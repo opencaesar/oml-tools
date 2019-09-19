@@ -1,0 +1,52 @@
+buildscript {
+	repositories {
+	    mavenLocal()
+  		mavenCentral()
+		jcenter()
+	}
+	dependencies {
+		classpath 'org.xtext:xtext-gradle-plugin:1.0.21'
+		classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.+'
+	}
+}
+
+repositories {
+	mavenLocal()
+	maven { url 'https://dl.bintray.com/opencaesar/oml' }
+	mavenCentral()
+	jcenter()
+}
+
+apply plugin: 'com.jfrog.bintray'
+apply plugin: 'java'
+apply plugin: 'org.xtext.xtend'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+apply plugin: 'application'
+
+group = 'io.opencaesar.bikeshed'
+version = '0.1.0'
+
+ext.title = 'Oml to Bikeshed'
+description = 'Bikeshed generator for Oml'
+mainClassName = 'io.opencaesar.oml2bikeshed.App'
+
+apply from: "${rootDir}/gradle/source-layout.gradle"
+apply from: "${rootDir}/gradle/maven-deployment.gradle"
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+configurations.all {
+	exclude group: 'asm'
+}
+
+dependencies {
+    // This dependency is used internally, and not exposed to consumers on their own compile classpath.
+    implementation 'com.beust:jcommander:1.72'
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:0.2.+"
+	implementation 'net.sourceforge.plantuml:plantuml:1.2019.0'
+
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}
