@@ -12,7 +12,7 @@ buildscript {
 
 repositories {
 	mavenLocal()
-	maven { url 'https://dl.bintray.com/opencaesar/oml' }
+	maven { url 'https://dl.bintray.com/opencaesar/oml-server' }
 	mavenCentral()
 	jcenter()
 }
