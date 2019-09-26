@@ -30,7 +30,19 @@ import org.eclipse.emf.ecore.resource.Resource
 
 import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
+import io.opencaesar.oml.Entity
+import io.opencaesar.oml.CharacterizationProperty
 
+/**
+ * Transform OML to Bikeshed
+ * 
+ * To produce documentation for a given ontology in OML we use Bikeshed as an intermediate form
+ * that can be leveraged to produce the html output from a simpler markdown specificaiton.
+ * 
+ * See: OML Reference https://opencaesar.github.io/oml-spec/
+ * See: Bikeshed Reference https://tabatkins.github.io/bikeshed/
+ * 
+ */
 class OmlToBikeshed {
 
 	val Resource inputResource 
@@ -90,6 +102,7 @@ class OmlToBikeshed {
 		«terminology.toSubsection(StructuredPropertyReference, "# External Structured Properties # {#heading-external-structuredproperties}")»
 		«terminology.toSubsection(ScalarProperty, "# Scalar Properties # {#heading-scalarproperties}")»
 		«terminology.toSubsection(ScalarPropertyReference, "# External Scalar Properties # {#heading-external-scalarproperties}")»
+		
 	'''
 	
 	private def dispatch String toDiv(Description description) '''
@@ -125,54 +138,116 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(Term term) '''
 		## <dfn>«term.name»</dfn> ## {#heading-«term.localName»}
 		«term.comment»
-			«val superTerms = term.specializedTerms»
-			«IF !superTerms.empty»
+		«val superTerms = term.specializedTerms»
+		«IF !superTerms.empty»
 
-			*Super terms:*
-			«superTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(term.graph)»</a>'''].join(', ')»
-			«ENDIF»
-			«val subTerms = term.allSpecializingTerms»
-			«IF !subTerms.empty»
+		*Super terms:*
+		«superTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(term.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		«val subTerms = term.allSpecializingTerms»
+		«IF !subTerms.empty»
 
-			*Sub terms:*
-			«subTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(term.graph)»</a>'''].join(', ')»
-			«ENDIF»
+		*Sub terms:*
+		«subTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(term.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		
 	'''
 
-	private def dispatch String toBikeshed(Relationship relationship) '''
+	private def dispatch String toBikeshed(Entity entity) '''
+		## <dfn>«entity.name»</dfn> ## {#heading-«entity.localName»}
+		«entity.comment»
+		«val superEntities = entity.specializedTerms»
+		«IF !superEntities.empty»
+
+		*Super entities:*
+		«superEntities.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		«val subEntities = entity.allSpecializingEntities»
+		«IF !subEntities.empty»
+
+		*Sub entities:*
+		«subEntities.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
+
+		«val domainRelations = entity.allSourceReifiedRelations»
+		«IF !domainRelations.empty»
+		*Relations having «entity.localName» as domain:*
+		«domainRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		
+		«val rangeRelations = entity.allTargetReifiedRelations»
+		«IF !rangeRelations.empty»
+		*Relations having «entity.localName» as range:*
+		«rangeRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		
+		*TODO: Relations having supertype of «entity.localName» as domain:*
+
+		«val properties = entity.allSourceProperties»
+		«IF !properties.empty»
+		*Properties:*
+		«properties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
+
+		*TODO: Inherited Properties:*
+	'''
+	
+	private def String toBikeshedHelper(Relationship relationship) '''
 		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
 		«relationship.comment»
-			*Source:*
-			«val source = relationship.source»
-			<a spec="«source.graph.iri»" lt="«source.name»">«source.getReferenceName(relationship.graph)»</a>
+		*Source:*
+		«val source = relationship.source»
+		<a spec="«source.graph.iri»" lt="«source.name»">«source.getReferenceName(relationship.graph)»</a>
 
-			*Target:*
-			«val target = relationship.target»
-			<a spec="«target.graph.iri»" lt="«target.name»">«target.getReferenceName(relationship.graph)»</a>
+		*Target:*
+		«val target = relationship.target»
+		<a spec="«target.graph.iri»" lt="«target.name»">«target.getReferenceName(relationship.graph)»</a>
 
-			*Forward:*
-			<dfn attribute for=«relationship.name»>«relationship.forward.name»</dfn>
-			«relationship.forward.description»
-			«IF relationship.inverse !== null»
-			
-			*Inverse:*
-			<dfn attribute for=«relationship.name»>«relationship.inverse.name»</dfn>
-			«relationship.inverse.description»
-			«ENDIF»
-			«val superTerms = relationship.specializedTerms»
-			«IF !superTerms.empty»
+		*Forward:*
+		<dfn attribute for=«relationship.name»>«relationship.forward.name»</dfn>
+		«relationship.forward.description»
+		«IF relationship.inverse !== null»
 
-			*Super terms:*
-			«superTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(relationship.graph)»</a>'''].join(', ')»
-			«ENDIF»
-			«val subTerms = relationship.allSpecializingTerms»
-			«IF !subTerms.empty»
+		*Inverse:*
+		<dfn attribute for=«relationship.name»>«relationship.inverse.name»</dfn>
+		«relationship.inverse.description»
+		«ENDIF»
+		«val superTerms = relationship.specializedTerms»
+		«IF !superTerms.empty»
 
-			*Sub terms:*
-			«subTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(relationship.graph)»</a>'''].join(', ')»
-			«ENDIF»
+		*Super terms:*
+		«superTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(relationship.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		«val subTerms = relationship.allSpecializingTerms»
+		«IF !subTerms.empty»
+
+		*Sub terms:*
+		«subTerms.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(relationship.graph)»</a>'''].join(', ')»
+		«ENDIF»
 	'''
 
+	private def dispatch String toBikeshed(ReifiedRelationship relationship) {
+		toBikeshedHelper(relationship)
+	}
+	
+	private def dispatch String toBikeshed(Relationship relationship) {
+		toBikeshedHelper(relationship)
+	}
+	
+	private def dispatch String toBikeshed(StructuredProperty property) '''
+		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.comment»
+		
+		Structured range described by...
+	'''
+	
+	private def dispatch String toBikeshed(ScalarProperty property) '''
+		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.comment»
+		
+		Scalar range reference
+	'''
+	
 	private def dispatch String toBikeshed(TermReference reference) '''
 		«val term = reference.resolve»
 		## <a spec="«term.graph.iri»" lt="«term.name»">«reference.localName»</a> ## {#heading-«reference.localName»}
@@ -183,7 +258,7 @@ class OmlToBikeshed {
 			*Super terms:*
 			«superTerms.sortBy[name].map['''<a spec="«graph.iri»">«name»</a>'''].join(', ')»
 			«ENDIF»
-
+		
 	'''
 
 	//----------------------------------------------------------------------------------------------------------
