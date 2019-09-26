@@ -32,6 +32,7 @@ import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
 import io.opencaesar.oml.Entity
 import io.opencaesar.oml.CharacterizationProperty
+import io.opencaesar.oml.LiteralValue
 
 /**
  * Transform OML to Bikeshed
@@ -153,6 +154,9 @@ class OmlToBikeshed {
 		
 	'''
 
+	// TODO: inherited relations
+	// TODO: inherited properties
+	// TODO: annotation properties?
 	private def dispatch String toBikeshed(Entity entity) '''
 		## <dfn>«entity.name»</dfn> ## {#heading-«entity.localName»}
 		«entity.comment»
@@ -180,8 +184,6 @@ class OmlToBikeshed {
 		*Relations having «entity.localName» as range:*
 		«rangeRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
-		
-		*TODO: Relations having supertype of «entity.localName» as domain:*
 
 		«val properties = entity.allSourceProperties»
 		«IF !properties.empty»
@@ -189,7 +191,6 @@ class OmlToBikeshed {
 		«properties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
 
-		*TODO: Inherited Properties:*
 	'''
 	
 	private def String toBikeshedHelper(Relationship relationship) '''
@@ -234,19 +235,27 @@ class OmlToBikeshed {
 		toBikeshedHelper(relationship)
 	}
 	
-	private def dispatch String toBikeshed(StructuredProperty property) '''
-		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
-		«property.comment»
-		
-		Structured range described by...
-	'''
+//  TODO: find an ontology containing examples of this we can test against
+//	private def dispatch String toBikeshed(StructuredProperty property) '''
+//		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+//		«property.comment»
+//		
+//		Structured range described by...
+//	'''
 	
 	private def dispatch String toBikeshed(ScalarProperty property) '''
 		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
 		«property.comment»
-		
-		Scalar range reference
+		«val range = property.range»
+		Scalar range type: <a spec="«range.graph.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
 	'''
+//	
+//	private def dispatch String toBikesshed(ScalarRange range) '''
+//		## <dfn>«range.name»</dfn> ## {#heading-«range.localName»}
+//		«range.comment»
+//		range definition...
+//	'''
+	
 	
 	private def dispatch String toBikeshed(TermReference reference) '''
 		«val term = reference.resolve»
