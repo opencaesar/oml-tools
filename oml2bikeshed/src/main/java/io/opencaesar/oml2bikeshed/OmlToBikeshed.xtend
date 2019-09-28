@@ -160,6 +160,8 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(Entity entity) '''
 		## <dfn>«entity.name»</dfn> ## {#heading-«entity.localName»}
 		«entity.comment»
+		«entity.description»
+		
 		«val superEntities = entity.specializedTerms»
 		«IF !superEntities.empty»
 
@@ -194,8 +196,7 @@ class OmlToBikeshed {
 	'''
 	
 	private def String toBikeshedHelper(Relationship relationship) '''
-		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
-		«relationship.comment»
+		
 		*Source:*
 		«val source = relationship.source»
 		<a spec="«source.graph.iri»" lt="«source.name»">«source.getReferenceName(relationship.graph)»</a>
@@ -227,13 +228,22 @@ class OmlToBikeshed {
 		«ENDIF»
 	'''
 
-	private def dispatch String toBikeshed(ReifiedRelationship relationship) {
-		toBikeshedHelper(relationship)
-	}
+	private def dispatch String toBikeshed(ReifiedRelationship relationship) '''
+		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
+		«relationship.comment»
+		«relationship.description»
+		
+		«relationship.toBikeshedHelper»
+	'''
 	
-	private def dispatch String toBikeshed(Relationship relationship) {
-		toBikeshedHelper(relationship)
-	}
+	// Can ordinary relationships have descriptions too?
+	private def dispatch String toBikeshed(Relationship relationship) '''
+		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
+		«relationship.comment»
+		
+		«relationship.toBikeshedHelper»
+	'''
+	
 	
 //  TODO: find an ontology containing examples of this we can test against
 //	private def dispatch String toBikeshed(StructuredProperty property) '''
@@ -246,15 +256,17 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(ScalarProperty property) '''
 		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
 		«property.comment»
+		«property.description»
 		«val range = property.range»
 		Scalar range type: <a spec="«range.graph.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
 	'''
-//	
-//	private def dispatch String toBikesshed(ScalarRange range) '''
-//		## <dfn>«range.name»</dfn> ## {#heading-«range.localName»}
-//		«range.comment»
-//		range definition...
-//	'''
+	
+	private def dispatch String toBikesshed(ScalarRange range) '''
+		## <dfn>«range.name»</dfn> ## {#heading-«range.localName»}
+		«range.comment»
+		«range.description»
+		range definition...
+	'''
 	
 	
 	private def dispatch String toBikeshed(TermReference reference) '''
