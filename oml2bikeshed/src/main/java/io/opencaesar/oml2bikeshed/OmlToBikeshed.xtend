@@ -31,8 +31,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
 import io.opencaesar.oml.Entity
-import io.opencaesar.oml.CharacterizationProperty
-import io.opencaesar.oml.LiteralValue
 
 /**
  * Transform OML to Bikeshed
@@ -258,16 +256,8 @@ class OmlToBikeshed {
 		«property.comment»
 		«property.description»
 		«val range = property.range»
-		Scalar range type: <a spec="«range.graph.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
+		Scalar property type: <a spec="«range.graph.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
 	'''
-	
-	private def dispatch String toBikesshed(ScalarRange range) '''
-		## <dfn>«range.name»</dfn> ## {#heading-«range.localName»}
-		«range.comment»
-		«range.description»
-		range definition...
-	'''
-	
 	
 	private def dispatch String toBikeshed(TermReference reference) '''
 		«val term = reference.resolve»

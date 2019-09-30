@@ -121,6 +121,9 @@ class App {
 		// create the script file
 		val scriptFile = new File(outputPath+'/publish.sh')
 		val scriptContents = new StringBuffer
+		scriptContents.append('''
+			bikeshed spec index.bs
+		''')
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
@@ -131,8 +134,8 @@ class App {
 		}
 		outputFiles.put(scriptFile, scriptContents.toString)
 
-		// create the index file
-		val indexFile = new File(outputPath+'/index.html')
+		// create the index file as bikeshed spec
+		val indexFile = new File(outputPath+'/index.bs')
 		val indexContents = new StringBuffer
 		indexContents.append(OmlToIndex.addHeader(url, inputPath))
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
