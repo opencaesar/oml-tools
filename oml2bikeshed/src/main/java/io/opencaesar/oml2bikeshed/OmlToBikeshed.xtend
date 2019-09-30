@@ -166,7 +166,7 @@ class OmlToBikeshed {
 		*Super entities:*
 		«superEntities.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
-		«val subEntities = entity.allSpecializingEntities»
+		«val subEntities = entity.allSpecializingTerms.filter(Entity)»
 		«IF !subEntities.empty»
 
 		*Sub entities:*
@@ -185,7 +185,7 @@ class OmlToBikeshed {
 		«rangeRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
 
-		«val properties = entity.allSourceProperties»
+		«val properties = entity.allDomainProperties»
 		«IF !properties.empty»
 		*Properties:*
 		«properties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
