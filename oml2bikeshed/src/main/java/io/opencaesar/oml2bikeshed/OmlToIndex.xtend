@@ -29,8 +29,6 @@ class OmlToIndex {
 		Abstract: Documentation generated from OML ontologies
 		</pre>
 		
-		# Documentation of «inputName»
-		
 	'''
 	
 	static def String addFooter() '''
@@ -48,9 +46,7 @@ class OmlToIndex {
 		«val graph = inputResource.graph»
 		«val title = graph.title»
 		
-		## «title»
-		
-		[«title»](./«relativePath».html)
+		# [«title»](./«relativePath».html)
 		
 	'''
 	
