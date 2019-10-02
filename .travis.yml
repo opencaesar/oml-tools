@@ -5,7 +5,7 @@ jdk:
 - openjdk8
 
 before_script:
-- cd io.opencaesar.oml2bikeshed
+- cd oml2bikeshed
 
 script:
   - ./gradlew build
