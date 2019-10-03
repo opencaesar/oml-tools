@@ -31,6 +31,8 @@ import org.eclipse.emf.ecore.resource.Resource
 import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
 import io.opencaesar.oml.Entity
+import io.opencaesar.oml.Scalar
+import io.opencaesar.oml.AnnotationProperty
 
 /**
  * Transform OML to Bikeshed
@@ -85,48 +87,59 @@ class OmlToBikeshed {
 	private def dispatch String toDiv(Terminology terminology) '''
 		«terminology.toNamespace("# Namespace # {#heading-namespace}")»			
 		«terminology.toImports("# Imports # {#heading-imports}")»
-		«terminology.toSubsection(Aspect, "# Aspects # {#heading-aspects}")»
-		«terminology.toSubsection(AspectReference, "# External Aspects # {#heading-external-aspects}")»
-		«terminology.toSubsection(Concept, "# Concepts # {#heading-concepts}")»
-		«terminology.toSubsection(ConceptReference, "# External Concepts # {#heading-external-concepts}")»
-		«terminology.toSubsection(ReifiedRelationship, "# Reified Relationships # {#heading-reifiedrelationships}")»
-		«terminology.toSubsection(ReifiedRelationshipReference, "# External Reified Relationships # {#heading-external-reifiedrelationships}")»
-		«terminology.toSubsection(UnreifiedRelationship, "# Unreified Relationships # {#heading-unreifiedrelationships}")»
-		«terminology.toSubsection(UnreifiedRelationshipReference, "# External Unreified Relationships # {#heading-external-unreifiedrelationships}")»
-		«terminology.toSubsection(Structure, "# Structures # {#heading-structures}")»
-		«terminology.toSubsection(StructureReference, "# External Structures # {#heading-external-structures}")»
-		«terminology.toSubsection(ScalarRange, "# Scalars # {#heading-scalars}")»
-		«terminology.toSubsection(ScalarRangeReference, "# External Structures # {#heading-external-scalars}")»
-		«terminology.toSubsection(StructuredProperty, "# Structured Properties # {#heading-structuredproperties}")»
-		«terminology.toSubsection(StructuredPropertyReference, "# External Structured Properties # {#heading-external-structuredproperties}")»
-		«terminology.toSubsection(ScalarProperty, "# Scalar Properties # {#heading-scalarproperties}")»
-		«terminology.toSubsection(ScalarPropertyReference, "# External Scalar Properties # {#heading-external-scalarproperties}")»
+		«terminology.toSubsection(Aspect, "# Aspects # {#heading-aspects}","")»
+		«terminology.toSubsection(AspectReference, "# External Aspects # {#heading-external-aspects}","")»
+		«terminology.toSubsection(Concept, "# Concepts # {#heading-concepts}","")»
+		«terminology.toSubsection(ConceptReference, "# External Concepts # {#heading-external-concepts}","")»
+		«terminology.toSubsection(ReifiedRelationship, "# Reified Relationships # {#heading-reifiedrelationships}","")»
+		«terminology.toSubsection(ReifiedRelationshipReference, "# External Reified Relationships # {#heading-external-reifiedrelationships}","")»
+		«terminology.toSubsection(UnreifiedRelationship, "# Unreified Relationships # {#heading-unreifiedrelationships}","")»
+		«terminology.toSubsection(UnreifiedRelationshipReference, "# External Unreified Relationships # {#heading-external-unreifiedrelationships}","")»
+		«terminology.toSubsection(Structure, "# Structures # {#heading-structures}","")»
+		«terminology.toSubsection(StructureReference, "# External Structures # {#heading-external-structures}","")»
+		«terminology.toSubsection(ScalarRange, "# Scalars # {#heading-scalars}","")»
+		«terminology.toSubsection(ScalarRangeReference, "# External Structures # {#heading-external-scalars}","")»
+		«terminology.toSubsection(StructuredProperty, "# Structured Properties # {#heading-structuredproperties}","")»
+		«terminology.toSubsection(StructuredPropertyReference, "# External Structured Properties # {#heading-external-structuredproperties}","")»
+		«terminology.toSubsection(ScalarProperty, "# Scalar Properties # {#heading-scalarproperties}","")»
+		«terminology.toSubsection(ScalarPropertyReference, "# External Scalar Properties # {#heading-external-scalarproperties}","")»
+		«terminology.toSubsection(AnnotationProperty, "# External Annotation Properties # {#heading-external-annotationproperties}","Annotation properties name annotations that can be applied to any AnnotatedElement")»
 		
 	'''
 	
 	private def dispatch String toDiv(Description description) '''
-		«description.toNamespace("# Namespace # {#heading-namespace}")»			
+		«description.toNamespace("# Namespace # {#heading-namespace}")»
 	'''
 
+	// FIXME: this works for internal links to generated docs but not for links to external
+	// documentation. 
 	private def String toNamespace(Graph graph, String heading) '''
 		«heading»
-			«val importURI = graph.eResource.URI.trimFileExtension.appendFileExtension('html').lastSegment»
+		«val importURI = graph.eResource.URI.trimFileExtension.appendFileExtension('html').lastSegment»
 			* «graph.name»: [«graph.iri»](«importURI»)
+			
+		«val relation=graph.relation»
+		«IF relation!=""»
+		[External documentation](«relation»)
+		«ENDIF»
 	'''
 	
 	private def String toImports(Terminology terminology, String heading) '''
 		«heading»
 		*Extensions:*
-			«FOR _extension : terminology.imports.filter(TerminologyExtension)»
-			«val importURI = URI.createURI(_extension.importURI).trimFileExtension.appendFileExtension('html')»
+		«FOR _extension : terminology.imports.filter(TerminologyExtension)»
+		«val importURI = URI.createURI(_extension.importURI).trimFileExtension.appendFileExtension('html')»
 			* «_extension.importAlias»: [«_extension.importedGraph.iri»](«importURI»)
-			«ENDFOR»
+		«ENDFOR»
 	'''
 
-	private def <T extends AnnotatedElement> String toSubsection(Terminology terminology, Class<T> type, String heading) '''
+	private def <T extends AnnotatedElement> String toSubsection(Terminology terminology, Class<T> type, String heading, String text) '''
 		«val elements = terminology.statements.filter(type)»
 		«IF !elements.empty»
 		«heading»
+		
+		«text»
+		
 		«FOR element : elements»
 		«element.toBikeshed»
 		
@@ -137,6 +150,9 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(Term term) '''
 		## <dfn>«term.name»</dfn> ## {#heading-«term.localName»}
 		«term.comment»
+		
+		«term.description»
+		
 		«val superTerms = term.specializedTerms»
 		«IF !superTerms.empty»
 
@@ -158,7 +174,8 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(Entity entity) '''
 		## <dfn>«entity.name»</dfn> ## {#heading-«entity.localName»}
 		«entity.comment»
-		«entity.description»
+		
+		«entity.descriptionURL»
 		
 		«val superEntities = entity.specializedTerms»
 		«IF !superEntities.empty»
@@ -229,6 +246,7 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(ReifiedRelationship relationship) '''
 		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
 		«relationship.comment»
+		
 		«relationship.description»
 		
 		«relationship.toBikeshedHelper»
@@ -239,17 +257,21 @@ class OmlToBikeshed {
 		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
 		«relationship.comment»
 		
+		«relationship.description»
+		
 		«relationship.toBikeshedHelper»
 	'''
 	
 	
-//  TODO: find an ontology containing examples of this we can test against
-//	private def dispatch String toBikeshed(StructuredProperty property) '''
-//		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
-//		«property.comment»
-//		
-//		Structured range described by...
-//	'''
+  //TODO: find an ontology containing examples of this we can test against
+	private def dispatch String toBikeshed(StructuredProperty property) '''
+		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.comment»
+		
+		«property.descriptionURL»
+		
+		Structured range described by...
+	'''
 	
 	private def dispatch String toBikeshed(ScalarProperty property) '''
 		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
@@ -259,27 +281,53 @@ class OmlToBikeshed {
 		Scalar property type: <a spec="«range.graph.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
 	'''
 	
+	private def dispatch String toBikeshed(AnnotationProperty property) '''
+		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.comment»
+
+		«property.descriptionURL»
+		
+	'''
+	
 	private def dispatch String toBikeshed(TermReference reference) '''
 		«val term = reference.resolve»
 		## <a spec="«term.graph.iri»" lt="«term.name»">«reference.localName»</a> ## {#heading-«reference.localName»}
 		«reference.comment»
-			«val superTerms = reference.specializedTerms»
-			«IF !superTerms.empty»
+		«val superTerms = reference.specializedTerms»
+		«IF !superTerms.empty»
 
-			*Super terms:*
-			«superTerms.sortBy[name].map['''<a spec="«graph.iri»">«name»</a>'''].join(', ')»
-			«ENDIF»
+		*Super terms:*
+		«superTerms.sortBy[name].map['''<a spec="«graph.iri»">«name»</a>'''].join(', ')»
+		«ENDIF»
 		
 	'''
 
+	private def dispatch String toBikeshed(Scalar property) '''
+		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.comment»
+		
+		«property.descriptionURL»
+		
+	'''
+	
 	//----------------------------------------------------------------------------------------------------------
 
+	
 	private def String getTitle(NamedElement element) {
-		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/title", element.name)
+		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/title", element.name?:"")
 	}
 	
 	private def String getDescription(AnnotatedElement element) {
 		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/description", "")
+	}
+	
+	private def String getDescriptionURL(AnnotatedElement element) {
+		val desc = element.description
+		if (desc.startsWith("http")) '''
+			[«element.localName»](«desc»)
+		'''
+		else
+			desc
 	}
 
 	private def String getCreator(AnnotatedElement element) {
@@ -292,6 +340,10 @@ class OmlToBikeshed {
 
 	private def String getComment(AnnotatedElement element) {
 		element.getAnnotationStringValue("http://www.w3.org/2000/01/rdf-schema#comment", "")
+	}
+	
+	private def String getRelation(AnnotatedElement element) {
+		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/relation", "")
 	}
 	
 	private def String getReferenceName(NamedElement referenced, Graph graph) {
