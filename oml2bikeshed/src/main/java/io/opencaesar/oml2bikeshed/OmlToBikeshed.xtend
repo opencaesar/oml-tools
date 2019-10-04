@@ -33,6 +33,7 @@ import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
 import io.opencaesar.oml.Entity
 import io.opencaesar.oml.Scalar
 import io.opencaesar.oml.AnnotationProperty
+import java.util.ArrayList
 
 /**
  * Transform OML to Bikeshed
@@ -210,7 +211,21 @@ class OmlToBikeshed {
 
 	'''
 	
+	private def String getRelationshipAttributes(Relationship relationship) {
+		val ArrayList<String> pnames=new ArrayList
+		if (relationship.functional) pnames.add("Functional")
+		if (relationship.inverseFunctional) pnames.add("InverseFunctional")
+		if (relationship.symmetric) pnames.add("Symmetric")
+		if (relationship.asymmetric) pnames.add("Asymmetric")
+		if (relationship.reflexive) pnames.add("Reflexive")
+		if (relationship.irreflexive) pnames.add("Irreflexive")
+		if (relationship.transitive) pnames.add("Transitive")
+		pnames.join(", ")
+	}
+	
 	private def String toBikeshedHelper(Relationship relationship) '''
+		
+		*«relationship.relationshipAttributes»*
 		
 		*Source:*
 		«val source = relationship.source»
