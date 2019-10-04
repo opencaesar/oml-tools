@@ -2,7 +2,7 @@
 name: User Story
 about: To describe a user story, feature, or enhancement.
 title: ''
-labels: ''
+labels: Enhancement
 assignees: ''
 
 ---

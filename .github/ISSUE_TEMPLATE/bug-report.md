@@ -1,7 +1,7 @@
 ---
 name: Bug Report
 about: To provide a concise description of a bug or issue.
-title: ''
+title: "[BUG] - "
 labels: Bug
 assignees: ''
 
