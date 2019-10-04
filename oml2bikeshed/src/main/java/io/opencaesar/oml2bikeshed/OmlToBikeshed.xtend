@@ -34,6 +34,7 @@ import io.opencaesar.oml.Entity
 import io.opencaesar.oml.Scalar
 import io.opencaesar.oml.AnnotationProperty
 import java.util.ArrayList
+import io.opencaesar.oml.CharacterizableTerm
 
 /**
  * Transform OML to Bikeshed
@@ -171,7 +172,6 @@ class OmlToBikeshed {
 
 	// TODO: inherited relations
 	// TODO: inherited properties
-	// TODO: annotation properties?
 	private def dispatch String toBikeshed(Entity entity) '''
 		## <dfn>«entity.name»</dfn> ## {#heading-«entity.localName»}
 		«entity.comment»
@@ -205,10 +205,15 @@ class OmlToBikeshed {
 
 		«val properties = entity.allDomainProperties»
 		«IF !properties.empty»
-		*Properties:*
+		*Direct Properties:*
 		«properties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
-
+		
+		«val transitiveproperties = entity.specializedTerms.filter(CharacterizableTerm).map(e | e.allDomainProperties).flatten»
+		«IF !transitiveproperties.empty»
+		*Supertype Properties:*
+		«transitiveproperties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
 	'''
 	
 	private def String getRelationshipAttributes(Relationship relationship) {
@@ -265,6 +270,18 @@ class OmlToBikeshed {
 		«relationship.description»
 		
 		«relationship.toBikeshedHelper»
+		
+		«val properties = relationship.allDomainProperties»
+		«IF !properties.empty»
+		*Direct Properties:*
+		«properties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(relationship.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		
+		«val transitiveproperties = relationship.specializedTerms.filter(CharacterizableTerm).map(e | e.allDomainProperties).flatten»
+		«IF !transitiveproperties.empty»
+		*Supertype Properties:*
+		«transitiveproperties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(relationship.graph)»</a>'''].join(', ')»
+		«ENDIF»
 	'''
 	
 	// Can ordinary relationships have descriptions too?
