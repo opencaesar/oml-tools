@@ -84,6 +84,8 @@ class OmlToBikeshed {
 		Markup Shorthands: markdown yes
 		Use Dfn Panels: yes
 		Abstract: «graph.description»
+		Favicon: https://opencaesar.github.io/assets/img/oml.png
+		!OMLlogo: <img src='https://opencaesar.github.io/assets/img/oml.png' width='50px'/>
 	'''
 
 	private def dispatch String toDiv(Terminology terminology) '''
@@ -120,10 +122,6 @@ class OmlToBikeshed {
 		«val importURI = graph.eResource.URI.trimFileExtension.appendFileExtension('html').lastSegment»
 			* «graph.name»: [«graph.iri»](«importURI»)
 			
-		«val relation=graph.relation»
-		«IF relation!=""»
-		[External documentation](«relation»)
-		«ENDIF»
 	'''
 	
 	private def String toImports(Terminology terminology, String heading) '''
@@ -150,10 +148,11 @@ class OmlToBikeshed {
 	'''
 
 	private def dispatch String toBikeshed(Term term) '''
-		## <dfn>«term.name»</dfn> ## {#heading-«term.localName»}
+		«term.sectionHeader»
+		
 		«term.comment»
 		
-		«term.description»
+		«term.plainDescription»
 		
 		«val superTerms = term.specializedTerms»
 		«IF !superTerms.empty»
@@ -170,13 +169,12 @@ class OmlToBikeshed {
 		
 	'''
 
-	// TODO: inherited relations
-	// TODO: inherited properties
 	private def dispatch String toBikeshed(Entity entity) '''
-		## <dfn>«entity.name»</dfn> ## {#heading-«entity.localName»}
+		«entity.sectionHeader»
+		
 		«entity.comment»
 		
-		«entity.descriptionURL»
+		«entity.plainDescription»
 		
 		«val superEntities = entity.specializedTerms»
 		«IF !superEntities.empty»
@@ -230,7 +228,10 @@ class OmlToBikeshed {
 	
 	private def String toBikeshedHelper(Relationship relationship) '''
 		
-		*«relationship.relationshipAttributes»*
+		«val attr=relationship.relationshipAttributes»
+		«IF attr !== null»
+		*Attributes:* «attr»
+		«ENDIF»
 		
 		*Source:*
 		«val source = relationship.source»
@@ -264,10 +265,11 @@ class OmlToBikeshed {
 	'''
 
 	private def dispatch String toBikeshed(ReifiedRelationship relationship) '''
-		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
+		«relationship.sectionHeader»
+	
 		«relationship.comment»
 		
-		«relationship.description»
+		«relationship.plainDescription»
 		
 		«relationship.toBikeshedHelper»
 		
@@ -286,10 +288,12 @@ class OmlToBikeshed {
 	
 	// Can ordinary relationships have descriptions too?
 	private def dispatch String toBikeshed(Relationship relationship) '''
-		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
+	
+		«relationship.sectionHeader»
+		
 		«relationship.comment»
 		
-		«relationship.description»
+		«relationship.plainDescription»
 		
 		«relationship.toBikeshedHelper»
 	'''
@@ -297,27 +301,33 @@ class OmlToBikeshed {
 	
   //TODO: find an ontology containing examples of this we can test against
 	private def dispatch String toBikeshed(StructuredProperty property) '''
-		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.sectionHeader»
+		
 		«property.comment»
 		
-		«property.descriptionURL»
+		«property.plainDescription»
 		
-		Structured range described by...
 	'''
 	
 	private def dispatch String toBikeshed(ScalarProperty property) '''
-		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.sectionHeader»
+		
 		«property.comment»
-		«property.description»
+		
+		«property.plainDescription»
+		
 		«val range = property.range»
-		Scalar property type: <a spec="«range.graph.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
+		
+		Scalar property type: <a spec="«range.graph?.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
+		
 	'''
 	
 	private def dispatch String toBikeshed(AnnotationProperty property) '''
-		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.sectionHeader»
+		
 		«property.comment»
 
-		«property.descriptionURL»
+		«property.plainDescription»
 		
 	'''
 	
@@ -335,15 +345,35 @@ class OmlToBikeshed {
 	'''
 
 	private def dispatch String toBikeshed(Scalar property) '''
-		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.sectionHeader»
+		
 		«property.comment»
 		
-		«property.descriptionURL»
+		«property.plainDescription»
 		
 	'''
 	
 	//----------------------------------------------------------------------------------------------------------
 
+	private def String getPlainDescription(Term term) {
+		val desc=term.description
+		if (desc.startsWith("http")) ""
+		else 
+			desc
+	}
+	
+	/**
+	 * Tricky bit: if description starts with a url we treat it as an
+	 * external definition.
+	 */
+	private def String getSectionHeader(Term term) {
+		val desc=term.description
+		
+		if (desc.startsWith("http"))
+		'''## <dfn>«term.name»</dfn> see \[«term.localName»](«desc») ## {#heading-«term.localName»}'''
+		else
+		'''## <dfn>«term.name»</dfn> ## {#heading-«term.localName»}'''
+	}
 	
 	private def String getTitle(NamedElement element) {
 		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/title", element.name?:"")
@@ -369,13 +399,17 @@ class OmlToBikeshed {
 	private def String getCopyright(AnnotatedElement element) {
 		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/rights", "").replaceAll('\n', '')
 	}
+	
+	private def String getRelation(AnnotatedElement element) {
+		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/relation", "").replaceAll('\n', '')
+	}
 
 	private def String getComment(AnnotatedElement element) {
 		element.getAnnotationStringValue("http://www.w3.org/2000/01/rdf-schema#comment", "")
 	}
 	
-	private def String getRelation(AnnotatedElement element) {
-		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/relation", "")
+	private def String getSeeAlso(AnnotatedElement element) {
+		element.getAnnotationStringValue("http://www.w3.org/2000/01/rdf-schema#seeAlso", "")
 	}
 	
 	private def String getReferenceName(NamedElement referenced, Graph graph) {

@@ -27,6 +27,8 @@ class OmlToIndex {
 		Markup Shorthands: markdown yes
 		Use Dfn Panels: yes
 		Abstract: Documentation generated from OML ontologies
+		Favicon: https://opencaesar.github.io/assets/img/oml.png
+		!OMLlogo: <img src='https://opencaesar.github.io/assets/img/oml.png' width='50px'/>
 		</pre>
 		
 	'''
