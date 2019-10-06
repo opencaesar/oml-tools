@@ -23,7 +23,7 @@ import java.io.PrintStream
 
 class App {
 	
-	private val logoString = '''
+	val logoString = '''
 		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
 		'''
 

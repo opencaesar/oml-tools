@@ -35,6 +35,7 @@ import java.util.ArrayList
 
 import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
+import io.opencaesar.oml.Rule
 
 /**
  * Transform OML to Bikeshed
@@ -98,6 +99,7 @@ class OmlToBikeshed {
 		«terminology.toSubsection(ReifiedRelationshipReference, "# External Reified Relationships # {#heading-external-reifiedrelationships}","")»
 		«terminology.toSubsection(UnreifiedRelationship, "# Unreified Relationships # {#heading-unreifiedrelationships}","")»
 		«terminology.toSubsection(UnreifiedRelationshipReference, "# External Unreified Relationships # {#heading-external-unreifiedrelationships}","")»
+		«terminology.toSubsection(Rule, "# Rules # {#heading-rules}","")»
 		«terminology.toSubsection(Structure, "# Structures # {#heading-structures}","")»
 		«terminology.toSubsection(StructureReference, "# External Structures # {#heading-external-structures}","")»
 		«terminology.toSubsection(ScalarRange, "# Scalars # {#heading-scalars}","")»
@@ -297,8 +299,12 @@ class OmlToBikeshed {
 		«relationship.toBikeshedHelper»
 	'''
 	
+	private def dispatch String toBikeshed(Rule rule) '''
+		## <dfn>«rule.name»</dfn> ## {#heading-«rule.localName»}
+		
+	'''
 	
-  //TODO: find an ontology containing examples of this we can test against
+  	//TODO: find an ontology containing examples of this we can test against
 	private def dispatch String toBikeshed(StructuredProperty property) '''
 		«property.sectionHeader»
 		

@@ -47,7 +47,7 @@ class OmlToIndex {
 		«val graph = inputResource.graph»
 		«val title = graph.title»
 		
-		# [«title»](./«relativePath».html)
+		# [«title»](./«relativePath».html) # {#heading-«graph.localName»}
 		
 	'''
 	
