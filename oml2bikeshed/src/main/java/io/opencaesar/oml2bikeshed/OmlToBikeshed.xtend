@@ -25,16 +25,16 @@ import io.opencaesar.oml.Terminology
 import io.opencaesar.oml.TerminologyExtension
 import io.opencaesar.oml.UnreifiedRelationship
 import io.opencaesar.oml.UnreifiedRelationshipReference
-import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.Resource
-
-import static extension io.opencaesar.oml.Oml.*
-import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
 import io.opencaesar.oml.Entity
 import io.opencaesar.oml.Scalar
 import io.opencaesar.oml.AnnotationProperty
-import java.util.ArrayList
 import io.opencaesar.oml.CharacterizableTerm
+import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.Resource
+import java.util.ArrayList
+
+import static extension io.opencaesar.oml.Oml.*
+import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
 
 /**
  * Transform OML to Bikeshed
@@ -58,7 +58,7 @@ class OmlToBikeshed {
 		this.relativePath = relativePath
 	}
 	
-	def run() {
+	def String run() {
 		inputResource.graph.toBikeshed
 	}
 	
@@ -85,7 +85,6 @@ class OmlToBikeshed {
 		Use Dfn Panels: yes
 		Abstract: «graph.description»
 		Favicon: https://opencaesar.github.io/assets/img/oml.png
-		!OMLlogo: <img src='https://opencaesar.github.io/assets/img/oml.png' width='50px'/>
 	'''
 
 	private def dispatch String toDiv(Terminology terminology) '''

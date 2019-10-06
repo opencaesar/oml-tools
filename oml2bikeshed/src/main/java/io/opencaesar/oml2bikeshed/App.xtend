@@ -19,8 +19,13 @@ import org.apache.log4j.LogManager
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
+import java.io.PrintStream
 
 class App {
+	
+	private val logoString = '''
+		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
+		'''
 
 	@Parameter(
 		names=#["--input","-i"], 
@@ -146,6 +151,7 @@ class App {
 		}
 		indexContents.append(OmlToIndex.addFooter)
 		outputFiles.put(indexFile, indexContents.toString)
+		outputFiles.put(new File(outputPath+'/logo.include'), logoString)
 		
 		// create the anchors.bsdata files
 		for (folder : allInputFolders) {
@@ -153,6 +159,8 @@ class App {
 			val anchoreResourceURI = URI.createFileURI(inputPath+'/'+relativePath+'/anchors.bsdata') 
 			val anchorsFile = new File(outputPath+'/'+relativePath+'/anchors.bsdata')
 			outputFiles.put(anchorsFile, new OmlToAnchors(anchoreResourceURI, inputResourceSet).run)
+			// this may write the same logo file multiple times
+			outputFiles.put(new File(outputPath+'/'+relativePath+'/logo.include'), logoString)
 		}
 
 		// create the ontology files
@@ -169,6 +177,7 @@ class App {
 			file.parentFile.mkdirs
 			val filePath = file.canonicalPath
 			val out = new BufferedWriter(new FileWriter(filePath))
+	
 			try {
 				LOGGER.info("Saving: "+filePath)
 			    out.write(result.toString) 
@@ -219,5 +228,14 @@ class App {
 			}
 	  	}
 	}
+	
+	private def writeLogoFile(String path) {
+		val fout = new PrintStream(new File(path + "/logo.include"))
+		fout.println('''
+		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
+		''')
+		fout.close
+	}
+	
 	
 }
