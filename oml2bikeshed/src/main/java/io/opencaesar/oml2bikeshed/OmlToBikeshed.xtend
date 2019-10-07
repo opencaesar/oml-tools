@@ -192,26 +192,33 @@ class OmlToBikeshed {
 		«val subEntities = entity.allSpecializingTerms.filter(Entity)»
 		«IF !subEntities.empty»
 
-		*Sub entities:*
+		*Specializations:*
 		«subEntities.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
 
 		«val domainRelations = entity.allSourceReifiedRelations»
 		«IF !domainRelations.empty»
 		*Relations having «entity.localName» as domain:*
-		«domainRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+			«FOR dr :domainRelations.sortBy[name]»
+			* «entity.name» «dr.forward.toBikeshedReference» «dr.target.toBikeshedReference» 
+			«ENDFOR»
+		
 		«ENDIF»
 		
 		«val domainTransitiveRelations = entity.specializedTerms.filter(Entity).map(e | e.allSourceReifiedRelations).flatten»
 		«IF !domainTransitiveRelations.empty»
 		*Supertype Relations having «entity.localName» as domain:*
-		«domainTransitiveRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+			«FOR dr :domainTransitiveRelations.sortBy[name]»
+			* «entity.name» «dr.forward.toBikeshedReference» «dr.target.toBikeshedReference» 
+			«ENDFOR»
 		«ENDIF»
 		
 		«val rangeRelations = entity.allTargetReifiedRelations»
 		«IF !rangeRelations.empty»
 		*Relations having «entity.localName» as range:*
-		«rangeRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+			«FOR dr :rangeRelations.sortBy[name]»
+			* «dr.source.toBikeshedReference» «dr.forward.toBikeshedReference» «entity.name» 
+			«ENDFOR»
 		«ENDIF»
 
 		«val properties = entity.allDomainProperties»
@@ -231,26 +238,26 @@ class OmlToBikeshed {
 		«ENDFOR»
 	'''
 
-	// Since direction.name doesn't provide full reference to the referenced relation we can't
-	// easily turn it into a reference.	
 	private def dispatch String toBikeshed(UniversalRelationshipRestrictionAxiom axiom) '''
 		«val target = axiom.restrictedTo»
 		«val direction = axiom.relationshipDirection»
-		Restricts range of «direction.toTerminologyReference» to be an instance of «target.toTerminologyReference»
+		Restricts range of «direction.toBikeshedReference» to be an instance of «target.toBikeshedReference»
 	'''
-	
-	// TODO: use this macro in place of literal reference patterns all over the place
-	private def String toTerminologyReference(NamedElement term) 
-	'''<a spec="«term.graph.iri»" lt="«term.name»">«term.getReferenceName(term.graph)»</a>'''
 	
 	private def dispatch String toBikeshed(ExistentialRelationshipRestrictionAxiom axiom) '''
-		ExistentialRelationshipRestrictionAxiom
+		«val target = axiom.restrictedTo»
+		«val direction = axiom.relationshipDirection»
+		Restricts range of «direction.toBikeshedReference» to some instances of «target.toBikeshedReference»
 	'''
 	private def dispatch String toBikeshed(UniversalScalarPropertyRestrictionAxiom axiom) '''
-		UniversalScalarPropertyRestrictionAxiom
+		«val target = axiom.restrictedTo»
+		«val property = axiom.property»
+		Restricts range of «property.toBikeshedReference» to be an instance of «target.toBikeshedReference»
 	'''
 	private def dispatch String toBikeshed(ExistentialScalarPropertyRestrictionAxiom axiom) '''
-		ExistentialScalarPropertyRestrictionAxiom
+		«val target = axiom.restrictedTo»
+		«val property = axiom.property»
+		Restricts range of «property.toBikeshedReference» to some instances of «target.toBikeshedReference»
 	'''
 	
 	private def String getRelationshipAttributes(Relationship relationship) {
@@ -405,6 +412,14 @@ class OmlToBikeshed {
 	
 	//----------------------------------------------------------------------------------------------------------
 
+	private def String toBikeshedReferenceBase(Graph graph, NamedElement element) 
+	'''<a spec="«graph.iri»" lt="«element.name»">«element.getReferenceName(graph)»</a> '''
+	
+	private def String toBikeshedReference(NamedElement element) {
+		element.graph.toBikeshedReferenceBase(element)
+	}
+		
+	
 	private def String getPlainDescription(Term term) {
 		val desc=term.description
 		if (desc.startsWith("http")) ""
