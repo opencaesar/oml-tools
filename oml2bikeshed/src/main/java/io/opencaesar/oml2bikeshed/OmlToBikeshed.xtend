@@ -236,13 +236,12 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(UniversalRelationshipRestrictionAxiom axiom) '''
 		«val target = axiom.restrictedTo»
 		«val direction = axiom.relationshipDirection»
-		Restricts range of «direction.name» to be an instance of «target.toTerminologyReference»
+		Restricts range of «direction.toTerminologyReference» to be an instance of «target.toTerminologyReference»
 	'''
 	
 	// TODO: use this macro in place of literal reference patterns all over the place
-	private def String toTerminologyReference(Term term) '''
-		<a spec="«term.graph.iri»" lt="«term.name»">«term.getReferenceName(term.graph)»</a>
-	'''
+	private def String toTerminologyReference(NamedElement term) 
+	'''<a spec="«term.graph.iri»" lt="«term.name»">«term.getReferenceName(term.graph)»</a>'''
 	
 	private def dispatch String toBikeshed(ExistentialRelationshipRestrictionAxiom axiom) '''
 		ExistentialRelationshipRestrictionAxiom
@@ -339,7 +338,7 @@ class OmlToBikeshed {
 	'''
 	
 	private def dispatch String toBikeshed(Rule rule) '''
-		## <dfn>«rule.name»</dfn> ## {#heading-«rule.localName»}
+		«rule.sectionHeader»
 		
 	'''
 	
@@ -417,7 +416,7 @@ class OmlToBikeshed {
 	 * Tricky bit: if description starts with a url we treat it as an
 	 * external definition.
 	 */
-	private def String getSectionHeader(Term term) {
+	private def String getSectionHeader(NamedElement term) {
 		val desc=term.description
 		
 		if (desc.startsWith("http"))
