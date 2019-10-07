@@ -29,13 +29,19 @@ import io.opencaesar.oml.Entity
 import io.opencaesar.oml.Scalar
 import io.opencaesar.oml.AnnotationProperty
 import io.opencaesar.oml.CharacterizableTerm
+import io.opencaesar.oml.Rule
+import io.opencaesar.oml.UniversalRelationshipRestrictionAxiom
+import io.opencaesar.oml.ExistentialRelationshipRestrictionAxiom
+import io.opencaesar.oml.ExistentialScalarPropertyRestrictionAxiom
+import io.opencaesar.oml.UniversalScalarPropertyRestrictionAxiom
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
 import java.util.ArrayList
 
 import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
-import io.opencaesar.oml.Rule
+
+
 
 /**
  * Transform OML to Bikeshed
@@ -196,6 +202,12 @@ class OmlToBikeshed {
 		«domainRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
 		
+		«val domainTransitiveRelations = entity.specializedTerms.filter(Entity).map(e | e.allSourceReifiedRelations).flatten»
+		«IF !domainTransitiveRelations.empty»
+		*Supertype Relations having «entity.localName» as domain:*
+		«domainTransitiveRelations.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
+		«ENDIF»
+		
 		«val rangeRelations = entity.allTargetReifiedRelations»
 		«IF !rangeRelations.empty»
 		*Relations having «entity.localName» as range:*
@@ -213,6 +225,33 @@ class OmlToBikeshed {
 		*Supertype Properties:*
 		«transitiveproperties.sortBy[name].map['''<a spec="«graph.iri»" lt="«name»">«getReferenceName(entity.graph)»</a>'''].join(', ')»
 		«ENDIF»
+		
+		«FOR r : entity.restrictions»
+			* «r.toBikeshed»
+		«ENDFOR»
+	'''
+
+	// Since direction.name doesn't provide full reference to the referenced relation we can't
+	// easily turn it into a reference.	
+	private def dispatch String toBikeshed(UniversalRelationshipRestrictionAxiom axiom) '''
+		«val target = axiom.restrictedTo»
+		«val direction = axiom.relationshipDirection»
+		Restricts range of «direction.name» to be an instance of «target.toTerminologyReference»
+	'''
+	
+	// TODO: use this macro in place of literal reference patterns all over the place
+	private def String toTerminologyReference(Term term) '''
+		<a spec="«term.graph.iri»" lt="«term.name»">«term.getReferenceName(term.graph)»</a>
+	'''
+	
+	private def dispatch String toBikeshed(ExistentialRelationshipRestrictionAxiom axiom) '''
+		ExistentialRelationshipRestrictionAxiom
+	'''
+	private def dispatch String toBikeshed(UniversalScalarPropertyRestrictionAxiom axiom) '''
+		UniversalScalarPropertyRestrictionAxiom
+	'''
+	private def dispatch String toBikeshed(ExistentialScalarPropertyRestrictionAxiom axiom) '''
+		ExistentialScalarPropertyRestrictionAxiom
 	'''
 	
 	private def String getRelationshipAttributes(Relationship relationship) {
@@ -321,9 +360,16 @@ class OmlToBikeshed {
 		
 		«property.plainDescription»
 		
-		«val range = property.range»
+		«val domain = property.domain»
+		*Domain:* <a spec="«domain.graph?.iri»" lt="«domain.name»">«domain.getReferenceName(domain.graph)»</a>
 		
-		Scalar property type: <a spec="«range.graph?.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
+		«val range = property.range»
+		*Scalar value type:* <a spec="«range.graph?.iri»" lt="«range.name»">«range.getReferenceName(range.graph)»</a>
+		
+		
+		«IF property.functional»
+		*Attributes:* Functional
+		«ENDIF»
 		
 	'''
 	
