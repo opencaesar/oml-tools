@@ -24,6 +24,8 @@ apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'application'
 
+mainClassName = 'io.opencaesar.oml2bikeshed.App'
+
 group = 'io.opencaesar.bikeshed'
 version = '0.1.0'
 
