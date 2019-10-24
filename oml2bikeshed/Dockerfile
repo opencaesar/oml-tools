@@ -26,7 +26,7 @@ LABEL org.opencontainers.image.source="https://github.com/opencaesar/oml-bikeshe
 # LABEL org.opencontainers.image.licenses="Apache-2.0"
 
 # URL defines the IRI root of the vocabularies. This is used in script to pass this argument to converter
-ENV URL "https://github.com/opencaesar/vocabularies"
+ENV URL "https://opencaesar.github.io/vocabularies/"
 
 #COPY --from=builder /home/gradle/src/build/distributions/*.tar /app/
 #COPY --from=builder /home/gradle/src/runindocker.sh /app/oml2bikeshed-0.1.0/
