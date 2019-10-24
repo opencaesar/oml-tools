@@ -235,21 +235,19 @@ class OmlToBikeshed {
 	'''
 	
 	// Can ordinary relationships have descriptions too?
-	private def dispatch String toBikeshed(Relationship relationship) '''
+	private def dispatch String toBikeshed(UnreifiedRelationship relationship) '''
 		## <dfn>«relationship.name»</dfn> ## {#heading-«relationship.localName»}
 		«relationship.comment»
 		
 		«relationship.toBikeshedHelper»
 	'''
 	
-	
-//  TODO: find an ontology containing examples of this we can test against
-//	private def dispatch String toBikeshed(StructuredProperty property) '''
-//		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
-//		«property.comment»
-//		
-//		Structured range described by...
-//	'''
+	private def dispatch String toBikeshed(StructuredProperty property) '''
+		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
+		«property.comment»
+		
+		Structured range described by...
+	'''
 	
 	private def dispatch String toBikeshed(ScalarProperty property) '''
 		## <dfn>«property.name»</dfn> ## {#heading-«property.localName»}
@@ -272,6 +270,8 @@ class OmlToBikeshed {
 		
 	'''
 
+	// TODO: embedding axioms are references
+	
 	//----------------------------------------------------------------------------------------------------------
 
 	private def String getTitle(NamedElement element) {

@@ -43,12 +43,26 @@ configurations.all {
 	exclude group: 'asm'
 }
 
+jar {
+    manifest {
+       attributes 'Implementation-Title': 'OML to Bikeshed documentation generator',
+                                'Implementation-Version': version
+    }
+    // also write version to properties file for access in prior to deployment
+    def props = new Properties()
+    props.setProperty('build.version', version)
+    def propertyFile = file "src/main/resources/application.properties"
+    propertyFile.withWriter { props.store(it, "set in gradle build" )}
+}
+
 dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.beust:jcommander:1.72'
-    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:0.3.1+"
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:0.3.2+"
 	implementation 'net.sourceforge.plantuml:plantuml:1.2019.0'
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }
+
+
