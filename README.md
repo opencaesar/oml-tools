@@ -22,6 +22,10 @@ where:
 * "<output folder>" is a folder where output bikeshed files will be written
 * "<url>" is the URL root where documents will be deployed
 
+### Options
+
+* -f adds the force option to bikeshed calls so that bikeshed doesn't fail on first error (useful for debugging)
+
 Generally, the output folder should be a temporary folder. A subsequent step will run bikeshed on each generated
 specification in that folder to convert it to html.
 
