@@ -5,3 +5,4 @@ xtend-gen
 build
 .gradle
 .launch
+application.properties
