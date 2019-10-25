@@ -1,6 +1,5 @@
 package io.opencaesar.oml2bikeshed
 
-import java.io.File
 import org.eclipse.emf.ecore.resource.Resource
 
 import static extension io.opencaesar.oml.Oml.*
@@ -13,7 +12,6 @@ import io.opencaesar.oml.NamedElement
 class OmlToIndex {
 
 	static def String addHeader(String url, String inputPath) '''
-		«val inputName = new File(inputPath).name»
 		<pre class='metadata'>
 		Title: OML Vocabularies Index
 		Shortname: Index

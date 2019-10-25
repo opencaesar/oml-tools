@@ -145,7 +145,7 @@ class App {
 		val forcetoken = if (force) "-f" else ""
 		val scriptContents = new StringBuffer
 		scriptContents.append('''
-			bikeshed spec index.bs
+			bikeshed «forcetoken» spec index.bs
 		''')
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
