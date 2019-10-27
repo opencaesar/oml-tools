@@ -20,6 +20,7 @@ import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
 import java.io.PrintStream
+import java.util.Properties
 
 class App {
 	
@@ -66,6 +67,20 @@ class App {
 		order=5)
 	package boolean help
 
+	@Parameter(
+		names=#["--version","-v"], 
+		description="Displays app version", 
+		help=true, 
+		order=6)
+	package boolean version
+	
+	@Parameter(
+		names=#["--force","-f"], 
+		description="Run bikeshed with force option -f", 
+		help=true, 
+		order=7)
+	package boolean force
+	
 	val LOGGER = LogManager.getLogger(App)
 
 	/*
@@ -75,6 +90,10 @@ class App {
 		val app = new App
 		val builder = JCommander.newBuilder().addObject(app).build()
 		builder.parse(args)
+		if (app.version) {
+			println(app.getAppVersion)
+			return
+		}
 		if (app.help) {
 			builder.usage()
 			return
@@ -98,6 +117,7 @@ class App {
 	def void run() {
 		LOGGER.info("=================================================================")
 		LOGGER.info("                        S T A R T")
+		LOGGER.info("                       OML to Bikeshed "+getAppVersion)
 		LOGGER.info("=================================================================")
 		LOGGER.info("Input Folder= " + inputPath)
 		LOGGER.info("Output Folder= " + outputPath)
@@ -126,15 +146,16 @@ class App {
 		// create the script file
 		val scriptFile = new File(outputPath+'/publish.sh')
 		val scriptContents = new StringBuffer
+		val forceToken=if(force) "-f" else ""
 		scriptContents.append('''
-			bikeshed spec index.bs
+			bikeshed «forceToken» spec index.bs
 		''')
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
 			scriptContents.append('''
-				bikeshed spec «relativePath».bs
+				bikeshed «forceToken» spec «relativePath».bs
 			''')
 		}
 		outputFiles.put(scriptFile, scriptContents.toString)
@@ -237,5 +258,24 @@ class App {
 		fout.close
 	}
 	
+	/**
+	 * Get application version id from properties file.
+	 * Note that the gradle build also puts version ID in the MANIFEST file in the
+	 * jar, but this will not be useful in unit tests.
+	 * @return version string from build.properties or UNKNOWN
+	 */
+	def String getAppVersion() {
+		var version = "UNKNOWN"
+		try {
+			val inputs = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.properties")
+			val prop = new Properties();
+			prop.load(inputs);
+			version = prop.getProperty("build.version");
+		} catch (IOException e) {
+			val errorMsg = "Could not read application.properties file."
+			LOGGER.error(errorMsg, e)
+		}
+		version
+	}
 	
 }
