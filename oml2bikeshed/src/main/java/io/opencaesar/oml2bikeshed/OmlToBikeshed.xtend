@@ -40,8 +40,21 @@ import java.util.ArrayList
 
 import static extension io.opencaesar.oml.Oml.*
 import static extension io.opencaesar.oml.util.OmlCrossReferencer.*
-
-
+import io.opencaesar.oml.EnumerationScalar
+import io.opencaesar.oml.LiteralValue
+import io.opencaesar.oml.LiteralBoolean
+import io.opencaesar.oml.LiteralDateTime
+import io.opencaesar.oml.LiteralString
+import io.opencaesar.oml.LiteralUUID
+import io.opencaesar.oml.LiteralURI
+import io.opencaesar.oml.LiteralReal
+import io.opencaesar.oml.LiteralRational
+import io.opencaesar.oml.LiteralFloat
+import io.opencaesar.oml.TimeScalar
+import io.opencaesar.oml.NumericScalar
+import io.opencaesar.oml.EntityPredicate
+import io.opencaesar.oml.DirectionalRelationshipPredicate
+import io.opencaesar.oml.ReifiedRelationshipPredicate
 
 /**
  * Transform OML to Bikeshed
@@ -105,7 +118,7 @@ class OmlToBikeshed {
 		«terminology.toSubsection(ReifiedRelationshipReference, "# External Reified Relationships # {#heading-external-reifiedrelationships}","")»
 		«terminology.toSubsection(UnreifiedRelationship, "# Unreified Relationships # {#heading-unreifiedrelationships}","")»
 		«terminology.toSubsection(UnreifiedRelationshipReference, "# External Unreified Relationships # {#heading-external-unreifiedrelationships}","")»
-		«terminology.toSubsection(Rule, "# Rules # {#heading-rules}","")»
+		«terminology.toSubsection(Rule, "# Inference Rules # {#heading-rules}","")»
 		«terminology.toSubsection(Structure, "# Structures # {#heading-structures}","")»
 		«terminology.toSubsection(StructureReference, "# External Structures # {#heading-external-structures}","")»
 		«terminology.toSubsection(ScalarRange, "# Scalars # {#heading-scalars}","")»
@@ -344,9 +357,26 @@ class OmlToBikeshed {
 		«relationship.toBikeshedHelper»
 	'''
 	
+	// Inference rules have a set of set of antecedents and one consequent
 	private def dispatch String toBikeshed(Rule rule) '''
 		«rule.sectionHeader»
 		
+		«rule.consequent.toBikeshed» is implied when the following conditions are true
+		
+		«rule.antecedent.map[toBikeshed].join(" AND ")»
+		
+	'''
+	
+	private def dispatch String toBikeshed(EntityPredicate predicate) '''
+		«predicate.variable.toString» is A «predicate.entity.name»
+	'''
+	
+	private def dispatch String toBikeshed(DirectionalRelationshipPredicate predicate) '''
+		directional relationship predicate
+	'''
+	
+	private def dispatch String toBikeshed(ReifiedRelationshipPredicate predicate) '''
+	«predicate.relationship.name»(«predicate.variable1.toString»,«predicate.variable2.toString»)
 	'''
 	
   	//TODO: find an ontology containing examples of this we can test against
@@ -410,6 +440,46 @@ class OmlToBikeshed {
 		
 	'''
 	
+	// EnumerationScalar
+	private def dispatch String toBikeshed(EnumerationScalar property) '''
+		«property.sectionHeader»
+		
+		«property.comment»
+		
+		«property.plainDescription»
+		
+		*Values*: «property.literals.map['''<a spec="«graph.iri»">«value.toString»</a>'''].join(', ')»
+		
+	'''
+	
+	// TimeScalar
+	private def dispatch String toBikeshed(TimeScalar property) '''
+		«property.sectionHeader»
+		
+		«property.comment»
+		
+		«property.plainDescription»
+		
+		«IF null!==property.minInclusive»*min inclusive:* «property.minInclusive.toString»«ENDIF»
+		«IF null!==property.minExclusive»*min exclusive:* «property.minExclusive.toString»«ENDIF»
+		«IF null!==property.maxInclusive»*max inclusive:* «property.maxInclusive.toString»«ENDIF»
+		«IF null!==property.maxExclusive»*max exclusive:* «property.maxExclusive.toString»«ENDIF»
+	'''
+	
+	// NumericScalar
+	private def dispatch String toBikeshed(NumericScalar property) '''
+		«property.sectionHeader»
+		
+		«property.comment»
+		
+		«property.plainDescription»
+		
+		«IF null!==property.minInclusive»*min inclusive:* «property.minInclusive.toString»«ENDIF»
+		«IF null!==property.minExclusive»*min exclusive:* «property.minExclusive.toString»«ENDIF»
+		«IF null!==property.maxInclusive»*max inclusive:* «property.maxInclusive.toString»«ENDIF»
+		«IF null!==property.maxExclusive»*max exclusive:* «property.maxExclusive.toString»«ENDIF»
+	'''
+	
 	//----------------------------------------------------------------------------------------------------------
 
 	private def String toBikeshedReferenceBase(Graph graph, NamedElement element) 
@@ -418,7 +488,6 @@ class OmlToBikeshed {
 	private def String toBikeshedReference(NamedElement element) {
 		element.graph.toBikeshedReferenceBase(element)
 	}
-		
 	
 	private def String getPlainDescription(Term term) {
 		val desc=term.description
