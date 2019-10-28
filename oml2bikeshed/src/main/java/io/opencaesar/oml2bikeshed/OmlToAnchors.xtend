@@ -20,10 +20,12 @@ class OmlToAnchors {
 			«val relativePath = inputResource.URI.deresolve(anchorsFileURI, true, true, false).toString»
 			«val baseRelativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))»
 			«val graph = inputResource.graph»
+			«IF !graph.members.empty»
 		urlPrefix: «baseRelativePath».html#; type: dfn; spec: «graph.iri»
 			«FOR member: graph.members»
 			text: «member.name»
 			«ENDFOR»
+			«ENDIF»
 			
 		«ENDFOR»
 
