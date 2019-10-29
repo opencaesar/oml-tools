@@ -368,11 +368,11 @@ class OmlToBikeshed {
 	'''
 	
 	private def dispatch String toBikeshed(EntityPredicate predicate) '''
-		«predicate.variable.toString» is A «predicate.entity.name»
+		«predicate.entity.name»(«predicate.variable.toString»)
 	'''
 	
 	private def dispatch String toBikeshed(DirectionalRelationshipPredicate predicate) '''
-		directional relationship predicate
+		«predicate.relationshipDirection.name»(«predicate.variable1.toString»,«predicate.variable2.toString»)
 	'''
 	
 	private def dispatch String toBikeshed(ReifiedRelationshipPredicate predicate) '''
