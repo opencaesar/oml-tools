@@ -1,10 +1,9 @@
 package io.opencaesar.oml2bikeshed
 
-import java.io.File
+import io.opencaesar.oml.Ontology
 import org.eclipse.emf.ecore.resource.Resource
 
-import static extension io.opencaesar.oml.Oml.*
-import io.opencaesar.oml.NamedElement
+import static extension io.opencaesar.oml.util.OmlRead.*
 
 /**
  * Generate the index file. We produce this as a bikeshed spec as well in order to 
@@ -13,7 +12,6 @@ import io.opencaesar.oml.NamedElement
 class OmlToIndex {
 
 	static def String addHeader(String url, String inputPath) '''
-		«val inputName = new File(inputPath).name»
 		<pre class='metadata'>
 		Title: OML Vocabularies Index
 		Shortname: Index
@@ -37,21 +35,27 @@ class OmlToIndex {
 	
 	val Resource inputResource
 	val String relativePath
+	val int index
 	
-	new(Resource inputResource, String relativePath) {
+	new(Resource inputResource, String relativePath, int index) {
 		this.inputResource = inputResource
 		this.relativePath = relativePath
+		this.index = index
 	}
 	
 	def String run() '''
-		«val graph = inputResource.graph»
-		«val title = graph.title»
+		«val ontology = inputResource.ontology»
 		
-		# [«title»](./«relativePath».html) # {#heading-«graph.localName»}
+		# \[«ontology.title»](./«relativePath».html) # {#heading-«ontology.prefix»-«index»}
+		«ontology.description»		
 		
 	'''
 	
-	private def String getTitle(NamedElement element) {
-		element.getAnnotationStringValue("http://purl.org/dc/elements/1.1/title", element.name)
+	private def String getTitle(Ontology ontology) {
+		ontology.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/title") ?: ontology.prefix
+	}
+
+	private def String getDescription(Ontology ontology) {
+		ontology.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/description") ?: ""
 	}
 }
