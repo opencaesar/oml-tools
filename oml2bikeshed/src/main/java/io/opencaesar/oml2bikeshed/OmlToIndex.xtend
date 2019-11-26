@@ -27,6 +27,7 @@ class OmlToIndex {
 		Markup Shorthands: markdown yes
 		Use Dfn Panels: yes
 		Abstract: Documentation generated from OML ontologies
+		Favicon: https://opencaesar.github.io/assets/img/oml.png
 		</pre>
 		
 	'''
@@ -46,7 +47,7 @@ class OmlToIndex {
 		«val graph = inputResource.graph»
 		«val title = graph.title»
 		
-		# [«title»](./«relativePath».html)
+		# [«title»](./«relativePath».html) # {#heading-«graph.localName»}
 		
 	'''
 	

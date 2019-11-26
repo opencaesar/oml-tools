@@ -19,8 +19,14 @@ import org.apache.log4j.LogManager
 import org.eclipse.emf.common.util.URI
 import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
+import java.io.PrintStream
+import java.util.Properties
 
 class App {
+	
+	val logoString = '''
+		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
+		'''
 
 	@Parameter(
 		names=#["--input","-i"], 
@@ -61,6 +67,20 @@ class App {
 		order=5)
 	package boolean help
 
+	@Parameter(
+		names=#["--version","-v"], 
+		description="Displays app version", 
+		help=true, 
+		order=6)
+	package boolean version
+	
+	@Parameter(
+		names=#["--force","-f"], 
+		description="Run bikeshed with force option -f", 
+		help=true, 
+		order=7)
+	package boolean force
+	
 	val LOGGER = LogManager.getLogger(App)
 
 	/*
@@ -70,6 +90,10 @@ class App {
 		val app = new App
 		val builder = JCommander.newBuilder().addObject(app).build()
 		builder.parse(args)
+		if (app.version) {
+			println(app.getAppVersion)
+			return
+		}
 		if (app.help) {
 			builder.usage()
 			return
@@ -93,6 +117,7 @@ class App {
 	def void run() {
 		LOGGER.info("=================================================================")
 		LOGGER.info("                        S T A R T")
+		LOGGER.info("                       OML to Bikeshed "+getAppVersion)
 		LOGGER.info("=================================================================")
 		LOGGER.info("Input Folder= " + inputPath)
 		LOGGER.info("Output Folder= " + outputPath)
@@ -121,15 +146,16 @@ class App {
 		// create the script file
 		val scriptFile = new File(outputPath+'/publish.sh')
 		val scriptContents = new StringBuffer
+		val forceToken=if(force) "-f" else ""
 		scriptContents.append('''
-			bikeshed spec index.bs
+			bikeshed «forceToken» spec index.bs
 		''')
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
 			scriptContents.append('''
-				bikeshed spec «relativePath».bs
+				bikeshed «forceToken» spec «relativePath».bs
 			''')
 		}
 		outputFiles.put(scriptFile, scriptContents.toString)
@@ -146,6 +172,7 @@ class App {
 		}
 		indexContents.append(OmlToIndex.addFooter)
 		outputFiles.put(indexFile, indexContents.toString)
+		outputFiles.put(new File(outputPath+'/logo.include'), logoString)
 		
 		// create the anchors.bsdata files
 		for (folder : allInputFolders) {
@@ -153,6 +180,8 @@ class App {
 			val anchoreResourceURI = URI.createFileURI(inputPath+'/'+relativePath+'/anchors.bsdata') 
 			val anchorsFile = new File(outputPath+'/'+relativePath+'/anchors.bsdata')
 			outputFiles.put(anchorsFile, new OmlToAnchors(anchoreResourceURI, inputResourceSet).run)
+			// this may write the same logo file multiple times
+			outputFiles.put(new File(outputPath+'/'+relativePath+'/logo.include'), logoString)
 		}
 
 		// create the ontology files
@@ -169,6 +198,7 @@ class App {
 			file.parentFile.mkdirs
 			val filePath = file.canonicalPath
 			val out = new BufferedWriter(new FileWriter(filePath))
+	
 			try {
 				LOGGER.info("Saving: "+filePath)
 			    out.write(result.toString) 
@@ -218,6 +248,34 @@ class App {
 				throw new ParameterException("Parameter " + name + " should be a valid folder path")
 			}
 	  	}
+	}
+	
+	private def writeLogoFile(String path) {
+		val fout = new PrintStream(new File(path + "/logo.include"))
+		fout.println('''
+		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
+		''')
+		fout.close
+	}
+	
+	/**
+	 * Get application version id from properties file.
+	 * Note that the gradle build also puts version ID in the MANIFEST file in the
+	 * jar, but this will not be useful in unit tests.
+	 * @return version string from build.properties or UNKNOWN
+	 */
+	def String getAppVersion() {
+		var version = "UNKNOWN"
+		try {
+			val inputs = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.properties")
+			val prop = new Properties();
+			prop.load(inputs);
+			version = prop.getProperty("build.version");
+		} catch (IOException e) {
+			val errorMsg = "Could not read application.properties file."
+			LOGGER.error(errorMsg, e)
+		}
+		version
 	}
 	
 }
