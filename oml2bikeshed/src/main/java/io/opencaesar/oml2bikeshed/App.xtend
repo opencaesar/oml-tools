@@ -13,21 +13,16 @@ import java.util.ArrayList
 import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
+import java.util.Properties
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.eclipse.emf.common.util.URI
-import org.eclipse.xtext.resource.XtextResourceSet
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
-import java.io.PrintStream
-import java.util.Properties
+import org.eclipse.xtext.resource.XtextResourceSet
 
 class App {
 	
-	val logoString = '''
-		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
-		'''
-
 	@Parameter(
 		names=#["--input","-i"], 
 		description="Location of Oml input folder (Required)",
@@ -82,6 +77,7 @@ class App {
 	package boolean force
 	
 	val LOGGER = LogManager.getLogger(App)
+	val logoString = '''<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>'''
 
 	/*
 	 * Main method
@@ -117,7 +113,7 @@ class App {
 	def void run() {
 		LOGGER.info("=================================================================")
 		LOGGER.info("                        S T A R T")
-		LOGGER.info("                       OML to Bikeshed "+getAppVersion)
+		LOGGER.info("                    OML to Bikeshed "+getAppVersion)
 		LOGGER.info("=================================================================")
 		LOGGER.info("Input Folder= " + inputPath)
 		LOGGER.info("Output Folder= " + outputPath)
@@ -131,7 +127,6 @@ class App {
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 
 		val outputFiles = new HashMap<File, String>
-
 
 		// load all resources first
 		for (inputFile : inputFiles.sortBy[canonicalPath]) {
@@ -164,11 +159,12 @@ class App {
 		val indexFile = new File(outputPath+'/index.bs')
 		val indexContents = new StringBuffer
 		indexContents.append(OmlToIndex.addHeader(url, inputPath))
+		var index = 1
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
-			indexContents.append(new OmlToIndex(inputResource, relativePath).run)
+			indexContents.append(new OmlToIndex(inputResource, relativePath, index++).run)
 		}
 		indexContents.append(OmlToIndex.addFooter)
 		outputFiles.put(indexFile, indexContents.toString)
@@ -248,14 +244,6 @@ class App {
 				throw new ParameterException("Parameter " + name + " should be a valid folder path")
 			}
 	  	}
-	}
-	
-	private def writeLogoFile(String path) {
-		val fout = new PrintStream(new File(path + "/logo.include"))
-		fout.println('''
-		<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>
-		''')
-		fout.close
 	}
 	
 	/**

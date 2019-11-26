@@ -3,7 +3,7 @@ package io.opencaesar.oml2bikeshed
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.ResourceSet
 
-import static extension io.opencaesar.oml.Oml.*
+import static extension io.opencaesar.oml.util.OmlRead.*
 
 class OmlToAnchors {
 
@@ -16,15 +16,14 @@ class OmlToAnchors {
 	}
 	
 	def String run() '''
-		«FOR inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]»
-			«val relativePath = inputResource.URI.deresolve(anchorsFileURI, true, true, false).toString»
+		«FOR ontology : inputResourceSet.ontologies»
+			«val relativePath = ontology.eResource.URI.deresolve(anchorsFileURI, true, true, false).toString»
 			«val baseRelativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))»
-			«val graph = inputResource.graph»
-			«IF !graph.members.empty»
-		urlPrefix: «baseRelativePath».html#; type: dfn; spec: «graph.iri»
-			«FOR member: graph.members»
-			text: «member.name»
-			«ENDFOR»
+			«IF !ontology.members.empty»
+			urlPrefix: «baseRelativePath».html#; type: dfn; spec: «ontology.iri»
+				«FOR member: ontology.members»
+				text: «member.name»
+				«ENDFOR»
 			«ENDIF»
 			
 		«ENDFOR»
