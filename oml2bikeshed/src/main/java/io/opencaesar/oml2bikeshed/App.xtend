@@ -137,12 +137,13 @@ class App {
 		// create the index file as bikeshed spec
 		val indexFile = new File(outputPath+'/index.bs')
 		val indexContents = new StringBuffer
+		var index = 1
 		indexContents.append(OmlToIndex.addHeader(url, inputPath))
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
-			indexContents.append(new OmlToIndex(inputResource, relativePath).run)
+			indexContents.append(new OmlToIndex(inputResource, relativePath, index++).run)
 		}
 		indexContents.append(OmlToIndex.addFooter)
 		outputFiles.put(indexFile, indexContents.toString)
