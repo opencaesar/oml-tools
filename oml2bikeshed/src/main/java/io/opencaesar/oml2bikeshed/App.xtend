@@ -122,8 +122,8 @@ class App {
 		val inputFiles = collectInputFiles(inputFolder).sortBy[canonicalPath]
 		val allInputFolders = new HashSet<File>
 		
-		val injector = new OmlStandaloneSetup().createInjectorAndDoEMFRegistration()
-		val inputResourceSet = injector.getInstance(XtextResourceSet)
+		OmlStandaloneSetup.doSetup
+		val inputResourceSet = new XtextResourceSet
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 
 		val outputFiles = new HashMap<File, String>
