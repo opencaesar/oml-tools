@@ -17,5 +17,4 @@ deploy:
     dry-run: false
     on:
       tags: true
-      repo: opencaesar/oml-bikeshed
       branch: master
