@@ -1,4 +1,4 @@
-# Bikeshed Generator for Ecore
+# Bikeshed Generator for OML
 
 [![Build Status](https://travis-ci.org/opencaesar/oml-bikeshed.svg?branch=master)](https://travis-ci.org/opencaesar/oml-bikeshed)
 [ ![Download](https://api.bintray.com/packages/opencaesar/oml-bikeshed/oml2bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-bikeshed/oml2bikeshed/_latestVersion)
