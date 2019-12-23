@@ -116,43 +116,43 @@ class OmlToBikeshed {
 	'''
 
 	private def dispatch String toDiv(Vocabulary vocabulary) '''
-		«vocabulary.toNamespace("# Namespace # {#heading-namespace}")»			
-		«vocabulary.toImport("# Extensions # {#heading-extensions}", VocabularyExtension)»
-		«vocabulary.toStatement("# Aspects # {#heading-aspects}", Aspect)»
-		«vocabulary.toStatement("# External Aspects # {#heading-external-aspects}", AspectReference)»
-		«vocabulary.toStatement("# Concepts # {#heading-concepts}", Concept)»
-		«vocabulary.toStatement("# External Concepts # {#heading-external-concepts}", ConceptReference)»
-		«vocabulary.toStatement("# Relations # {#heading-relations}", RelationEntity)»
-		«vocabulary.toStatement("# External Relations # {#heading-external-relations}", #[RelationEntityReference, RelationReference])»
-		«vocabulary.toStatement("# Structures # {#heading-structures}", Structure)»
-		«vocabulary.toStatement("# External Structures # {#heading-external-structures}", StructureReference)»
-		«vocabulary.toStatement("# Scalars # {#heading-scalars}", #[FacetedScalar, EnumeratedScalar])»
-		«vocabulary.toStatement("# External Scalars # {#heading-external-scalars}", #[FacetedScalarReference, EnumeratedScalarReference])»
-		«vocabulary.toStatement("# Scalar Properties # {#heading-scalar-properties}", ScalarProperty)»
-		«vocabulary.toStatement("# External Scalar Properties # {#heading-external-scalar-properties}", ScalarPropertyReference)»
-		«vocabulary.toStatement("# Structured Properties # {#heading-structured-properties}", StructuredProperty)»
-		«vocabulary.toStatement("# External Structured Properties # {#heading-external-structured-properties}", StructuredPropertyReference)»
-		«vocabulary.toStatement("# Annotation Properties # {#heading-annotation-properties}", AnnotationProperty)»
-		«vocabulary.toStatement("# External Annotation Properties # {#heading-external-annotation-properties}", AnnotationPropertyReference)»
-		«vocabulary.toStatement("# Rules # {#heading-rules}", Rule)»
-		«vocabulary.toStatement("# External Rules # {#heading-external-rules}", RuleReference)»
+		«vocabulary.toNamespace("# Namespace # {#Namespace}")»			
+		«vocabulary.toImport("# Extensions # {#Extensions}", VocabularyExtension)»
+		«vocabulary.toStatement("# Aspects # {#Aspects}", Aspect)»
+		«vocabulary.toStatement("# External Aspects # {#ExternalAspects}", AspectReference)»
+		«vocabulary.toStatement("# Concepts # {#concepts}", Concept)»
+		«vocabulary.toStatement("# External Concepts # {#ExternalConcepts}", ConceptReference)»
+		«vocabulary.toStatement("# Relations # {#Relations}", RelationEntity)»
+		«vocabulary.toStatement("# External Relations # {#ExternalRelations}", #[RelationEntityReference, RelationReference])»
+		«vocabulary.toStatement("# Structures # {#Structures}", Structure)»
+		«vocabulary.toStatement("# External Structures # {#ExternalStructures}", StructureReference)»
+		«vocabulary.toStatement("# Scalars # {#Scalars}", #[FacetedScalar, EnumeratedScalar])»
+		«vocabulary.toStatement("# External Scalars # {#ExternalScalars}", #[FacetedScalarReference, EnumeratedScalarReference])»
+		«vocabulary.toStatement("# Scalar Properties # {#ScalarProperties}", ScalarProperty)»
+		«vocabulary.toStatement("# External Scalar Properties # {#ExternalScalarProperties}", ScalarPropertyReference)»
+		«vocabulary.toStatement("# Structured Properties # {#StructuredProperties}", StructuredProperty)»
+		«vocabulary.toStatement("# External Structured Properties # {#ExternalStructuredProperties}", StructuredPropertyReference)»
+		«vocabulary.toStatement("# Annotation Properties # {#AnnotationProperties}", AnnotationProperty)»
+		«vocabulary.toStatement("# External Annotation Properties # {#ExternalAnnotationProperties}", AnnotationPropertyReference)»
+		«vocabulary.toStatement("# Rules # {#Rules}", Rule)»
+		«vocabulary.toStatement("# External Rules # {#ExternalRules}", RuleReference)»
 		
 	'''
 	
 	private def dispatch String toDiv(Bundle bundle) '''
-		«bundle.toNamespace("# Namespace # {#heading-namespace}")»			
-		«bundle.toImport("# Inclusions # {#heading-inclusions}", BundleInclusion)»
-		«bundle.toImport("# Extensions # {#heading-extensions}", BundleExtension)»
+		«bundle.toNamespace("# Namespace # {#Namespace}")»			
+		«bundle.toImport("# Inclusions # {#Inclusions}", BundleInclusion)»
+		«bundle.toImport("# Extensions # {#Extensions}", BundleExtension)»
 	'''
 
 	private def dispatch String toDiv(Description description) '''
-		«description.toNamespace("# Namespace # {#heading-namespace}")»
-		«description.toImport("# Usages # {#heading-inclusions}", DescriptionUsage)»
-		«description.toImport("# Extensions # {#heading-extensions}", DescriptionExtension)»
-		«description.toImport("# Concept Instances # {#heading-concept-instances}", ConceptInstance)»
-		«description.toImport("# External Concept Instances # {#heading-external-concept-instances}", ConceptInstanceReference)»
-		«description.toImport("# Relation Instances # {#heading-concept-instances}", RelationInstance)»
-		«description.toImport("# External Relation Instances # {#heading-external-concept-instances}", RelationInstanceReference)»
+		«description.toNamespace("# Namespace # {#Namespace}")»
+		«description.toImport("# Usages # {#Iclusions}", DescriptionUsage)»
+		«description.toImport("# Extensions # {#Extensions}", DescriptionExtension)»
+		«description.toImport("# Concept Instances # {#ConceptInstances}", ConceptInstance)»
+		«description.toImport("# External Concept Instances # {#ExternalConceptInstances}", ConceptInstanceReference)»
+		«description.toImport("# Relation Instances # {#ConceptInstances}", RelationInstance)»
+		«description.toImport("# External Relation Instances # {#ExternalConceptInstances}", RelationInstanceReference)»
 	'''
 
 	// FIXME: this works for internal links to generated docs but not for links to external documentation. 
@@ -446,7 +446,7 @@ class OmlToBikeshed {
 	
 	private def dispatch String toBikeshed(SpecializableTermReference reference) '''
 		«val term = reference.resolve»
-		## <a spec="«term.ontology.iri»" lt="«term.name»">«reference.resolvedName»</a> ## {#heading-«reference.resolvedName»}
+		## <a spec="«term.ontology.iri»" lt="«term.name»">«reference.resolvedName»</a> ## {#«reference.resolvedName.toFirstUpper»}
 		«reference.comment»
 		«val superTerms = reference.specializedTerms»
 		«IF !superTerms.empty»
@@ -493,9 +493,9 @@ class OmlToBikeshed {
 		val desc=member.description
 
 		if (desc.startsWith("http"))
-		'''## <dfn>«member.name»</dfn> see \[«member.name»](«desc») ## {#heading-«member.name»}'''
+		'''## <dfn>«member.name»</dfn> see \[«member.name»](«desc») ## {#«member.name.toFirstUpper»}'''
 		else
-		'''## <dfn>«member.name»</dfn> ## {#heading-«member.name»}'''
+		'''## <dfn>«member.name»</dfn> ## {#«member.name.toFirstUpper»}'''
 	}
 	
 	private def String getTitle(Ontology ontology) {

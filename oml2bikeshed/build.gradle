@@ -17,19 +17,20 @@ repositories {
 	jcenter()
 }
 
-apply plugin: 'com.jfrog.bintray'
 apply plugin: 'java'
 apply plugin: 'org.xtext.xtend'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'application'
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'com.jfrog.bintray'
 
 group = 'io.opencaesar.bikeshed'
-version = '0.2.0'
-
+version = rootProject.file('src/main/resources/version.txt').text.trim()
+mainClassName = 'io.opencaesar.oml2bikeshed.App'
+applicationName = 'oml2bikeshed'
 ext.title = 'Oml to Bikeshed'
 description = 'Bikeshed generator for Oml'
-mainClassName = 'io.opencaesar.oml2bikeshed.App'
 
 apply from: "${rootDir}/gradle/source-layout.gradle"
 apply from: "${rootDir}/gradle/maven-deployment.gradle"
@@ -41,18 +42,6 @@ configurations.all {
 	exclude group: 'asm'
 }
 
-jar {
-	manifest {
-		attributes 'Implementation-Title': 'Legacy OML Converter',
-				'Implementation-Version': version
-	}
-	// also write version to properties file for access in prior to deployment
-	def props = new Properties()
-	props.setProperty('build.version', version)
-	def propertyFile = file "src/main/resources/application.properties"
-	propertyFile.withWriter { props.store(it, "set in gradle build" )}
-}
-
 dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.beust:jcommander:1.72'
@@ -62,3 +51,13 @@ dependencies {
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
 }
+
+gradlePlugin {
+    plugins {
+        oml2BikeshedPlugin {
+            id = 'io.opencaesar.oml2bikeshed'
+            implementationClass = 'io.opencaesar.oml2bikeshed.GradlePlugin'
+        }
+    }
+}
+

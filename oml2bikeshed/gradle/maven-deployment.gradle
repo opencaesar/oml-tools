@@ -5,7 +5,7 @@ apply plugin: 'maven-publish'
 ext.gh = [
 	dep: 'https://github.com',
 	org: 'opencaesar',
-	rep: 'ecore-bikeshed'
+	rep: 'oml-bikeshed'
 ]
 
 uploadArchives {

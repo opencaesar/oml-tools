@@ -4,16 +4,17 @@ import com.beust.jcommander.IParameterValidator
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
+import com.google.common.io.CharStreams
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.io.InputStreamReader
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashMap
 import java.util.HashSet
-import java.util.Properties
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
@@ -34,7 +35,6 @@ class App {
 	@Parameter(
 		names=#["--output", "-o"], 
 		description="Location of the Bikeshed output folder", 
-		validateWith=FolderPath, 
 		required=true, 
 		order=2
 	)
@@ -143,6 +143,9 @@ class App {
 		val scriptContents = new StringBuffer
 		val forceToken=if(force) "-f" else ""
 		scriptContents.append('''
+			cd "${BASH_SOURCE%/*}/"
+		''')
+		scriptContents.append('''
 			bikeshed «forceToken» spec index.bs
 		''')
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
@@ -173,7 +176,7 @@ class App {
 		// create the anchors.bsdata files
 		for (folder : allInputFolders) {
 			val relativePath = inputFolder.toURI().relativize(folder.toURI()).getPath()
-			val anchoreResourceURI = URI.createFileURI(inputPath+'/'+relativePath+'/anchors.bsdata') 
+			val anchoreResourceURI = URI.createURI(inputFolder.toURI+'/'+relativePath+'/anchors.bsdata') 
 			val anchorsFile = new File(outputPath+'/'+relativePath+'/anchors.bsdata')
 			outputFiles.put(anchorsFile, new OmlToAnchors(anchoreResourceURI, inputResourceSet).run)
 			// this may write the same logo file multiple times
@@ -239,7 +242,7 @@ class App {
 
 	static class FolderPath implements IParameterValidator {
 		override validate(String name, String value) throws ParameterException {
-			val directory = new File(value)
+			val directory = new File(value).absoluteFile
 			if (!directory.isDirectory) {
 				throw new ParameterException("Parameter " + name + " should be a valid folder path")
 			}
@@ -248,19 +251,16 @@ class App {
 	
 	/**
 	 * Get application version id from properties file.
-	 * Note that the gradle build also puts version ID in the MANIFEST file in the
-	 * jar, but this will not be useful in unit tests.
 	 * @return version string from build.properties or UNKNOWN
 	 */
 	def String getAppVersion() {
 		var version = "UNKNOWN"
 		try {
-			val inputs = Thread.currentThread().getContextClassLoader().getResourceAsStream("application.properties")
-			val prop = new Properties();
-			prop.load(inputs);
-			version = prop.getProperty("build.version");
+			val input = Thread.currentThread().getContextClassLoader().getResourceAsStream("version.txt")
+			val reader = new InputStreamReader(input)
+			version = CharStreams.toString(reader);
 		} catch (IOException e) {
-			val errorMsg = "Could not read application.properties file."
+			val errorMsg = "Could not read version.txt file." + e
 			LOGGER.error(errorMsg, e)
 		}
 		version
