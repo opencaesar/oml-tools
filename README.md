@@ -37,7 +37,7 @@ Add the following to an OML project's build.gradle:
 ```
 buildscript {
 	repositories {
-		maven { url 'https://dl.bintray.com/opencaesar/ecore-bikeshed' }
+		maven { url 'https://dl.bintray.com/opencaesar/oml-bikeshed' }
 		maven { url 'https://dl.bintray.com/opencaesar/oml' }
 		jcenter()
 	}
