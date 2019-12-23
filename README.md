@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/opencaesar/oml-bikeshed.svg?branch=master)](https://travis-ci.org/opencaesar/oml-bikeshed)
 [ ![Download](https://api.bintray.com/packages/opencaesar/oml-bikeshed/oml2bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-bikeshed/oml2bikeshed/_latestVersion)
 
-An [Bikeshed](https://github.com/tabatkins/bikeshed) generator for [Ecore](https://www.eclipse.org/modeling/emf/)
+A [Bikeshed](https://github.com/tabatkins/bikeshed) generator for [OML](https://opencaesar.github.io/oml) that can be run as an app from the Terminal or as a Gradle plugin.
 
 ## Clone
 ```
