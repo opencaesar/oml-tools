@@ -77,7 +77,7 @@ class App {
 	package boolean force
 	
 	val LOGGER = LogManager.getLogger(App)
-	val logoString = '''<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml-spec/oml-logo.png"></a>'''
+	val logoString = '''<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml/images/oml.svg"></a>'''
 
 	/*
 	 * Main method
