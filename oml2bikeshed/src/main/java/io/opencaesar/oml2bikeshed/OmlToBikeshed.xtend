@@ -112,7 +112,7 @@ class OmlToBikeshed {
 		Boilerplate: copyright no, conformance no
 		Markup Shorthands: markdown yes
 		Use Dfn Panels: yes
-		Abstract: «ontology.description»
+		Abstract: «ontology.description.replaceAll('\n', '\n ')»
 	'''
 
 	private def dispatch String toDiv(Vocabulary vocabulary) '''
