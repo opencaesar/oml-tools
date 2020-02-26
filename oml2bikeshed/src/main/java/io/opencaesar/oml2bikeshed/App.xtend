@@ -118,7 +118,7 @@ class App {
 		LOGGER.info("Input Folder= " + inputPath)
 		LOGGER.info("Output Folder= " + outputPath)
 
-		val inputFolder = new File(inputPath)
+		val inputFolder = new File(inputPath).canonicalFile
 		val inputFiles = collectInputFiles(inputFolder).sortBy[canonicalPath]
 		val allInputFolders = new HashSet<File>
 		
@@ -139,7 +139,7 @@ class App {
 		}
 
 		// create the script file
-		val scriptFile = new File(outputPath+'/publish.sh')
+		val scriptFile = new File(outputPath+'/publish.sh').canonicalFile
 		val scriptContents = new StringBuffer
 		val forceToken=if(force) "-f" else ""
 		scriptContents.append('''
