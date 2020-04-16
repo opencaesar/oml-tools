@@ -9,7 +9,7 @@ class GradlePlugin implements Plugin<Project> {
     	val params = project.extensions.create('oml2bikeshed', Oml2BikeshedParams)
        	 
         project.getTasks().create("generateBikeshed").doLast([task|
-	       	App.main("-i", params.inputPath, "-o", params.outputPath, "-u", params.url)
+	       	App.main("-i",  project.file(params.inputPath).absolutePath, "-o", project.file(params.outputPath).absolutePath, "-u", params.url)
         ])
 	}
 }
