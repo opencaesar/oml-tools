@@ -16,6 +16,7 @@ import io.opencaesar.oml.ConceptReference
 import io.opencaesar.oml.Description
 import io.opencaesar.oml.DescriptionExtension
 import io.opencaesar.oml.DescriptionUsage
+import io.opencaesar.oml.DifferentFromPredicate
 import io.opencaesar.oml.Element
 import io.opencaesar.oml.Entity
 import io.opencaesar.oml.EntityPredicate
@@ -38,6 +39,7 @@ import io.opencaesar.oml.RelationRangeRestrictionAxiom
 import io.opencaesar.oml.RelationReference
 import io.opencaesar.oml.Rule
 import io.opencaesar.oml.RuleReference
+import io.opencaesar.oml.SameAsPredicate
 import io.opencaesar.oml.ScalarProperty
 import io.opencaesar.oml.ScalarPropertyRangeRestrictionAxiom
 import io.opencaesar.oml.ScalarPropertyReference
@@ -275,6 +277,14 @@ class OmlToBikeshed {
 		«FOR r : entity.findPropertyRestrictions»
 			* «r.toBikeshed»
 		«ENDFOR»
+
+		«val keys = entity.findKeys»
+		«IF !keys.empty»
+		*Keys:*
+		«FOR key : keys»
+			* «key.properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
+		«ENDFOR»
+		«ENDIF»
 	'''
 
 	private def dispatch String toBikeshed(RelationEntity entity) '''
@@ -426,24 +436,29 @@ class OmlToBikeshed {
 	private def dispatch String toBikeshed(Rule rule) '''
 		«rule.sectionHeader»
 		
-		«rule.consequent.toBikeshed» is implied when the following conditions are true
-		
-		«rule.antecedent.map[toBikeshed].join(" AND ")»
-		
+		«rule.antecedent.map[toBikeshed].join(" ∧ ")» -> «rule.consequent.map[toBikeshed].join(" ∧ ")»
 	'''
 	
 	private def dispatch String toBikeshed(EntityPredicate predicate) '''
 		«predicate.entity.name»(«predicate.variable.toString»)
 	'''
+		
+	private def dispatch String toBikeshed(RelationEntityPredicate predicate) '''
+		«predicate.entity.name»(«predicate.variable1.toString», «predicate.entityVariable.toString», «predicate.variable2.toString»)
+	'''
 	
 	private def dispatch String toBikeshed(RelationPredicate predicate) '''
-		«predicate.relation.name»(«predicate.variable1.toString»,«predicate.variable2.toString»)
+		«predicate.relation.name»(«predicate.variable1.toString», «predicate.variable2.toString»)
 	'''
-	
-	private def dispatch String toBikeshed(RelationEntityPredicate predicate) '''
-	«predicate.entity.name»(«predicate.variable1.toString»,«predicate.variable2.toString»)
+
+	private def dispatch String toBikeshed(SameAsPredicate predicate) '''
+		sameAs(«predicate.variable1.toString», «predicate.variable2.toString»)
 	'''
-	
+
+	private def dispatch String toBikeshed(DifferentFromPredicate predicate) '''
+		differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
+	'''
+
 	private def dispatch String toBikeshed(SpecializableTermReference reference) '''
 		«val term = reference.resolve»
 		## <a spec="«term.ontology.iri»" lt="«term.name»">«reference.resolvedName»</a> ## {#«reference.resolvedName.toFirstUpper»}
