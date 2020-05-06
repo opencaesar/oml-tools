@@ -32,8 +32,6 @@ Windows:
 ```
 
 ## Run from Gradle
-
-## Run from Gradle
 Optionally install it in your local maven repo (if you modified it)
 ```
     ./gradlew install
