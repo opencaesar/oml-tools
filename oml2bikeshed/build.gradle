@@ -26,7 +26,7 @@ apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'io.opencaesar.bikeshed'
-version = rootProject.file('src/main/resources/version.txt').text.trim()
+version = '0.6.1'
 mainClassName = 'io.opencaesar.oml2bikeshed.App'
 applicationName = 'oml2bikeshed'
 ext.title = 'Oml to Bikeshed'
@@ -50,6 +50,18 @@ dependencies {
 
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+}
+
+task createVersion {
+    doLast {
+        def version = project.version.toString()
+        def file = new File("$projectDir/src/main/resources/version.txt")
+        file.write(version)
+    }
+}
+
+classes {
+    dependsOn createVersion
 }
 
 gradlePlugin {
