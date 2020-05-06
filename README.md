@@ -18,7 +18,7 @@ Requirements: java 8, node 8.x,
     ./gradlew build
 ```
 
-## Run from Terminal
+## Run as CLI
 
 MacOS/Linux:
 ```
@@ -33,13 +33,18 @@ Windows:
 
 ## Run from Gradle
 
-Add the following to an OML project's build.gradle:
+## Run from Gradle
+Optionally install it in your local maven repo (if you modified it)
+```
+    ./gradlew install
+```
+In a gradle.build script, add the following:
 ```
 buildscript {
 	repositories {
+		mavenLocal()
 		maven { url 'https://dl.bintray.com/opencaesar/oml-bikeshed' }
 		maven { url 'https://dl.bintray.com/opencaesar/oml' }
-		jcenter()
 	}
 	dependencies {
 		classpath 'io.opencaesar.bikeshed:oml2bikeshed:+'
@@ -49,13 +54,17 @@ buildscript {
 apply plugin: 'io.opencaesar.oml2bikeshed'
 
 oml2bikeshed {
-	inputPath = 'src/main/oml'
-	outputPath = 'src/main/bikeshed-gen'
+	inputPath = 'path/to/oml/folder'
+	outputPath = 'path/to/bikeshed/folder'
 	url = '<url>'
 }
 
+task build {
+	dependsOn generateBikeshed
+}
+
 task clean(type: Delete) {
-	delete 'src/main/bikeshed-gen'
+	delete 'path/to/bikeshed/folder'
 }
 ```
 
