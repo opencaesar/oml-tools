@@ -310,11 +310,11 @@ class OmlToBikeshed {
 		*Forward:*
 		<dfn attribute for=«entity.name»>«entity.forward.name»</dfn>
 		«entity.forward.description»
-		«IF entity.inverse !== null»
+		«IF entity.reverse !== null»
 
-		*Inverse:*
-		<dfn attribute for=«entity.name»>«entity.inverse.name»</dfn>
-		«entity.inverse.description»
+		*Reverse:*
+		<dfn attribute for=«entity.name»>«entity.reverse.name»</dfn>
+		«entity.reverse.description»
 		«ENDIF»
 		«val superTerms = entity.specializedTerms»
 		«IF !superTerms.empty»
