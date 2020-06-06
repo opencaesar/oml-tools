@@ -26,7 +26,7 @@ apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'io.opencaesar.bikeshed'
-version = '0.6.2'
+version = '0.7.0'
 mainClassName = 'io.opencaesar.oml2bikeshed.App'
 applicationName = 'oml2bikeshed'
 ext.title = 'Oml to Bikeshed'
@@ -45,7 +45,7 @@ configurations.all {
 dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     implementation 'com.beust:jcommander:1.72'
-    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:0.6.+"
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:0.7.+"
 	implementation 'net.sourceforge.plantuml:plantuml:1.2019.0'
 
     // Use JUnit test framework

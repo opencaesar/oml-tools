@@ -5,15 +5,15 @@ import io.opencaesar.oml.AnnotationProperty
 import io.opencaesar.oml.AnnotationPropertyReference
 import io.opencaesar.oml.Aspect
 import io.opencaesar.oml.AspectReference
-import io.opencaesar.oml.Bundle
-import io.opencaesar.oml.BundleExtension
-import io.opencaesar.oml.BundleInclusion
 import io.opencaesar.oml.Classifier
 import io.opencaesar.oml.Concept
 import io.opencaesar.oml.ConceptInstance
 import io.opencaesar.oml.ConceptInstanceReference
 import io.opencaesar.oml.ConceptReference
 import io.opencaesar.oml.Description
+import io.opencaesar.oml.DescriptionBundle
+import io.opencaesar.oml.DescriptionBundleExtension
+import io.opencaesar.oml.DescriptionBundleInclusion
 import io.opencaesar.oml.DescriptionExtension
 import io.opencaesar.oml.DescriptionUsage
 import io.opencaesar.oml.DifferentFromPredicate
@@ -50,6 +50,9 @@ import io.opencaesar.oml.StructureReference
 import io.opencaesar.oml.StructuredProperty
 import io.opencaesar.oml.StructuredPropertyReference
 import io.opencaesar.oml.Vocabulary
+import io.opencaesar.oml.VocabularyBundle
+import io.opencaesar.oml.VocabularyBundleExtension
+import io.opencaesar.oml.VocabularyBundleInclusion
 import io.opencaesar.oml.VocabularyExtension
 import java.util.ArrayList
 import org.eclipse.emf.common.util.URI
@@ -141,10 +144,10 @@ class OmlToBikeshed {
 		
 	'''
 	
-	private def dispatch String toDiv(Bundle bundle) '''
+	private def dispatch String toDiv(VocabularyBundle bundle) '''
 		«bundle.toNamespace("# Namespace # {#Namespace}")»			
-		«bundle.toImport("# Inclusions # {#Inclusions}", BundleInclusion)»
-		«bundle.toImport("# Extensions # {#Extensions}", BundleExtension)»
+		«bundle.toImport("# Inclusions # {#Inclusions}", VocabularyBundleInclusion)»
+		«bundle.toImport("# Extensions # {#Extensions}", VocabularyBundleExtension)»
 	'''
 
 	private def dispatch String toDiv(Description description) '''
@@ -155,6 +158,12 @@ class OmlToBikeshed {
 		«description.toImport("# External Concept Instances # {#ExternalConceptInstances}", ConceptInstanceReference)»
 		«description.toImport("# Relation Instances # {#ConceptInstances}", RelationInstance)»
 		«description.toImport("# External Relation Instances # {#ExternalConceptInstances}", RelationInstanceReference)»
+	'''
+
+	private def dispatch String toDiv(DescriptionBundle bundle) '''
+		«bundle.toNamespace("# Namespace # {#Namespace}")»			
+		«bundle.toImport("# Inclusions # {#Inclusions}", DescriptionBundleInclusion)»
+		«bundle.toImport("# Extensions # {#Extensions}", DescriptionBundleExtension)»
 	'''
 
 	// FIXME: this works for internal links to generated docs but not for links to external documentation. 
