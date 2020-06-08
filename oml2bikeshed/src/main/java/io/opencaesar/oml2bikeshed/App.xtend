@@ -5,6 +5,8 @@ import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import com.google.common.io.CharStreams
+import io.opencaesar.oml.Member
+import io.opencaesar.oml.Ontology
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
 import java.io.BufferedWriter
 import java.io.File
@@ -18,9 +20,15 @@ import java.util.HashSet
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
+import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.ecore.util.Diagnostician
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
+import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.resource.XtextResourceSet
+
+import static extension io.opencaesar.oml.util.OmlRead.*
 
 class App {
 	
@@ -132,9 +140,13 @@ class App {
 		for (inputFile : inputFiles.sortBy[canonicalPath]) {
 			allInputFolders.add(inputFile.getParentFile())
 			val inputURI = URI.createFileURI(inputFile.absolutePath)
+			LOGGER.info("Reading: "+inputURI)
 			val inputResource = inputResourceSet.getResource(inputURI, true)
 			if (inputResource !== null) {
-				LOGGER.info("Reading: "+inputURI)
+				val ontology = inputResource.ontology
+				if (!validate(ontology)) {
+					System.exit(1);
+				}
 			}
 		}
 
@@ -213,6 +225,27 @@ class App {
 		LOGGER.info("=================================================================")
 		LOGGER.info("                          E N D")
 		LOGGER.info("=================================================================")
+	}
+
+	def validate(Ontology ontology) {
+		val diagnostician = new Diagnostician() {
+		  override getObjectLabel(EObject eObject) {
+		    val name = if (eObject instanceof Member) {
+		    	eObject.abbreviatedIri
+		    } else if (eObject instanceof Ontology) {
+		    	eObject.iri
+		    } else {
+		    	EcoreUtil.getID(eObject)
+		    }
+		    return eObject.eClass.name+' '+name
+		  }
+		}
+		val diagnostic = diagnostician.validate(ontology)
+		if (diagnostic.severity === Diagnostic.ERROR) {
+			diagnostic.children.forEach[ LOGGER.error(it.message)]
+			return false
+		}
+		return true
 	}
 
 	// Utility methods

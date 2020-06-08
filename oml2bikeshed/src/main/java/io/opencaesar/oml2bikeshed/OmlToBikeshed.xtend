@@ -198,7 +198,7 @@ class OmlToBikeshed {
 
 	private def dispatch String toBikeshed(Import ^import) '''
 		«val importURI = URI.createURI(^import.uri).trimFileExtension.appendFileExtension('html')»
-			* «^import.importPrefix»: [«^import.importedOntology.iri»](«importURI»)
+			* «^import.importPrefix»: [«^import.importedOntology?.iri»](«importURI»)
 	'''
 
 	private def dispatch String toBikeshed(SpecializableTerm term) '''
