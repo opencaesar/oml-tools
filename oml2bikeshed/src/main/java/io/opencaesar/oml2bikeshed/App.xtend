@@ -137,6 +137,7 @@ class App {
 		val outputFiles = new HashMap<File, String>
 
 		// load all resources first
+		var valid = true
 		for (inputFile : inputFiles.sortBy[canonicalPath]) {
 			allInputFolders.add(inputFile.getParentFile())
 			val inputURI = URI.createFileURI(inputFile.absolutePath)
@@ -145,9 +146,12 @@ class App {
 			if (inputResource !== null) {
 				val ontology = inputResource.ontology
 				if (!validate(ontology)) {
-					return
+					valid = false
 				}
 			}
+		}
+		if (valid === false) {
+			return
 		}
 
 		// create the script file
