@@ -26,7 +26,7 @@ apply plugin: 'java-gradle-plugin'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'io.opencaesar.bikeshed'
-version = '0.7.2'
+version = '0.7.3'
 mainClassName = 'io.opencaesar.oml2bikeshed.App'
 applicationName = 'oml2bikeshed'
 ext.title = 'Oml to Bikeshed'

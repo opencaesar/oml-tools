@@ -14,6 +14,7 @@ import io.opencaesar.oml.Description
 import io.opencaesar.oml.DescriptionBundle
 import io.opencaesar.oml.DescriptionBundleExtension
 import io.opencaesar.oml.DescriptionBundleInclusion
+import io.opencaesar.oml.DescriptionBundleUsage
 import io.opencaesar.oml.DescriptionExtension
 import io.opencaesar.oml.DescriptionUsage
 import io.opencaesar.oml.DifferentFromPredicate
@@ -146,14 +147,14 @@ class OmlToBikeshed {
 	
 	private def dispatch String toDiv(VocabularyBundle bundle) '''
 		«bundle.toNamespace("# Namespace # {#Namespace}")»			
-		«bundle.toImport("# Inclusions # {#Inclusions}", VocabularyBundleInclusion)»
 		«bundle.toImport("# Extensions # {#Extensions}", VocabularyBundleExtension)»
+		«bundle.toImport("# Inclusions # {#Inclusions}", VocabularyBundleInclusion)»
 	'''
 
 	private def dispatch String toDiv(Description description) '''
 		«description.toNamespace("# Namespace # {#Namespace}")»
-		«description.toImport("# Usages # {#Iclusions}", DescriptionUsage)»
 		«description.toImport("# Extensions # {#Extensions}", DescriptionExtension)»
+		«description.toImport("# Usages # {#Iclusions}", DescriptionUsage)»
 		«description.toImport("# Concept Instances # {#ConceptInstances}", ConceptInstance)»
 		«description.toImport("# External Concept Instances # {#ExternalConceptInstances}", ConceptInstanceReference)»
 		«description.toImport("# Relation Instances # {#ConceptInstances}", RelationInstance)»
@@ -162,8 +163,9 @@ class OmlToBikeshed {
 
 	private def dispatch String toDiv(DescriptionBundle bundle) '''
 		«bundle.toNamespace("# Namespace # {#Namespace}")»			
-		«bundle.toImport("# Inclusions # {#Inclusions}", DescriptionBundleInclusion)»
 		«bundle.toImport("# Extensions # {#Extensions}", DescriptionBundleExtension)»
+		«bundle.toImport("# Inclusions # {#Inclusions}", DescriptionBundleInclusion)»
+		«bundle.toImport("# Usages # {#Usages}", DescriptionBundleUsage)»
 	'''
 
 	// FIXME: this works for internal links to generated docs but not for links to external documentation. 

@@ -145,7 +145,7 @@ class App {
 			if (inputResource !== null) {
 				val ontology = inputResource.ontology
 				if (!validate(ontology)) {
-					System.exit(1);
+					return
 				}
 			}
 		}
