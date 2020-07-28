@@ -1,75 +1,30 @@
-# Bikeshed Generator for OML
+# OML Tools
 
-[![Build Status](https://travis-ci.org/opencaesar/oml-bikeshed.svg?branch=master)](https://travis-ci.org/opencaesar/oml-bikeshed)
-[ ![Download](https://api.bintray.com/packages/opencaesar/oml-bikeshed/oml2bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-bikeshed/oml2bikeshed/_latestVersion)
+[![Build Status](https://travis-ci.org/opencaesar/oml-tools.svg?branch=master)](https://travis-ci.org/opencaesar/oml-tools)
 
-A [Bikeshed](https://github.com/tabatkins/bikeshed) generator for [OML](https://opencaesar.github.io/oml) that can be run as an app from the Terminal or as a Gradle plugin.
+A set of tools that work om OML models.
 
 ## Clone
 ```
-    git clone https://github.com/opencaesar/oml-bikeshed.git
-    cd oml-bikeshed
+    git clone https://github.com/opencaesar/oml-tools.git
+    cd oml-tools
 ```
       
 ## Build
 Requirements: java 8, node 8.x, 
 ```
-    cd oml2bikeshed
+    cd oml-tools
     ./gradlew build
 ```
 
-## Run as CLI
+## [OML Bikeshed](oml-tools/oml-bikeshed/README.md)
 
-MacOS/Linux:
-```
-    cd oml2bikeshed
-    ./gradlew run --args="-i path/to/oml/folder -o path/to/bikeshed/folder -u <url>"
-```
-Windows:
-```
-    cd oml2bikeshed
-    gradlew.bat run --args="-i path/to/oml/folder -o path/to/bikeshed/folder -u <url>"
-```
+[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-bikeshed/_latestVersion)
 
-## Run from Gradle
-Optionally install it in your local maven repo (if you modified it)
-```
-    ./gradlew install
-```
-In a gradle.build script, add the following:
-```
-buildscript {
-	repositories {
-		mavenLocal()
-		maven { url 'https://dl.bintray.com/opencaesar/oml-bikeshed' }
-		maven { url 'https://dl.bintray.com/opencaesar/oml' }
-	}
-	dependencies {
-		classpath 'io.opencaesar.bikeshed:oml2bikeshed:+'
-	}
-}
+A tool to generate Bikeshed specification from an OML catalog
 
-apply plugin: 'io.opencaesar.oml2bikeshed'
+## [OML Merge](oml-tools/oml-merge/README.md)
 
-oml2bikeshed {
-	inputPath = 'path/to/oml/folder'
-	outputPath = 'path/to/bikeshed/folder'
-	url = '<url>'
-}
+[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge/_latestVersion)
 
-task build {
-	dependsOn generateBikeshed
-}
-
-task clean(type: Delete) {
-	delete 'path/to/bikeshed/folder'
-}
-```
-
-## Release
-
-Replace \<version\> by the version, e.g., 1.2
-```
-  git tag -a <version> -m "<version>"
-  git push origin <version>
-```
+A tool to merge two or more OML catalogs into a new OML catalog. 

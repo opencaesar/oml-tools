@@ -1,24 +1,24 @@
-# OWL Diff
+# OML Bikeshed
 
-[ ![Download](https://api.bintray.com/packages/opencaesar/owl-tools/owl-diff/images/download.svg) ](https://bintray.com/opencaesar/owl-tools/owl-diff/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-bikeshed/_latestVersion)
 
-A tool to produce a difference report between two OWL datasets
+A tool to generate Bikeshed specification from an OML catalog.
 
 ## Run as CLI
 
 MacOS/Linux:
 ```
-    cd owl-adapter
-    ./gradlew owl-diff:run --args="..."
+    cd oml-bikeshed
+    ./gradlew owl-bikeshed:run --args="..."
 ```
 Windows:
 ```
-    cd owl-adapter
-    gradlew.bat owl-diff:run --args="..."
+    cd oml-bikeshed
+    gradlew.bat owl-bikeshed:run --args="..."
 ```
 Args:
 ```
--c1 path/to/first/owl/catalog.xml 
--c2 path/to/second/owl/catalog.xml
--n comma-separated-partial-iris-to-ignore
+-i path/to/input/oml/folder
+-o path/to/output/bikeshed/folder
+-u URL where the Bikeshed documents will be published
 ```

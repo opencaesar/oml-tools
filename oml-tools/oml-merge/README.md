@@ -1,24 +1,23 @@
-# OWL Diff
+# OML Merge
 
-[ ![Download](https://api.bintray.com/packages/opencaesar/owl-tools/owl-diff/images/download.svg) ](https://bintray.com/opencaesar/owl-tools/owl-diff/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge/_latestVersion)
 
-A tool to produce a difference report between two OWL datasets
+A tool to merge two or more OML catalogs into a new OML catalog.
 
 ## Run as CLI
 
 MacOS/Linux:
 ```
-    cd owl-adapter
-    ./gradlew owl-diff:run --args="..."
+    cd oml-merge
+    ./gradlew owl-merge:run --args="..."
 ```
 Windows:
 ```
-    cd owl-adapter
-    gradlew.bat owl-diff:run --args="..."
+    cd oml-merge
+    gradlew.bat owl-merge:run --args="..."
 ```
 Args:
 ```
--c1 path/to/first/owl/catalog.xml 
--c2 path/to/second/owl/catalog.xml
--n comma-separated-partial-iris-to-ignore
+-i path/to/input/oml/catalog.xml (one or more)
+-o path/to/output/oml/catalog
 ```

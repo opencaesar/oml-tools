@@ -1,0 +1,7 @@
+ext.title = 'OML Bikeshed Gradle'
+description = 'A gradle interface to OML Bikeshed'
+
+dependencies {
+	implementation gradleApi()
+    implementation project (':oml-merge')
+}

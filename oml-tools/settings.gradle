@@ -1,3 +1,4 @@
 include 'oml-bikeshed'
 include 'oml-bikeshed-gradle'
 include 'oml-merge'
+include 'oml-merge-gradle'
