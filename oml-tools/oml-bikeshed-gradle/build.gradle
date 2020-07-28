@@ -1,0 +1,9 @@
+ext.title = 'OML Bikeshed Gradle'
+description = 'A gradle interface to OML Bikeshed'
+
+dependencies {
+	implementation gradleApi()
+    implementation project (':oml-bikeshed')
+
+    implementation 'org.eclipse.xtext:org.eclipse.xtext:2.19.0'
+}

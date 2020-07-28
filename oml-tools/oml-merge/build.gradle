@@ -1,0 +1,15 @@
+apply plugin: 'application'
+
+ext.title = 'Oml to Bikeshed'
+description = 'Bikeshed generator for Oml'
+mainClassName = 'io.opencaesar.oml.merge.Oml2BikeshedApp'
+applicationName = 'oml2bikeshed'
+
+dependencies {
+    implementation 'com.beust:jcommander:1.72'
+
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
+	implementation "net.sourceforge.plantuml:plantuml:${versions.plantuml}"
+
+    testImplementation 'junit:junit:4.12'
+}
