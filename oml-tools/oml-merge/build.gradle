@@ -1,9 +1,9 @@
 apply plugin: 'application'
 
-ext.title = 'Oml to Bikeshed'
-description = 'Bikeshed generator for Oml'
-mainClassName = 'io.opencaesar.oml.merge.Oml2BikeshedApp'
-applicationName = 'oml2bikeshed'
+ext.title = 'Oml Merge'
+description = 'A tool to merge several input Oml catalogs into a single output catalog'
+mainClassName = 'io.opencaesar.oml.merge.OmlMergeApp'
+applicationName = 'oml-merge'
 
 dependencies {
     implementation 'com.beust:jcommander:1.72'
