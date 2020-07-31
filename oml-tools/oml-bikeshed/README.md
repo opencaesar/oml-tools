@@ -18,7 +18,9 @@ Windows:
 ```
 Args:
 ```
--i path/to/input/oml/folder
--o path/to/output/bikeshed/folder
--u URL where the Bikeshed documents will be published
+--input | -i path/to/input/oml/folder [Required]
+--output | -o path/to/output/bikeshed/folder [Required]
+--url | -u URL where the Bikeshed spec will be published [Required]
 ```
+
+## [Run as Gradle Task](../oml-bikeshed-gradle/README.md)

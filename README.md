@@ -11,7 +11,7 @@ A set of tools that work om OML models.
 ```
       
 ## Build
-Requirements: java 8, node 8.x, 
+Requirements: JDK 8
 ```
     cd oml-tools
     ./gradlew build

@@ -34,7 +34,7 @@ import io.opencaesar.oml.util.OmlXMIResourceFactory;
 public class OmlMergeApp {
 
 	@Parameter(
-		names = { "--input-catalog", "-i" },
+		names = { "--input-catalog-path", "-i" },
 		description = "Paths to OML input catalog files (Required)",
 		validateWith = InputCatalogPath.class,
 		required = true,
@@ -42,7 +42,7 @@ public class OmlMergeApp {
 	private List<String> inputCatalogPaths = null;
 
 	@Parameter(
-			names = { "--output-catalog", "-o" },
+			names = { "--output-catalog-path", "-o" },
 			description = "Paths to OML output catalog files (Required)",
 			validateWith = OutputCatalogPath.class,
 			required = true,

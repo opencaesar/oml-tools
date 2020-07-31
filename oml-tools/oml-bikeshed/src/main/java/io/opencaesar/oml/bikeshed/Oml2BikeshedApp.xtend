@@ -34,7 +34,7 @@ import static extension io.opencaesar.oml.util.OmlRead.*
 class Oml2BikeshedApp {
 	
 	@Parameter(
-		names=#["--input","-i"], 
+		names=#["--input-path","-i"], 
 		description="Location of Oml input folder (Required)",
 		validateWith=FolderPath, 
 		required=true, 
@@ -42,7 +42,7 @@ class Oml2BikeshedApp {
 	package String inputPath = null
 
 	@Parameter(
-		names=#["--output", "-o"], 
+		names=#["--output-path", "-o"], 
 		description="Location of the Bikeshed output folder", 
 		required=true, 
 		order=2

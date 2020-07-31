@@ -1,26 +1,27 @@
-# OWL Reason
+# OML Merge
 
-[ ![Download](https://api.bintray.com/packages/opencaesar/owl-tools/owl-reason/images/download.svg) ](https://bintray.com/opencaesar/owl-tools/owl-reason/_latestVersion)
+[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge-gradle/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge-gradle/_latestVersion)
 
-A tool to analyze an OWL dataset for satisfiability and consistency with an OWL2-DL reasoner
+A tool to merge one or more OML catalogs into a new OML catalog.
 
-## Run as CLI
+## Run as Gradle Task
 
-MacOS/Linux:
 ```
-    cd owl-adapter
-    ./gradlew owl-reason:run --args="..."
-```
-Windows:
-```
-    cd owl-adapter
-    gradlew.bat owl-reason:run --args="..."
-```
-Args:
-```
---catalog path/to/owl/catalog.xml
---input-iri of-a-box-ontology-in-catalog
---spec 'output_iri=ALL_SUBCLASS'
---spec 'output_iri=INVERSE_PROPERTY ALL_SUBPROPERTY'
---spec 'output_iri=ALL_INSTANCE DATA_PROPERTY_VALUE OBJECT_PROPERTY_VALUE SAME_AS'
+buildscript {
+	repositories {
+		maven { url 'https://dl.bintray.com/opencaesar/oml-tools' }
+  		mavenCentral()
+		jcenter()
+	}
+	dependencies {
+		classpath 'io.opencaesar.oml:oml-merge-gradle:+'
+	}
+}
+task omlMerge(type:io.opencaesar.oml.merge.OmlMergeTask) {
+	inputCatalogPaths = [
+        file('path/to/input/oml/catalog.xml'),
+        file('path/to/input/oml/catalog.xml')
+    ] [Required, one or more]
+	outputCatalogPath = file('path/to/output/oml/catalog.xml') [Required]
+}               
 ```

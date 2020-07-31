@@ -2,7 +2,7 @@
 
 [ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge/_latestVersion)
 
-A tool to merge two or more OML catalogs into a new OML catalog.
+A tool to merge one or more OML catalogs into a new OML catalog.
 
 ## Run as CLI
 
@@ -18,6 +18,8 @@ Windows:
 ```
 Args:
 ```
--i path/to/input/oml/catalog.xml (one or more)
--o path/to/output/oml/catalog
+--input-catalog-path | -i path/to/input/oml/catalog.xml [Required, one or more]
+--output-catalog-path | -o path/to/output/oml/catalog.xml [Required]
 ```
+
+## [Run as Gradle Task](../oml-merge-gradle/README.md)
