@@ -8,18 +8,18 @@ A tool to generate Bikeshed specification from an OML catalog.
 
 MacOS/Linux:
 ```
-    cd oml-bikeshed
-    ./gradlew owl-bikeshed:run --args="..."
+cd oml-bikeshed
+./gradlew owl-bikeshed:run --args="..."
 ```
 Windows:
 ```
-    cd oml-bikeshed
-    gradlew.bat owl-bikeshed:run --args="..."
+cd oml-bikeshed
+gradlew.bat owl-bikeshed:run --args="..."
 ```
 Args:
 ```
---input | -i path/to/input/oml/folder [Required]
---output | -o path/to/output/bikeshed/folder [Required]
+--input-path | -i path/to/input/oml/folder [Required]
+--output-path | -o path/to/output/bikeshed/folder [Required]
 --url | -u URL where the Bikeshed spec will be published [Required]
 ```
 

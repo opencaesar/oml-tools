@@ -8,13 +8,13 @@ A tool to merge one or more OML catalogs into a new OML catalog.
 
 MacOS/Linux:
 ```
-    cd oml-merge
-    ./gradlew owl-merge:run --args="..."
+cd oml-merge
+./gradlew owl-merge:run --args="..."
 ```
 Windows:
 ```
-    cd oml-merge
-    gradlew.bat owl-merge:run --args="..."
+cd oml-merge
+gradlew.bat owl-merge:run --args="..."
 ```
 Args:
 ```
