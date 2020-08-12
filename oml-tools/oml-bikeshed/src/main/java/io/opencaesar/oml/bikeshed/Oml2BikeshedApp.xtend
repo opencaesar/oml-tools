@@ -51,12 +51,12 @@ class Oml2BikeshedApp {
 	package String outputFolderPath = "."
 
 	@Parameter(
-		names=#["--url", "-u"], 
-		description="Base URL where the Bikeshed documentation will be published", 
+		names=#["--publish-url", "-u"], 
+		description="URL where the Bikeshed documentation will be published", 
 		required=true, 
 		order=3
 	)
-	package String url
+	package String publishUrl
 
 	@Parameter(
 		names=#["-debug", "--d"], 
@@ -206,7 +206,7 @@ class Oml2BikeshedApp {
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
 			val bikeshedFile = new File(outputFolderPath+File.separator+relativePath+'.bs')
-			outputFiles.put(bikeshedFile, new Oml2Bikeshed(inputResource, url, relativePath).run)
+			outputFiles.put(bikeshedFile, new Oml2Bikeshed(inputResource, publishUrl, relativePath).run)
 		}
 
 		// save output files				

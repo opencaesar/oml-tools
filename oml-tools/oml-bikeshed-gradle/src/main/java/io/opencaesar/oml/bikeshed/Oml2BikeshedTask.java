@@ -13,7 +13,7 @@ public class Oml2BikeshedTask extends DefaultTask {
     
     public String outputFolderPath;
     
-    public String url;
+    public String publishUrl;
 
     @TaskAction
     public void run() {
@@ -26,9 +26,9 @@ public class Oml2BikeshedTask extends DefaultTask {
 			args.add("-o");
 			args.add(outputFolderPath);
 		}
-		if (url != null) {
+		if (publishUrl != null) {
 			args.add("-u");
-			args.add(url);
+			args.add(publishUrl);
 		}
 		try {
         	Oml2BikeshedApp.main(args.toArray(new String[0]));

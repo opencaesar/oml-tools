@@ -18,9 +18,9 @@ gradlew.bat owl-bikeshed:run --args="..."
 ```
 Args:
 ```
---input-path | -i path/to/input/oml/folder [Required]
---output-path | -o path/to/output/bikeshed/folder [Required]
---url | -u URL where the Bikeshed spec will be published [Required]
+--input-catalog-path | -i path/to/input/oml/catalog [Required]
+--output-folder-path | -o path/to/output/bikeshed/folder [Required]
+--publish-url | -u URL where the Bikeshed spec will be published [Required]
 ```
 
 ## [Run as Gradle Task](../oml-bikeshed-gradle/README.md)

@@ -20,6 +20,6 @@ buildscript {
 task oml2Bikeshed(type:io.opencaesar.oml.bikeshed.Oml2BikeshedTask) {
 	inputPath = file('path/to/input/oml/folder') [Required]
 	outputPath = file('path/to/output/bikeshed/folder') [Required]
-    url = 'URL where the Bikeshed spec will be published' [Required]
+    publishUrl = 'URL where the Bikeshed spec will be published' [Required]
 }               
 ```
