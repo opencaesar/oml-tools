@@ -64,7 +64,7 @@ public class OmlMergeApp {
 	
 	private final Logger LOGGER = Logger.getLogger(OmlMergeApp.class);
 
-	public static void main(final String... args) {
+	public static void main(final String... args) throws Exception {
 		final OmlMergeApp app = new OmlMergeApp();
 		final JCommander builder = JCommander.newBuilder().addObject(app).build();
 		builder.parse(args);
@@ -77,11 +77,7 @@ public class OmlMergeApp {
 			final Appender appender = Logger.getRootLogger().getAppender("stdout");
 			((AppenderSkeleton) appender).setThreshold(Level.DEBUG);
 		}
-		try {
-			app.run();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		app.run();
 	}
 
 	public void run() throws Exception {

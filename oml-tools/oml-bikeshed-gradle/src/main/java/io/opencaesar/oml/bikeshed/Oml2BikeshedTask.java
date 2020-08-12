@@ -5,30 +5,35 @@ import java.util.List;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskExecutionException;
 
 public class Oml2BikeshedTask extends DefaultTask {
 	
-	public String inputPath;
+	public String inputCatalogPath;
     
-    public String outputPath;
+    public String outputFolderPath;
     
     public String url;
 
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<String>();
-		if (inputPath != null) {
+		if (inputCatalogPath != null) {
 			args.add("-i");
-			args.add(inputPath);
+			args.add(inputCatalogPath);
 		}
-		if (outputPath != null) {
+		if (outputFolderPath != null) {
 			args.add("-o");
-			args.add(outputPath);
+			args.add(outputFolderPath);
 		}
 		if (url != null) {
 			args.add("-u");
 			args.add(url);
 		}
-        Oml2BikeshedApp.main(args.toArray(new String[0]));
+		try {
+        	Oml2BikeshedApp.main(args.toArray(new String[0]));
+		} catch (Exception e) {
+			throw new TaskExecutionException(this, e);
+		}
 	}
 }

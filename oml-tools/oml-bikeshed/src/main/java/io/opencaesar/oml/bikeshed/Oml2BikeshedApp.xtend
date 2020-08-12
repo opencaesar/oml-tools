@@ -34,20 +34,21 @@ import static extension io.opencaesar.oml.util.OmlRead.*
 class Oml2BikeshedApp {
 	
 	@Parameter(
-		names=#["--input-path","-i"], 
-		description="Location of Oml input folder (Required)",
-		validateWith=FolderPath, 
+		names=#["--input-catalog-path","-i"], 
+		description="Path of OML input catalog (Required)",
+		validateWith=InputCatalogPath, 
 		required=true, 
 		order=1)
-	package String inputPath = null
+	package String inputCatalogPath = null
 
 	@Parameter(
-		names=#["--output-path", "-o"], 
-		description="Location of the Bikeshed output folder", 
+		names=#["--output-folder-path", "-o"], 
+		description="Path of Bikeshed output folder", 
+		validateWith=OutputFolderPath, 
 		required=true, 
 		order=2
 	)
-	package String outputPath = "."
+	package String outputFolderPath = "."
 
 	@Parameter(
 		names=#["--url", "-u"], 
@@ -109,11 +110,8 @@ class Oml2BikeshedApp {
 			val appender = LogManager.getRootLogger.getAppender("stdout")
 			(appender as AppenderSkeleton).setThreshold(Level.DEBUG)
 		}
-		if (app.inputPath.endsWith('/')) {
-			app.inputPath = app.inputPath.substring(0, app.inputPath.length-1)
-		}
-		if (app.outputPath.endsWith('/')) {
-			app.outputPath = app.outputPath.substring(0, app.outputPath.length-1)
+		if (app.outputFolderPath.endsWith(File.separator)) {
+			app.outputFolderPath = app.outputFolderPath.substring(0, app.outputFolderPath.length-1)
 		}
 		app.run()
 	}
@@ -126,10 +124,10 @@ class Oml2BikeshedApp {
 		LOGGER.info("                        S T A R T")
 		LOGGER.info("                    OML to Bikeshed "+getAppVersion)
 		LOGGER.info("=================================================================")
-		LOGGER.info("Input Folder= " + inputPath)
-		LOGGER.info("Output Folder= " + outputPath)
+		LOGGER.info("Input Catalog= " + inputCatalogPath)
+		LOGGER.info("Output Folder= " + outputFolderPath)
 
-		val inputFolder = new File(inputPath).canonicalFile
+		val inputFolder = new File(inputCatalogPath).parentFile
 		val inputFiles = collectInputFiles(inputFolder).sortBy[canonicalPath]
 		val allInputFolders = new HashSet<File>
 		
@@ -158,9 +156,9 @@ class Oml2BikeshedApp {
 		}
 
 		// create the script file
-		val scriptFile = new File(outputPath+'/publish.sh').canonicalFile
+		val scriptFile = new File(outputFolderPath+File.separator+'publish.sh').canonicalFile
 		val scriptContents = new StringBuffer
-		val forceToken=if(force) "-f" else ""
+		val forceToken=if(force) "-f " else ""
 		scriptContents.append('''
 			cd "${BASH_SOURCE%/*}/"
 		''')
@@ -172,15 +170,15 @@ class Oml2BikeshedApp {
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
 			scriptContents.append('''
-				bikeshed «forceToken» spec «relativePath».bs
+				bikeshed «forceToken»spec «relativePath».bs
 			''')
 		}
 		outputFiles.put(scriptFile, scriptContents.toString)
 
 		// create the index file as bikeshed spec
-		val indexFile = new File(outputPath+'/index.bs')
+		val indexFile = new File(outputFolderPath+File.separator+'index.bs')
 		val indexContents = new StringBuffer
-		indexContents.append(Oml2Index.addHeader(url, inputPath))
+		indexContents.append(Oml2Index.addHeader)
 		var index = 1
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
@@ -190,16 +188,16 @@ class Oml2BikeshedApp {
 		}
 		indexContents.append(Oml2Index.addFooter)
 		outputFiles.put(indexFile, indexContents.toString)
-		outputFiles.put(new File(outputPath+'/logo.include'), logoString)
+		outputFiles.put(new File(outputFolderPath+File.separator+'logo.include'), logoString)
 		
 		// create the anchors.bsdata files
 		for (folder : allInputFolders) {
 			val relativePath = inputFolder.toURI().relativize(folder.toURI()).getPath()
-			val anchoreResourceURI = URI.createURI(inputFolder.toURI+'/'+relativePath+'/anchors.bsdata') 
-			val anchorsFile = new File(outputPath+'/'+relativePath+'/anchors.bsdata')
+			val anchoreResourceURI = URI.createURI(inputFolder.toURI+File.separator+relativePath+File.separator+'anchors.bsdata') 
+			val anchorsFile = new File(outputFolderPath+File.separator+relativePath+File.separator+'anchors.bsdata')
 			outputFiles.put(anchorsFile, new Oml2Anchors(anchoreResourceURI, inputResourceSet).run)
 			// this may write the same logo file multiple times
-			outputFiles.put(new File(outputPath+'/'+relativePath+'/logo.include'), logoString)
+			outputFiles.put(new File(outputFolderPath+File.separator+relativePath+File.separator+'logo.include'), logoString)
 		}
 
 		// create the ontology files
@@ -207,7 +205,7 @@ class Oml2BikeshedApp {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
-			val bikeshedFile = new File(outputPath+'/'+relativePath+'.bs')
+			val bikeshedFile = new File(outputFolderPath+File.separator+relativePath+'.bs')
 			outputFiles.put(bikeshedFile, new Oml2Bikeshed(inputResource, url, relativePath).run)
 		}
 
@@ -280,11 +278,23 @@ class Oml2BikeshedApp {
         	return ""
     }
 
-	static class FolderPath implements IParameterValidator {
+	static class InputCatalogPath implements IParameterValidator {
+		override validate(String name, String value) throws ParameterException {
+			val file = new File(value)
+			if (!file.getName().endsWith("catalog.xml")) {
+				throw new ParameterException("Parameter " + name + " should be a valid OWL catalog path")
+			}
+	  	}
+	}
+
+	static class OutputFolderPath implements IParameterValidator {
 		override validate(String name, String value) throws ParameterException {
 			val directory = new File(value).absoluteFile
 			if (!directory.isDirectory) {
-				throw new ParameterException("Parameter " + name + " should be a valid folder path")
+				val created = directory.mkdirs
+				if (!created) {
+					throw new ParameterException("Parameter " + name + " should be a valid folder path")
+				}
 			}
 	  	}
 	}

@@ -11,7 +11,7 @@ import static extension io.opencaesar.oml.util.OmlRead.*
  */
 class Oml2Index {
 
-	static def String addHeader(String url, String inputPath) '''
+	static def String addHeader() '''
 		<pre class='metadata'>
 		Title: OML Vocabularies Index
 		Shortname: Index

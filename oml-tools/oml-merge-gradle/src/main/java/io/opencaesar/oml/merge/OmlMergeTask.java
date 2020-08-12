@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskExecutionException;
 
 public class OmlMergeTask extends DefaultTask {
 	
@@ -28,6 +29,10 @@ public class OmlMergeTask extends DefaultTask {
 		if (debug) {
 			args.add("-d");
 		}
-        OmlMergeApp.main(args.toArray(new String[args.size()]));
+		try {
+			OmlMergeApp.main(args.toArray(new String[args.size()]));
+		} catch (Exception e) {
+			throw new TaskExecutionException(this, e);
+		}
 	}
 }
