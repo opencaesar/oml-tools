@@ -160,10 +160,11 @@ class Oml2BikeshedApp {
 		val scriptContents = new StringBuffer
 		val forceToken=if(force) "-f " else ""
 		scriptContents.append('''
-			cd "${BASH_SOURCE%/*}/"
+			parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+			cd "$parent_path"
 		''')
 		scriptContents.append('''
-			bikeshed «forceToken» spec index.bs
+			bikeshed «forceToken»spec index.bs
 		''')
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
