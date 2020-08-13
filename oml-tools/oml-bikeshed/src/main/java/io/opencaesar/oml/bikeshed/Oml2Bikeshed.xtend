@@ -116,8 +116,10 @@ class Oml2Bikeshed {
 		Editor: «ontology.creator.replaceAll(',', '')»
 		!Copyright: «ontology.copyright»
 		Boilerplate: copyright no, conformance no
+		Local Boilerplate: logo yes
 		Markup Shorthands: markdown yes
 		Use Dfn Panels: yes
+		External Infotrees: anchors.bsdata yes
 		Abstract: «ontology.description.replaceAll('\n', '\n ')»
 	'''
 

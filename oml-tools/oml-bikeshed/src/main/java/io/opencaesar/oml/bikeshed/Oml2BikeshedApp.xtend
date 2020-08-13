@@ -160,8 +160,7 @@ class Oml2BikeshedApp {
 		val scriptContents = new StringBuffer
 		val forceToken=if(force) "-f " else ""
 		scriptContents.append('''
-			parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
-			cd "$parent_path"
+			cd "$(dirname "$0")"
 		''')
 		scriptContents.append('''
 			bikeshed «forceToken»spec index.bs
