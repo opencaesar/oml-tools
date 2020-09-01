@@ -16,7 +16,6 @@ import java.io.InputStreamReader
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashMap
-import java.util.HashSet
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
@@ -31,12 +30,7 @@ import org.eclipse.xtext.resource.XtextResourceSet
 
 import static extension io.opencaesar.oml.util.OmlRead.*
 import io.opencaesar.oml.util.OmlCatalog
-import java.util.List
 import java.util.LinkedHashMap
-import java.util.Set
-import io.opencaesar.oml.VocabularyBundle
-import io.opencaesar.oml.Import
-import org.eclipse.emf.ecore.resource.ResourceSet
 
 class Oml2BikeshedApp {
 	
@@ -145,8 +139,6 @@ class Oml2BikeshedApp {
 		val inputCatalogFile = new File(inputCatalogPath)
 		val inputFolder = inputCatalogFile.parentFile
 		val inputCatalog = OmlCatalog.create(inputCatalogFile.toURI.toURL)
-		val inputFiles = collectInputFiles(inputFolder).sortBy[canonicalPath]
-		val allInputFolders = new HashSet<File>
 		
 		OmlStandaloneSetup.doSetup
 		val inputResourceSet = new XtextResourceSet
@@ -214,6 +206,7 @@ class Oml2BikeshedApp {
 		outputFiles.put(new File(outputFolderPath+File.separator+'logo.include'), logoString)
 		
 		// create the anchors.bsdata files
+		val allInputFolders = inputResourceSet.resources.map[new File(URI.toFileString).parentFile].toSet
 		for (folder : allInputFolders) {
 			val relativePath = inputFolder.toURI().relativize(folder.toURI()).getPath()
 			val anchoreResourceURI = URI.createURI(inputFolder.toURI+File.separator+relativePath+File.separator+'anchors.bsdata') 

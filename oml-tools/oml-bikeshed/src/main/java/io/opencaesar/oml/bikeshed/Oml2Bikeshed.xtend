@@ -54,6 +54,17 @@ import io.opencaesar.oml.FeatureProperty
 import io.opencaesar.oml.PropertyRestrictionAxiom
 import io.opencaesar.oml.Relation
 import io.opencaesar.oml.RelationRestrictionAxiom
+import io.opencaesar.oml.RelationTargetRestrictionAxiom
+import io.opencaesar.oml.RelationCardinalityRestrictionAxiom
+import io.opencaesar.oml.ForwardRelation
+import io.opencaesar.oml.ReverseRelation
+import io.opencaesar.oml.ScalarPropertyRestrictionAxiom
+import io.opencaesar.oml.ScalarPropertyCardinalityRestrictionAxiom
+import io.opencaesar.oml.ScalarPropertyValueRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyRangeRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyCardinalityRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyValueRestrictionAxiom
 
 /**
  * Transform OML to Bikeshed
@@ -260,7 +271,11 @@ class Oml2Bikeshed {
 		
 		«IF !properties.empty || !transitiveproperties.empty »
 		*Properties with domain:*
-		«(properties + transitiveproperties).sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>«notePropertyRestrictions(propertyRestrictions)»'''].join(', ')»
+		«(properties + transitiveproperties)
+			.sortBy[name]
+			.map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>«entity.ontology.notePropertyRestrictions(it, propertyRestrictions)»''']
+			.join(', ')
+		»
 		«ENDIF»
 
 		«val keys = entity.findKeys»
@@ -278,7 +293,7 @@ class Oml2Bikeshed {
 		«IF !domainRelations.empty || !domainTransitiveRelations.empty »
 		*Relations with domain:*
 			«FOR dr : (domainRelations + domainTransitiveRelations).sortBy[name]»
-			* «entity.name» «dr.forward.toBikeshedReference» «dr.target.toBikeshedReference» «dr.forward.noteRelationRestrictions(relationRestrictions)»
+			* «entity.name» «entity.ontology.toBikeshedReference(dr.forward)» «entity.ontology.toBikeshedReference(dr.target)» «entity.ontology.noteRelationRestrictions(dr.forward, relationRestrictions)»
 			«ENDFOR»
 		«ENDIF»
 		
@@ -288,7 +303,7 @@ class Oml2Bikeshed {
 		«IF !rangeRelations.empty || !rangeTransitiveRelations.empty »
 		*Relations with range:*
 			«FOR dr : (rangeRelations + rangeTransitiveRelations).sortBy[name]»
-			* «dr.source.toBikeshedReference» «dr.forward.toBikeshedReference» «entity.name» «dr.reverse?.noteRelationRestrictions(relationRestrictions)»
+			* «entity.ontology.toBikeshedReference(dr.source)» «entity.ontology.toBikeshedReference(dr.forward)» «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverse, relationRestrictions)»
 			«ENDFOR»
 		«ENDIF»
 		
@@ -364,26 +379,6 @@ class Oml2Bikeshed {
 		
 	'''
 		
-	private def dispatch String toBikeshed(RelationRangeRestrictionAxiom axiom) '''
-		«val range = axiom.range»
-		«val relation = axiom.relation»
-		«IF axiom.kind == RangeRestrictionKind.ALL»
-			Restricts range of «relation.toBikeshedReference» to be an instance of «range.toBikeshedReference»
-		«ELSE»
-			Restricts range of «relation.toBikeshedReference» to some instances of «range.toBikeshedReference»
-		«ENDIF»
-	'''
-	
-	private def dispatch String toBikeshed(ScalarPropertyRangeRestrictionAxiom axiom) '''
-		«val range = axiom.range»
-		«val property = axiom.property»
-		«IF axiom.kind == RangeRestrictionKind.ALL»
-			Restricts range of «property.toBikeshedReference» to be an instance of «range.toBikeshedReference»
-		«ELSE»
-			Restricts range of «property.toBikeshedReference» to some instances of «range.toBikeshedReference»
-		«ENDIF»
-	'''
-		
 	// Inference rules have a set of set of antecedents and one consequent
 	private def dispatch String toBikeshed(Rule rule) '''
 		«rule.sectionHeader»
@@ -425,12 +420,8 @@ class Oml2Bikeshed {
 		pnames.join(", ")
 	}
 	
-	private def String toBikeshedReferenceBase(Ontology ontology, Member member) 
-	'''<a spec="«ontology.iri»" lt="«member.name»">«member.getReferenceName(ontology)»</a> '''
-	
-	private def String toBikeshedReference(Member member) {
-		member.ontology.toBikeshedReferenceBase(member)
-	}
+	private def String toBikeshedReference(Ontology scope, Member member) 
+	'''<a spec="«member.ontology.iri»" lt="«member.name»">«member.getReferenceName(scope)»</a>'''
 	
 	private def String getPlainDescription(Member member) {
 		val desc=member.description
@@ -481,21 +472,121 @@ class Oml2Bikeshed {
 		localName ?: member.abbreviatedIri
 	}
 	
-	private def String notePropertyRestrictions(FeatureProperty property, Iterable<PropertyRestrictionAxiom> restrictions) {
-		val matchingRestrictions = restrictions.filter(ScalarPropertyRangeRestrictionAxiom).filter[it.property == property].toList
-		if (matchingRestrictions.empty) {
-			""
-		} else {
-			" (" + matchingRestrictions.map[toBikeshed.trim].join(", ") + ")"
+	private dispatch def String notePropertyRestrictions(Ontology context, ScalarProperty property, Iterable<PropertyRestrictionAxiom> restrictions) {
+		if (property !== null) {
+			val description = restrictions
+				.filter(ScalarPropertyRestrictionAxiom)
+				.filter[it.property == property]
+				.map[axiom|
+					switch (axiom) {
+						ScalarPropertyRangeRestrictionAxiom: {
+							val range = axiom.range
+							if (axiom.kind == RangeRestrictionKind.ALL) {
+								'''range restricted to an instance of «context.toBikeshedReference(range)»'''
+							} else {
+								'''range restricted to some instances of «context.toBikeshedReference(range)»'''
+							}
+						}
+						ScalarPropertyCardinalityRestrictionAxiom: {
+							val kind = switch (axiom.kind) {
+								case EXACTLY: "exactly"
+								case MIN: "at least"
+								case MAX: "at most"
+							}
+							'''cardinality restricted to «kind» «axiom.cardinality»'''
+						}
+						ScalarPropertyValueRestrictionAxiom: {
+							'''value restricted to «axiom.value.literalValue»'''
+						}
+						default: axiom.toString
+					}
+					
+				]
+				.join(", ")
+			if (!description.empty) {
+				return " (" + description + ")"
+			}
 		}
+		""
 	}
 	
-	private def String noteRelationRestrictions(Relation relation, Iterable<RelationRestrictionAxiom> restrictions) {
-		val matchingRestrictions = restrictions.filter[it.relation == relation].toList
-		if (matchingRestrictions.empty) {
-			""
-		} else {
-			"(" + matchingRestrictions.map[toBikeshed.trim].join(", ") + ")"
+	private dispatch def String notePropertyRestrictions(Ontology context, StructuredProperty property, Iterable<PropertyRestrictionAxiom> restrictions) {
+		if (property !== null) {
+			val description = restrictions
+				.filter(StructuredPropertyRestrictionAxiom)
+				.filter[it.property == property]
+				.map[axiom|
+					switch (axiom) {
+						StructuredPropertyRangeRestrictionAxiom: {
+							val range = axiom.range
+							if (axiom.kind == RangeRestrictionKind.ALL) {
+								'''range restricted to an instance of «context.toBikeshedReference(range)»'''
+							} else {
+								'''range restricted to some instances of «context.toBikeshedReference(range)»'''
+							}
+						}
+						StructuredPropertyCardinalityRestrictionAxiom: {
+							val kind = switch (axiom.kind) {
+								case EXACTLY: "exactly"
+								case MIN: "at least"
+								case MAX: "at most"
+							}
+							'''cardinality restricted to «kind» «axiom.cardinality»'''
+						}
+						StructuredPropertyValueRestrictionAxiom: {
+							'''value restricted to instance'''
+						}
+						default: axiom.toString
+					}
+					
+				]
+				.join(", ")
+			if (!description.empty) {
+				return " (" + description + ")"
+			}
 		}
+		""
+	}
+	
+	private def String noteRelationRestrictions(Ontology context, Relation relation, Iterable<RelationRestrictionAxiom> restrictions) {
+		if (relation !== null) {
+			val description = restrictions
+				.filter[it.relation == relation]
+				.map[axiom|
+					switch (axiom) {
+						RelationRangeRestrictionAxiom: {
+							val restrictedTo = axiom.range
+							val domainOrRange = switch (relation) {
+								ReverseRelation: "domain"
+								ForwardRelation: "range"
+							}
+							if (axiom.kind == RangeRestrictionKind.ALL) {
+								'''«domainOrRange» restricted to be an instance of «context.toBikeshedReference(restrictedTo)»'''
+							} else {
+								'''«domainOrRange» restricted to some instances of «context.toBikeshedReference(restrictedTo)»'''
+							}
+						}
+						RelationCardinalityRestrictionAxiom: {
+							val kind = switch (axiom.kind) {
+								case EXACTLY: "exactly"
+								case MIN: "at least"
+								case MAX: "at most"
+							}
+							'''cardinality restricted to «kind» «axiom.cardinality»'''
+						}
+						RelationTargetRestrictionAxiom: {
+							'''Target of «context.toBikeshedReference(relation)» restricted to instance «context.toBikeshedReference(axiom.target)»'''
+						}
+						default: axiom.toString
+					}
+					
+				]
+				.toList
+				.join(", ")
+			if (!description.empty) {
+				return "(" + description + ")"
+			}
+		}
+		""
 	}
 }
