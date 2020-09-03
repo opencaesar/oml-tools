@@ -16,7 +16,6 @@ import java.io.InputStreamReader
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashMap
-import java.util.HashSet
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
@@ -30,6 +29,8 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.resource.XtextResourceSet
 
 import static extension io.opencaesar.oml.util.OmlRead.*
+import io.opencaesar.oml.util.OmlCatalog
+import java.util.LinkedHashMap
 
 class Oml2BikeshedApp {
 	
@@ -42,11 +43,18 @@ class Oml2BikeshedApp {
 	package String inputCatalogPath = null
 
 	@Parameter(
+		names=#["--root-ontology-iri","-r"], 
+		description="Root OML ontology IRI (Required)",
+		required=true, 
+		order=2)
+	package String rootOntologyIri = null
+
+	@Parameter(
 		names=#["--output-folder-path", "-o"], 
 		description="Path of Bikeshed output folder", 
 		validateWith=OutputFolderPath, 
 		required=true, 
-		order=2
+		order=3
 	)
 	package String outputFolderPath = "."
 
@@ -54,14 +62,14 @@ class Oml2BikeshedApp {
 		names=#["--publish-url", "-u"], 
 		description="URL where the Bikeshed documentation will be published", 
 		required=true, 
-		order=3
+		order=4
 	)
 	package String publishUrl
 
 	@Parameter(
 		names=#["-debug", "--d"], 
 		description="Shows debug logging statements", 
-		order=4
+		order=5
 	)
 	package boolean debug
 
@@ -69,21 +77,21 @@ class Oml2BikeshedApp {
 		names=#["--help","-h"], 
 		description="Displays summary of options", 
 		help=true, 
-		order=5)
+		order=6)
 	package boolean help
 
 	@Parameter(
 		names=#["--version","-v"], 
 		description="Displays app version", 
 		help=true, 
-		order=6)
+		order=7)
 	package boolean version
 	
 	@Parameter(
 		names=#["--force","-f"], 
 		description="Run bikeshed with force option -f", 
 		help=true, 
-		order=7)
+		order=8)
 	package boolean force
 	
 	val LOGGER = LogManager.getLogger(Oml2BikeshedApp)
@@ -125,30 +133,29 @@ class Oml2BikeshedApp {
 		LOGGER.info("                    OML to Bikeshed "+getAppVersion)
 		LOGGER.info("=================================================================")
 		LOGGER.info("Input Catalog= " + inputCatalogPath)
+		LOGGER.info("Root Ontology= " + rootOntologyIri)
 		LOGGER.info("Output Folder= " + outputFolderPath)
-
-		val inputFolder = new File(inputCatalogPath).parentFile
-		val inputFiles = collectInputFiles(inputFolder).sortBy[canonicalPath]
-		val allInputFolders = new HashSet<File>
+		
+		val inputCatalogFile = new File(inputCatalogPath)
+		val inputFolder = inputCatalogFile.parentFile
+		val inputCatalog = OmlCatalog.create(inputCatalogFile.toURI.toURL)
 		
 		OmlStandaloneSetup.doSetup
 		val inputResourceSet = new XtextResourceSet
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
-
+		
+		
+		var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
+		val rootOntology = inputResourceSet.getResource(rootUri, true).contents.filter(Ontology).head
+		val inputOntologies = (#[rootOntology] + rootOntology.allImportsWithSource.map[importedOntology]).toSet.sortBy[iri]
+		
 		val outputFiles = new HashMap<File, String>
 
-		// load all resources first
+		// validate ontologies
 		var valid = true
-		for (inputFile : inputFiles.sortBy[canonicalPath]) {
-			allInputFolders.add(inputFile.getParentFile())
-			val inputURI = URI.createFileURI(inputFile.absolutePath)
-			LOGGER.info("Reading: "+inputURI)
-			val inputResource = inputResourceSet.getResource(inputURI, true)
-			if (inputResource !== null) {
-				val ontology = inputResource.ontology
-				if (!validate(ontology)) {
-					valid = false
-				}
+		for (inputOntology : inputOntologies) {
+			if (!validate(inputOntology)) {
+				valid = false
 			}
 		}
 		if (valid === false) {
@@ -180,17 +187,26 @@ class Oml2BikeshedApp {
 		val indexContents = new StringBuffer
 		indexContents.append(Oml2Index.addHeader)
 		var index = 1
+		
+		val groupsByDomain = new LinkedHashMap<String, Oml2Index.Group>
 		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
-			indexContents.append(new Oml2Index(inputResource, relativePath, index++).run)
+			val oml2index = new Oml2Index(inputResource, relativePath, index++)
+			groupsByDomain.computeIfAbsent(oml2index.domain, [new Oml2Index.Group]).add(oml2index)
 		}
+		
+		for (group : groupsByDomain.values) {
+			indexContents.append(group.run)
+		}
+		
 		indexContents.append(Oml2Index.addFooter)
 		outputFiles.put(indexFile, indexContents.toString)
 		outputFiles.put(new File(outputFolderPath+File.separator+'logo.include'), logoString)
 		
 		// create the anchors.bsdata files
+		val allInputFolders = inputResourceSet.resources.map[new File(URI.toFileString).parentFile].toSet
 		for (folder : allInputFolders) {
 			val relativePath = inputFolder.toURI().relativize(folder.toURI()).getPath()
 			val anchoreResourceURI = URI.createURI(inputFolder.toURI+File.separator+relativePath+File.separator+'anchors.bsdata') 
@@ -231,7 +247,7 @@ class Oml2BikeshedApp {
 		LOGGER.info("                          E N D")
 		LOGGER.info("=================================================================")
 	}
-
+	
 	def validate(Ontology ontology) {
 		val diagnostician = new Diagnostician() {
 		  override getObjectLabel(EObject eObject) {
@@ -268,6 +284,25 @@ class Oml2BikeshedApp {
 			}
 		}
 		return files
+	}
+	
+	static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
+		val resolved = URI.createURI(catalog.resolveURI(rootOntologyIri))
+		
+		if (resolved.file) {
+			val filename = resolved.toFileString
+			if (new File(filename).isFile) {
+				return resolved
+			}
+			if (new File(filename + '.oml').isFile) {
+				return URI.createURI(resolved.toString + '.oml')
+			}
+			if (new File(filename + '.omlxmi').isFile) {
+				return URI.createURI(resolved.toString + '.omlxmi')
+			}
+		}
+		
+		return resolved
 	}
 
 	private def String getFileExtension(File file) {

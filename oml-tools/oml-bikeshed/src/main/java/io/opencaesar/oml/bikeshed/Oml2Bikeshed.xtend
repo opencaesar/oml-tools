@@ -2,14 +2,10 @@ package io.opencaesar.oml.bikeshed
 
 import io.opencaesar.oml.AnnotatedElement
 import io.opencaesar.oml.AnnotationProperty
-import io.opencaesar.oml.AnnotationPropertyReference
 import io.opencaesar.oml.Aspect
-import io.opencaesar.oml.AspectReference
-import io.opencaesar.oml.Classifier
 import io.opencaesar.oml.Concept
 import io.opencaesar.oml.ConceptInstance
 import io.opencaesar.oml.ConceptInstanceReference
-import io.opencaesar.oml.ConceptReference
 import io.opencaesar.oml.Description
 import io.opencaesar.oml.DescriptionBundle
 import io.opencaesar.oml.DescriptionBundleExtension
@@ -22,9 +18,7 @@ import io.opencaesar.oml.Element
 import io.opencaesar.oml.Entity
 import io.opencaesar.oml.EntityPredicate
 import io.opencaesar.oml.EnumeratedScalar
-import io.opencaesar.oml.EnumeratedScalarReference
 import io.opencaesar.oml.FacetedScalar
-import io.opencaesar.oml.FacetedScalarReference
 import io.opencaesar.oml.Import
 import io.opencaesar.oml.Member
 import io.opencaesar.oml.Ontology
@@ -32,24 +26,17 @@ import io.opencaesar.oml.RangeRestrictionKind
 import io.opencaesar.oml.Reference
 import io.opencaesar.oml.RelationEntity
 import io.opencaesar.oml.RelationEntityPredicate
-import io.opencaesar.oml.RelationEntityReference
 import io.opencaesar.oml.RelationInstance
 import io.opencaesar.oml.RelationInstanceReference
 import io.opencaesar.oml.RelationPredicate
 import io.opencaesar.oml.RelationRangeRestrictionAxiom
-import io.opencaesar.oml.RelationReference
 import io.opencaesar.oml.Rule
-import io.opencaesar.oml.RuleReference
 import io.opencaesar.oml.SameAsPredicate
 import io.opencaesar.oml.ScalarProperty
 import io.opencaesar.oml.ScalarPropertyRangeRestrictionAxiom
-import io.opencaesar.oml.ScalarPropertyReference
 import io.opencaesar.oml.SpecializableTerm
-import io.opencaesar.oml.SpecializableTermReference
 import io.opencaesar.oml.Structure
-import io.opencaesar.oml.StructureReference
 import io.opencaesar.oml.StructuredProperty
-import io.opencaesar.oml.StructuredPropertyReference
 import io.opencaesar.oml.Vocabulary
 import io.opencaesar.oml.VocabularyBundle
 import io.opencaesar.oml.VocabularyBundleExtension
@@ -62,6 +49,21 @@ import org.eclipse.emf.ecore.resource.Resource
 import static extension io.opencaesar.oml.util.OmlIndex.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
+import io.opencaesar.oml.FeatureProperty
+import io.opencaesar.oml.PropertyRestrictionAxiom
+import io.opencaesar.oml.Relation
+import io.opencaesar.oml.RelationRestrictionAxiom
+import io.opencaesar.oml.RelationTargetRestrictionAxiom
+import io.opencaesar.oml.RelationCardinalityRestrictionAxiom
+import io.opencaesar.oml.ForwardRelation
+import io.opencaesar.oml.ReverseRelation
+import io.opencaesar.oml.ScalarPropertyRestrictionAxiom
+import io.opencaesar.oml.ScalarPropertyCardinalityRestrictionAxiom
+import io.opencaesar.oml.ScalarPropertyValueRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyRangeRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyCardinalityRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyValueRestrictionAxiom
 
 /**
  * Transform OML to Bikeshed
@@ -125,26 +127,16 @@ class Oml2Bikeshed {
 
 	private def dispatch String toDiv(Vocabulary vocabulary) '''
 		«vocabulary.toNamespace("# Namespace # {#Namespace}")»			
-		«vocabulary.toImport("# Extensions # {#Extensions}", VocabularyExtension)»
-		«vocabulary.toStatement("# Aspects # {#Aspects}", Aspect)»
-		«vocabulary.toStatement("# External Aspects # {#ExternalAspects}", AspectReference)»
+		«vocabulary.toImport("# Imports # {#Extensions}", VocabularyExtension)»
 		«vocabulary.toStatement("# Concepts # {#concepts}", Concept)»
-		«vocabulary.toStatement("# External Concepts # {#ExternalConcepts}", ConceptReference)»
-		«vocabulary.toStatement("# Relations # {#Relations}", RelationEntity)»
-		«vocabulary.toStatement("# External Relations # {#ExternalRelations}", #[RelationEntityReference, RelationReference])»
+		«vocabulary.toStatement("# Aspects # {#Aspects}", Aspect)»
+		«vocabulary.toStatement("# Relation Entities # {#Relations}", RelationEntity)»
 		«vocabulary.toStatement("# Structures # {#Structures}", Structure)»
-		«vocabulary.toStatement("# External Structures # {#ExternalStructures}", StructureReference)»
 		«vocabulary.toStatement("# Scalars # {#Scalars}", #[FacetedScalar, EnumeratedScalar])»
-		«vocabulary.toStatement("# External Scalars # {#ExternalScalars}", #[FacetedScalarReference, EnumeratedScalarReference])»
-		«vocabulary.toStatement("# Scalar Properties # {#ScalarProperties}", ScalarProperty)»
-		«vocabulary.toStatement("# External Scalar Properties # {#ExternalScalarProperties}", ScalarPropertyReference)»
-		«vocabulary.toStatement("# Structured Properties # {#StructuredProperties}", StructuredProperty)»
-		«vocabulary.toStatement("# External Structured Properties # {#ExternalStructuredProperties}", StructuredPropertyReference)»
 		«vocabulary.toStatement("# Annotation Properties # {#AnnotationProperties}", AnnotationProperty)»
-		«vocabulary.toStatement("# External Annotation Properties # {#ExternalAnnotationProperties}", AnnotationPropertyReference)»
+		«vocabulary.toStatement("# Structured Properties # {#StructuredProperties}", StructuredProperty)»
+		«vocabulary.toStatement("# Scalar Properties # {#ScalarProperties}", ScalarProperty)»
 		«vocabulary.toStatement("# Rules # {#Rules}", Rule)»
-		«vocabulary.toStatement("# External Rules # {#ExternalRules}", RuleReference)»
-		
 	'''
 	
 	private def dispatch String toDiv(VocabularyBundle bundle) '''
@@ -212,7 +204,7 @@ class Oml2Bikeshed {
 		
 		«term.plainDescription»
 		
-		«val superTerms = term.specializedTerms»
+		«val superTerms = term.findSpecializedTerms»
 		«IF !superTerms.empty»
 
 		*Super terms:*
@@ -234,125 +226,86 @@ class Oml2Bikeshed {
 		
 		«entity.plainDescription»
 		
-		«val superEntities = entity.specializedTerms»
+		«IF entity instanceof RelationEntity»
+			«val attr=entity.relationshipAttributes»
+			«IF attr !== null»
+			*Attributes:* «attr»
+			«ENDIF»
+			
+			*Source:*
+			«val source = entity.source»
+			<a spec="«source.ontology.iri»" lt="«source.name»">«source.getReferenceName(entity.ontology)»</a>
+
+			*Target:*
+			«val target = entity.target»
+			<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>
+
+			*Forward Relation:*
+			<dfn attribute for=«entity.name»>«entity.forward.name»</dfn>
+			«entity.forward.description»
+			«IF entity.reverse !== null»
+
+			*Reverse Relation:*
+			<dfn attribute for=«entity.name»>«entity.reverse.name»</dfn>
+			«entity.reverse.description»
+			«ENDIF»
+		«ENDIF»
+		
+		«val superEntities = entity.findSpecializedTerms»
 		«IF !superEntities.empty»
 
-		*Super entities:*
+		*Supertypes:*
 		«superEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
 		«ENDIF»
 		«val subEntities = entity.findSpecializingTerms.filter(Entity)»
 		«IF !subEntities.empty»
 
-		*Specializations:*
+		*Subtypes:*
 		«subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
 		«ENDIF»
+		
+		«val propertyRestrictions = entity.findPropertyRestrictions.toList»
 
-		«val domainRelations = entity.findRelationEntitiesWithSource»
-		«IF !domainRelations.empty»
-		*Relations having «entity.name» as domain:*
-			«FOR dr :domainRelations.sortBy[name]»
-			* «entity.name» «dr.forward.toBikeshedReference» «dr.target.toBikeshedReference» 
-			«ENDFOR»
+		«val propertiesDirect = entity.findFeaturePropertiesWithDomain»
+		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedTerm].filter(FeatureProperty) »
+		«val properties = (propertiesDirect + propertiesWithRestrictions).toSet»
 		
+		«IF !properties.empty »
+		*Properties with domain:*
+		«properties.sortBy[name].map[getPropertyDescription(entity.ontology, propertyRestrictions)].join(', ')»
 		«ENDIF»
-		
-		«val domainTransitiveRelations = entity.specializedTerms.filter(Entity).map(e | e.findRelationEntitiesWithSource).flatten»
-		«IF !domainTransitiveRelations.empty»
-		*Supertype Relations having «entity.name» as domain:*
-			«FOR dr :domainTransitiveRelations.sortBy[name]»
-			* «entity.name» «dr.forward.toBikeshedReference» «dr.target.toBikeshedReference» 
-			«ENDFOR»
-		«ENDIF»
-		
-		«val rangeRelations = entity.findRelationEntitiesWithTarget»
-		«IF !rangeRelations.empty»
-		*Relations having «entity.name» as range:*
-			«FOR dr :rangeRelations.sortBy[name]»
-			* «dr.source.toBikeshedReference» «dr.forward.toBikeshedReference» «entity.name» 
-			«ENDFOR»
-		«ENDIF»
-
-		«val properties = entity.findFeaturePropertiesWithDomain»
-		«IF !properties.empty»
-		*Direct Properties:*
-		«properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
-		«ENDIF»
-		
-		«val transitiveproperties = entity.specializedTerms.filter(Classifier).map(e | e.findFeaturePropertiesWithDomain).flatten»
-		«IF !transitiveproperties.empty»
-		*Supertype Properties:*
-		«transitiveproperties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
-		«ENDIF»
-		
-		«FOR r : entity.findRelationRestrictions»
-			* «r.toBikeshed»
-		«ENDFOR»
-		«FOR r : entity.findPropertyRestrictions»
-			* «r.toBikeshed»
-		«ENDFOR»
 
 		«val keys = entity.findKeys»
 		«IF !keys.empty»
-		*Keys:*
 		«FOR key : keys»
-			* «key.properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
+			* Key «key.properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
 		«ENDFOR»
 		«ENDIF»
-	'''
-
-	private def dispatch String toBikeshed(RelationEntity entity) '''
-		«entity.sectionHeader»
-	
-		«entity.comment»
 		
-		«entity.plainDescription»
+		«val relationRestrictions = entity.findRelationRestrictions.toList »
+
+		«val domainRelationsDirect = entity.findRelationEntitiesWithSource»
+		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation).map[it.entity] »
+		«val domainRelations = (domainRelationsDirect + domainRelationsWithRangeRestrictions).toSet »
 		
-		«val attr=entity.relationshipAttributes»
-		«IF attr !== null»
-		*Attributes:* «attr»
-		«ENDIF»
-		
-		*Source:*
-		«val source = entity.source»
-		<a spec="«source.ontology.iri»" lt="«source.name»">«source.getReferenceName(entity.ontology)»</a>
-
-		*Target:*
-		«val target = entity.target»
-		<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>
-
-		*Forward:*
-		<dfn attribute for=«entity.name»>«entity.forward.name»</dfn>
-		«entity.forward.description»
-		«IF entity.reverse !== null»
-
-		*Reverse:*
-		<dfn attribute for=«entity.name»>«entity.reverse.name»</dfn>
-		«entity.reverse.description»
-		«ENDIF»
-		«val superTerms = entity.specializedTerms»
-		«IF !superTerms.empty»
-
-		*Super terms:*
-		«superTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
-		«ENDIF»
-		«val subTerms = entity.findSpecializingTerms»
-		«IF !subTerms.empty»
-
-		*Sub terms:*
-		«subTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
+		«IF !domainRelations.empty »
+		*Relations with domain:*
+			«FOR dr : domainRelations.sortBy[name]»
+			* «entity.name» «entity.ontology.toBikeshedReference(dr.forward)» «entity.ontology.toBikeshedReference(getRestrictedType(dr.forward, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forward, relationRestrictions)»
+			«ENDFOR»
 		«ENDIF»
 		
-		«val properties = entity.findFeaturePropertiesWithDomain»
-		«IF !properties.empty»
-		*Direct Properties:*
-		«properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
+		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget»
+		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.entity] »
+		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet »
+				
+		«IF !rangeRelations.empty »
+		*Relations with range:*
+			«FOR dr : rangeRelations.sortBy[name]»
+			* «entity.ontology.toBikeshedReference(getRestrictedType(dr.reverse, dr.source, entity.ontology, relationRestrictions))» «entity.ontology.toBikeshedReference(dr.forward)» «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverse, relationRestrictions)»
+			«ENDFOR»
 		«ENDIF»
 		
-		«val transitiveproperties = entity.specializedTerms.filter(Classifier).map(e | e.findFeaturePropertiesWithDomain).flatten»
-		«IF !transitiveproperties.empty»
-		*Supertype Properties:*
-		«transitiveproperties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
-		«ENDIF»
 	'''
 		
 	// FacetedScalar
@@ -425,26 +378,6 @@ class Oml2Bikeshed {
 		
 	'''
 		
-	private def dispatch String toBikeshed(RelationRangeRestrictionAxiom axiom) '''
-		«val range = axiom.range»
-		«val relation = axiom.relation»
-		«IF axiom.kind == RangeRestrictionKind.ALL»
-			Restricts range of «relation.toBikeshedReference» to be an instance of «range.toBikeshedReference»
-		«ELSE»
-			Restricts range of «relation.toBikeshedReference» to some instances of «range.toBikeshedReference»
-		«ENDIF»
-	'''
-	
-	private def dispatch String toBikeshed(ScalarPropertyRangeRestrictionAxiom axiom) '''
-		«val range = axiom.range»
-		«val property = axiom.property»
-		«IF axiom.kind == RangeRestrictionKind.ALL»
-			Restricts range of «property.toBikeshedReference» to be an instance of «range.toBikeshedReference»
-		«ELSE»
-			Restricts range of «property.toBikeshedReference» to some instances of «range.toBikeshedReference»
-		«ENDIF»
-	'''
-		
 	// Inference rules have a set of set of antecedents and one consequent
 	private def dispatch String toBikeshed(Rule rule) '''
 		«rule.sectionHeader»
@@ -472,19 +405,6 @@ class Oml2Bikeshed {
 		differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
 	'''
 
-	private def dispatch String toBikeshed(SpecializableTermReference reference) '''
-		«val term = reference.resolve»
-		## <a spec="«term.ontology.iri»" lt="«term.name»">«reference.resolvedName»</a> ## {#«reference.resolvedName.toFirstUpper»}
-		«reference.comment»
-		«val superTerms = reference.specializedTerms»
-		«IF !superTerms.empty»
-
-		*Super terms:*
-		«superTerms.sortBy[name].map['''<a spec="«ontology.iri»">«name»</a>'''].join(', ')»
-		«ENDIF»
-		
-	'''
-
 	//----------------------------------------------------------------------------------------------------------
 
 	private def String getRelationshipAttributes(RelationEntity entity) {
@@ -498,13 +418,9 @@ class Oml2Bikeshed {
 		if (entity.transitive) pnames.add("Transitive")
 		pnames.join(", ")
 	}
-
-	private def String toBikeshedReferenceBase(Ontology ontology, Member member) 
-	'''<a spec="«ontology.iri»" lt="«member.name»">«member.getReferenceName(ontology)»</a> '''
 	
-	private def String toBikeshedReference(Member member) {
-		member.ontology.toBikeshedReferenceBase(member)
-	}
+	private def String toBikeshedReference(Ontology scope, Member member) 
+	'''<a spec="«member.ontology.iri»" lt="«member.name»">«member.getReferenceName(scope)»</a>'''
 	
 	private def String getPlainDescription(Member member) {
 		val desc=member.description
@@ -553,5 +469,141 @@ class Oml2Bikeshed {
 	private def String getReferenceName(Member member, Ontology ontology) {
 		val localName = member.getNameIn(ontology)
 		localName ?: member.abbreviatedIri
+	}
+	
+	private dispatch def String getPropertyDescription(ScalarProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
+		val baseDescription = '''<a spec="«context.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
+		
+		val restrictionDescriptions = restrictions
+			.filter(ScalarPropertyRestrictionAxiom)
+			.filter[it.property == property]
+			.map[axiom|
+				switch (axiom) {
+					ScalarPropertyRangeRestrictionAxiom: {
+						val range = axiom.range
+						if (axiom.kind == RangeRestrictionKind.ALL) {
+							'''must be of type «context.toBikeshedReference(range)»'''
+						} else {
+							'''must include instance of «context.toBikeshedReference(range)»'''
+						}
+					}
+					ScalarPropertyCardinalityRestrictionAxiom: {
+						val kind = switch (axiom.kind) {
+							case EXACTLY: "exactly"
+							case MIN: "at least"
+							case MAX: "at most"
+						}
+						'''must have «kind» «axiom.cardinality»'''
+					}
+					ScalarPropertyValueRestrictionAxiom: {
+						'''must have value «axiom.value.literalValue»'''
+					}
+					default: axiom.toString
+				}
+				
+			]
+			.join(", ")
+			
+		if (restrictionDescriptions.empty) {
+			baseDescription
+		} else {
+			baseDescription + " (" + restrictionDescriptions + ")"
+		}
+	}
+	
+	private dispatch def String getPropertyDescription(StructuredProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
+		val baseDescription = '''<a spec="«context.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
+		
+		val restrictionDescriptions = restrictions
+			.filter(StructuredPropertyRestrictionAxiom)
+			.filter[it.property == property]
+			.map[axiom|
+				switch (axiom) {
+					StructuredPropertyRangeRestrictionAxiom: {
+						val range = axiom.range
+						if (axiom.kind == RangeRestrictionKind.ALL) {
+							'''must be of type «context.toBikeshedReference(range)»'''
+						} else {
+							'''must include at least some «context.toBikeshedReference(range)»'''
+						}
+					}
+					StructuredPropertyCardinalityRestrictionAxiom: {
+						val kind = switch (axiom.kind) {
+							case EXACTLY: "exactly"
+							case MIN: "at least"
+							case MAX: "at most"
+						}
+						'''must have «kind» «axiom.cardinality»'''
+					}
+					StructuredPropertyValueRestrictionAxiom: {
+						'''must have specific value'''
+					}
+					default: axiom.toString
+				}
+				
+			]
+			.join(", ")
+		
+		if (restrictionDescriptions.empty) {
+			baseDescription
+		} else {
+			baseDescription + " (" + restrictionDescriptions + ")"
+		}
+	}
+	
+	private def Entity getRestrictedType(Relation relation, Entity baseType, Ontology context, Iterable<RelationRestrictionAxiom> restrictions) {
+		val restriction = restrictions
+			.filter(RelationRangeRestrictionAxiom)
+			.filter[kind == RangeRestrictionKind::ALL && it.relation == relation]
+			.head
+		
+		if (restriction !== null) {
+			restriction.range
+		} else {
+			baseType
+		}
+	}
+	
+	private def String noteRelationRestrictions(Ontology context, Relation relation, Iterable<RelationRestrictionAxiom> restrictions) {
+		if (relation !== null) {
+			val description = restrictions
+				.filter[it.relation == relation]
+				.map[axiom|
+					val domainOrRange = switch (relation) {
+						ReverseRelation: "domain"
+						ForwardRelation: "range"
+					}
+					switch (axiom) {
+						RelationRangeRestrictionAxiom: {
+							val restrictedTo = axiom.range
+							if (axiom.kind == RangeRestrictionKind.ALL) {
+								""
+							} else {
+								'''«domainOrRange» must include at least some «context.toBikeshedReference(restrictedTo)»'''
+							}
+						}
+						RelationCardinalityRestrictionAxiom: {
+							val kind = switch (axiom.kind) {
+								case EXACTLY: "exactly"
+								case MIN: "at least"
+								case MAX: "at most"
+							}
+							'''cardinality restricted to «kind» «axiom.cardinality»'''
+						}
+						RelationTargetRestrictionAxiom: {
+							'''«domainOrRange» restricted to instance «context.toBikeshedReference(axiom.target)»'''
+						}
+						default: axiom.toString
+					}
+					
+				]
+				.reject[empty]
+				.toList
+				.join(", ")
+			if (!description.empty) {
+				return "(" + description + ")"
+			}
+		}
+		""
 	}
 }

@@ -13,6 +13,8 @@ public class Oml2BikeshedTask extends DefaultTask {
     
     public String outputFolderPath;
     
+    public String rootOntologyIri;
+    
     public String publishUrl;
 
     @TaskAction
@@ -29,6 +31,10 @@ public class Oml2BikeshedTask extends DefaultTask {
 		if (publishUrl != null) {
 			args.add("-u");
 			args.add(publishUrl);
+		}
+		if (rootOntologyIri != null) {
+			args.add("-r");
+			args.add(rootOntologyIri);
 		}
 		try {
         	Oml2BikeshedApp.main(args.toArray(new String[0]));
