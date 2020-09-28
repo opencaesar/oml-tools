@@ -8,23 +8,33 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 
 public class OmlMergeTask extends DefaultTask {
-	
+
+	public List<String> inputZipPaths = null;
+	public List<String> inputFolderPaths = null;
 	public List<String> inputCatalogPaths = null;
     
-    public String outputCatalogPath;
+    public String outputCatalogFolder;
     
     public boolean debug;
 
     @TaskAction
     public void run() {
     	List<String> args = new ArrayList<String>();
+		for (String inputZipPath : inputZipPaths) {
+			args.add("-z");
+			args.add(inputZipPath);
+		}
+		for (String inputFolderPath : inputFolderPaths) {
+			args.add("-f");
+			args.add(inputFolderPath);
+		}
 		for (String inputCatalogPath : inputCatalogPaths) {
-			args.add("-i");
+			args.add("-c");
 			args.add(inputCatalogPath);
 		}
-		if (outputCatalogPath != null) {
+		if (outputCatalogFolder != null) {
 			args.add("-o");
-			args.add(outputCatalogPath);
+			args.add(outputCatalogFolder);
 		}
 		if (debug) {
 			args.add("-d");
