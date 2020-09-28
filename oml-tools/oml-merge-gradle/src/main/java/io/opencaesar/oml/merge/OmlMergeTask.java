@@ -1,8 +1,6 @@
 package io.opencaesar.oml.merge;
 
-import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.gradle.api.DefaultTask;
@@ -11,45 +9,32 @@ import org.gradle.api.tasks.TaskExecutionException;
 
 public class OmlMergeTask extends DefaultTask {
 
-	public Collection<File> inputZipPaths = null;
-	
-	public Collection<File> inputFolderPaths = null;
-	
-	public Collection<File> inputCatalogPaths = null;
+	public List<String> inputZipPaths = null;
+	public List<String> inputFolderPaths = null;
+	public List<String> inputCatalogPaths = null;
     
-    public File outputCatalogFolder;
+    public String outputCatalogFolder;
     
-    public boolean generateOutputCatalog;
-
     public boolean debug;
 
     @TaskAction
     public void run() {
     	List<String> args = new ArrayList<String>();
-    	if (null != inputZipPaths) {
-			for (File inputZipPath : inputZipPaths) {
-				args.add("-z");
-				args.add(inputZipPath.getAbsolutePath());
-			}
+		for (String inputZipPath : inputZipPaths) {
+			args.add("-z");
+			args.add(inputZipPath);
 		}
-    	if (null != inputFolderPaths) {
-			for (File inputFolderPath : inputFolderPaths) {
-				args.add("-f");
-				args.add(inputFolderPath.getAbsolutePath());
-			}
+		for (String inputFolderPath : inputFolderPaths) {
+			args.add("-f");
+			args.add(inputFolderPath);
 		}
-    	if (null != inputCatalogPaths) {
-			for (File inputCatalogPath : inputCatalogPaths) {
-				args.add("-c");
-				args.add(inputCatalogPath.getAbsolutePath());
-			}
+		for (String inputCatalogPath : inputCatalogPaths) {
+			args.add("-c");
+			args.add(inputCatalogPath);
 		}
 		if (outputCatalogFolder != null) {
 			args.add("-o");
-			args.add(outputCatalogFolder.getAbsolutePath());
-		}
-		if (generateOutputCatalog) {
-			args.add("-g");
+			args.add(outputCatalogFolder);
 		}
 		if (debug) {
 			args.add("-d");

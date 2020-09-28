@@ -15,7 +15,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
@@ -55,22 +54,16 @@ public class OmlMergeApp {
     private String outputFolderPath = null;
 
     @Parameter(
-            names = {"--generate-output-catalog", "-g"},
-            description = "Generate a catalog file in the output folder path",
-            order = 5)
-    private boolean generateOutputCatalog;
-
-    @Parameter(
-            names = {"--debug", "-d"},
+            names = {"-d", "--debug"},
             description = "Shows debug logging statements",
-            order = 6)
+            order = 5)
     private boolean debug;
 
     @Parameter(
             names = {"--help", "-h"},
             description = "Displays summary of options",
             help = true,
-            order = 7)
+            order = 6)
     private boolean help;
 
     private final Logger LOGGER = Logger.getLogger(OmlMergeApp.class);
@@ -111,17 +104,15 @@ public class OmlMergeApp {
         File outputFolder = new File(outputFolderPath);
         outputFolder.mkdirs();
 
-        if (generateOutputCatalog) {
-	        File outputCatalogFile = outputFolder.toPath().resolve("oml.catalog.xml").toFile();
-	        BufferedWriter bw = new BufferedWriter(new FileWriter(outputCatalogFile));
-	        bw.write(
-	                "<?xml version='1.0'?>\n" +
-	                        "<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"public\">\n" +
-	                        "\t<rewriteURI uriStartString=\"http://\" rewritePrefix=\"./\" />\n" +
-	                        "</catalog>"
-	        );
-	        bw.close();
-        }
+        File outputCatalogFile = outputFolder.toPath().resolve("oml.catalog.xml").toFile();
+        BufferedWriter bw = new BufferedWriter(new FileWriter(outputCatalogFile));
+        bw.write(
+                "<?xml version='1.0'?>\n" +
+                        "<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"public\">\n" +
+                        "\t<rewriteURI uriStartString=\"http://\" rewritePrefix=\"./\" />\n" +
+                        "</catalog>"
+        );
+        bw.close();
 
         List<InputFiles> allInputs = new ArrayList<>();
 
@@ -197,7 +188,7 @@ public class OmlMergeApp {
             Path outputFile = outputFolder.toPath().resolve(relativeFile);
             outputFile.getParent().toFile().mkdirs();
             Path inputFile = uf.top.resolve(relativeFile);
-            Files.copy(inputFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(inputFile, outputFile);
         }
 
         LOGGER.info("=================================================================");
@@ -213,9 +204,7 @@ public class OmlMergeApp {
         CheckedInputStream cis = new CheckedInputStream(fileInput, new CRC32());
         while (cis.read(buffer, 0, buffer.length) > 0) {
         }
-        long value = cis.getChecksum().getValue();
-        cis.close();
-        return value;
+        return cis.getChecksum().getValue();
     }
 
     public static Collection<UniqueFile> collectOMLUniqueFiles(File directory) throws IOException {
