@@ -5,7 +5,6 @@ import io.opencaesar.oml.AnnotationProperty
 import io.opencaesar.oml.Aspect
 import io.opencaesar.oml.Concept
 import io.opencaesar.oml.ConceptInstance
-import io.opencaesar.oml.ConceptInstanceReference
 import io.opencaesar.oml.Description
 import io.opencaesar.oml.DescriptionBundle
 import io.opencaesar.oml.DescriptionBundleExtension
@@ -27,7 +26,6 @@ import io.opencaesar.oml.Reference
 import io.opencaesar.oml.RelationEntity
 import io.opencaesar.oml.RelationEntityPredicate
 import io.opencaesar.oml.RelationInstance
-import io.opencaesar.oml.RelationInstanceReference
 import io.opencaesar.oml.RelationPredicate
 import io.opencaesar.oml.RelationRangeRestrictionAxiom
 import io.opencaesar.oml.Rule
@@ -64,6 +62,11 @@ import io.opencaesar.oml.StructuredPropertyRestrictionAxiom
 import io.opencaesar.oml.StructuredPropertyRangeRestrictionAxiom
 import io.opencaesar.oml.StructuredPropertyCardinalityRestrictionAxiom
 import io.opencaesar.oml.StructuredPropertyValueRestrictionAxiom
+import io.opencaesar.oml.Instance
+import io.opencaesar.oml.NamedInstance
+import io.opencaesar.oml.ScalarPropertyValueAssertion
+import io.opencaesar.oml.StructuredPropertyValueAssertion
+import io.opencaesar.oml.PropertyValueAssertion
 
 /**
  * Transform OML to Bikeshed
@@ -149,10 +152,8 @@ class Oml2Bikeshed {
 		«description.toNamespace("# Namespace # {#Namespace}")»
 		«description.toImport("# Extensions # {#Extensions}", DescriptionExtension)»
 		«description.toImport("# Usages # {#Iclusions}", DescriptionUsage)»
-		«description.toImport("# Concept Instances # {#ConceptInstances}", ConceptInstance)»
-		«description.toImport("# External Concept Instances # {#ExternalConceptInstances}", ConceptInstanceReference)»
-		«description.toImport("# Relation Instances # {#ConceptInstances}", RelationInstance)»
-		«description.toImport("# External Relation Instances # {#ExternalConceptInstances}", RelationInstanceReference)»
+		«description.toStatement("# Concept Instances # {#ConceptInstances}", ConceptInstance)»
+		«description.toStatement("# Relation Instances # {#RelationInstances}", RelationInstance)»
 	'''
 
 	private def dispatch String toDiv(DescriptionBundle bundle) '''
@@ -404,7 +405,46 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(DifferentFromPredicate predicate) '''
 		differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
 	'''
+	
+	private def dispatch String toBikeshed(NamedInstance instance) '''
+		«instance.sectionHeader»
+		
+		«val types = switch (instance) {
+			ConceptInstance: instance.findTypeAssertions.map[type].sortBy[name]
+			RelationInstance: instance.findTypeAssertions.map[type].sortBy[name]
+			default: #[]
+		}»
+		«val scope = instance.ontology»
+		
+		«IF !types.empty»
+		*Types:*
+		«types.map[scope.toBikeshedReference(it)].join(', ')»
+		«ENDIF»
+		
+		«IF instance instanceof RelationInstance»
+			*Source:* «scope.toBikeshedReference(instance.source)»
+			
+			*Target:* «scope.toBikeshedReference(instance.target)»
+		«ENDIF»
+		
+		«val propertyValueAssertions = instance.findPropertyValueAssertions.sortBy[property.name]»
+		«IF !propertyValueAssertions.empty»
+		*Properties:*
+			«FOR propertyValueAssertion : propertyValueAssertions»
+				«scope.toBikeshedPropertyValue(propertyValueAssertion)»
+			«ENDFOR»
+		«ENDIF»
+		
 
+		«val linkAssertions = instance.findLinkAssertionsWithSource.sortBy[relation.name]»
+		«IF !linkAssertions.empty»
+		*Links:*
+			«FOR linkAssertion : linkAssertions»
+			 * «scope.toBikeshedReference(linkAssertion.relation)» «scope.toBikeshedReference(linkAssertion.target)»
+			«ENDFOR»
+		«ENDIF»
+	'''
+	
 	//----------------------------------------------------------------------------------------------------------
 
 	private def String getRelationshipAttributes(RelationEntity entity) {
@@ -421,6 +461,18 @@ class Oml2Bikeshed {
 	
 	private def String toBikeshedReference(Ontology scope, Member member) 
 	'''<a spec="«member.ontology.iri»" lt="«member.name»">«member.getReferenceName(scope)»</a>'''
+	
+	private def String toBikeshedPropertyValue(Ontology scope, PropertyValueAssertion assertion) {
+		val valueText = switch (assertion) {
+			ScalarPropertyValueAssertion: assertion.value.literalValue
+			StructuredPropertyValueAssertion: '''
+				«FOR subAssertion : assertion.value.ownedPropertyValues»
+				 * «scope.toBikeshedPropertyValue(subAssertion)»
+				«ENDFOR»
+			'''
+		}
+		''' * «scope.toBikeshedReference(assertion.property)» «valueText»'''
+	}
 	
 	private def String getPlainDescription(Member member) {
 		val desc=member.description
