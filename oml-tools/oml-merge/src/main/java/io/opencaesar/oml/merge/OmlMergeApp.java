@@ -127,7 +127,7 @@ public class OmlMergeApp {
 
         byte[] buffer = new byte[4096];
         for (String inputZipPath : inputZipPaths) {
-            Path dir = Files.createTempDirectory(Paths.get("/tmp"), "oml-");
+            Path dir = Files.createTempDirectory("oml-");
             dir.toFile().deleteOnExit();
             ZipInputStream zis = new ZipInputStream(new FileInputStream(inputZipPath));
             ZipEntry ze;
