@@ -2,14 +2,18 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import com.beust.jcommander.JCommander;
+
 import io.opencaesar.oml.merge.OmlMergeApp;
-import org.junit.*;
 
 public class OmlMergeTests {
 
