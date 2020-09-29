@@ -15,6 +15,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
@@ -188,7 +189,7 @@ public class OmlMergeApp {
             Path outputFile = outputFolder.toPath().resolve(relativeFile);
             outputFile.getParent().toFile().mkdirs();
             Path inputFile = uf.top.resolve(relativeFile);
-            Files.copy(inputFile, outputFile);
+            Files.copy(inputFile, outputFile, StandardCopyOption.REPLACE_EXISTING);
         }
 
         LOGGER.info("=================================================================");
