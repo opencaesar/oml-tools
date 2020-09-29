@@ -98,7 +98,7 @@ public class OmlMergeTests {
     public void testMergeIdenticalFolders() throws IOException {
         OmlMergeApp app = new OmlMergeApp();
         final JCommander builder = JCommander.newBuilder().addObject(app).build();
-        builder.parse("-f", test1_folder1.toFile().getAbsolutePath(), "-f", test1_folder2.toFile().getAbsolutePath(), "-o", test1_output.toFile().getAbsolutePath());
+        builder.parse("-f", test1_folder1.toFile().getAbsolutePath(), "-f", test1_folder2.toFile().getAbsolutePath(), "-o", test1_output.toFile().getAbsolutePath(), "-g");
         List<OmlMergeApp.UniqueFile> differences = app.run();
         Assert.assertTrue(differences.isEmpty());
         Set<Path> resultPaths = Files.walk(test1_output).collect(Collectors.toSet());
@@ -109,7 +109,7 @@ public class OmlMergeTests {
     public void testMergeDifferentFolders() throws IOException {
         OmlMergeApp app = new OmlMergeApp();
         final JCommander builder = JCommander.newBuilder().addObject(app).build();
-        builder.parse("-f", test2_folder1.toFile().getAbsolutePath(), "-f", test2_folder2.toFile().getAbsolutePath(), "-o", test2_output.toFile().getAbsolutePath());
+        builder.parse("-f", test2_folder1.toFile().getAbsolutePath(), "-f", test2_folder2.toFile().getAbsolutePath(), "-o", test2_output.toFile().getAbsolutePath(), "-g");
         List<OmlMergeApp.UniqueFile> differences = app.run();
         Assert.assertTrue(differences.size() == 1);
         Set<Path> resultPaths = Files.walk(test2_output).collect(Collectors.toSet());
@@ -120,7 +120,7 @@ public class OmlMergeTests {
     public void testMergeIdenticalFolderAndZip() throws IOException {
         OmlMergeApp app = new OmlMergeApp();
         final JCommander builder = JCommander.newBuilder().addObject(app).build();
-        builder.parse("-f", test1_folder1.toFile().getAbsolutePath(), "-z", test3_folder2.resolve("folder2.zip").toFile().getAbsolutePath(), "-o", test3_output.toFile().getAbsolutePath());
+        builder.parse("-f", test1_folder1.toFile().getAbsolutePath(), "-z", test3_folder2.resolve("folder2.zip").toFile().getAbsolutePath(), "-o", test3_output.toFile().getAbsolutePath(), "-g");
         List<OmlMergeApp.UniqueFile> differences = app.run();
         Assert.assertTrue(differences.isEmpty());
         Set<Path> resultPaths = Files.walk(test3_output).collect(Collectors.toSet());
@@ -131,7 +131,7 @@ public class OmlMergeTests {
     public void testMergeDifferentFolderAndZip() throws IOException {
         OmlMergeApp app = new OmlMergeApp();
         final JCommander builder = JCommander.newBuilder().addObject(app).build();
-        builder.parse("-f", test1_folder1.toFile().getAbsolutePath(), "-z", test4_folder2.resolve("folder2.zip").toFile().getAbsolutePath(), "-o", test4_output.toFile().getAbsolutePath());
+        builder.parse("-f", test1_folder1.toFile().getAbsolutePath(), "-z", test4_folder2.resolve("folder2.zip").toFile().getAbsolutePath(), "-o", test4_output.toFile().getAbsolutePath(), "-g");
         List<OmlMergeApp.UniqueFile> differences = app.run();
         Assert.assertTrue(differences.size() == 1);
         Set<Path> resultPaths = Files.walk(test4_output).collect(Collectors.toSet());
