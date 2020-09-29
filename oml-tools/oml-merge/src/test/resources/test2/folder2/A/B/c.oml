@@ -1,0 +1,3 @@
+vocabulary <http://A/B/c> with # as c {
+    // Something...
+}
