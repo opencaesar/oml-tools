@@ -204,7 +204,9 @@ public class OmlMergeApp {
         CheckedInputStream cis = new CheckedInputStream(fileInput, new CRC32());
         while (cis.read(buffer, 0, buffer.length) > 0) {
         }
-        return cis.getChecksum().getValue();
+        long value = cis.getChecksum().getValue();
+        cis.close();
+        return value;
     }
 
     public static Collection<UniqueFile> collectOMLUniqueFiles(File directory) throws IOException {

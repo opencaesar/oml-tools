@@ -10,7 +10,9 @@ import org.gradle.api.tasks.TaskExecutionException;
 public class OmlMergeTask extends DefaultTask {
 
 	public List<String> inputZipPaths = null;
+	
 	public List<String> inputFolderPaths = null;
+	
 	public List<String> inputCatalogPaths = null;
     
     public String outputCatalogFolder;
