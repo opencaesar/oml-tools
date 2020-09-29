@@ -5,7 +5,6 @@ import io.opencaesar.oml.AnnotationProperty
 import io.opencaesar.oml.Aspect
 import io.opencaesar.oml.Concept
 import io.opencaesar.oml.ConceptInstance
-import io.opencaesar.oml.ConceptInstanceReference
 import io.opencaesar.oml.Description
 import io.opencaesar.oml.DescriptionBundle
 import io.opencaesar.oml.DescriptionBundleExtension
@@ -19,24 +18,41 @@ import io.opencaesar.oml.Entity
 import io.opencaesar.oml.EntityPredicate
 import io.opencaesar.oml.EnumeratedScalar
 import io.opencaesar.oml.FacetedScalar
+import io.opencaesar.oml.FeatureProperty
+import io.opencaesar.oml.ForwardRelation
 import io.opencaesar.oml.Import
 import io.opencaesar.oml.Member
+import io.opencaesar.oml.NamedInstance
 import io.opencaesar.oml.Ontology
+import io.opencaesar.oml.PropertyRestrictionAxiom
+import io.opencaesar.oml.PropertyValueAssertion
 import io.opencaesar.oml.RangeRestrictionKind
-import io.opencaesar.oml.Reference
+import io.opencaesar.oml.Relation
+import io.opencaesar.oml.RelationCardinalityRestrictionAxiom
 import io.opencaesar.oml.RelationEntity
 import io.opencaesar.oml.RelationEntityPredicate
 import io.opencaesar.oml.RelationInstance
-import io.opencaesar.oml.RelationInstanceReference
 import io.opencaesar.oml.RelationPredicate
 import io.opencaesar.oml.RelationRangeRestrictionAxiom
+import io.opencaesar.oml.RelationRestrictionAxiom
+import io.opencaesar.oml.RelationTargetRestrictionAxiom
+import io.opencaesar.oml.ReverseRelation
 import io.opencaesar.oml.Rule
 import io.opencaesar.oml.SameAsPredicate
 import io.opencaesar.oml.ScalarProperty
+import io.opencaesar.oml.ScalarPropertyCardinalityRestrictionAxiom
 import io.opencaesar.oml.ScalarPropertyRangeRestrictionAxiom
+import io.opencaesar.oml.ScalarPropertyRestrictionAxiom
+import io.opencaesar.oml.ScalarPropertyValueAssertion
+import io.opencaesar.oml.ScalarPropertyValueRestrictionAxiom
 import io.opencaesar.oml.SpecializableTerm
 import io.opencaesar.oml.Structure
 import io.opencaesar.oml.StructuredProperty
+import io.opencaesar.oml.StructuredPropertyCardinalityRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyRangeRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyRestrictionAxiom
+import io.opencaesar.oml.StructuredPropertyValueAssertion
+import io.opencaesar.oml.StructuredPropertyValueRestrictionAxiom
 import io.opencaesar.oml.Vocabulary
 import io.opencaesar.oml.VocabularyBundle
 import io.opencaesar.oml.VocabularyBundleExtension
@@ -49,21 +65,6 @@ import org.eclipse.emf.ecore.resource.Resource
 import static extension io.opencaesar.oml.util.OmlIndex.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
-import io.opencaesar.oml.FeatureProperty
-import io.opencaesar.oml.PropertyRestrictionAxiom
-import io.opencaesar.oml.Relation
-import io.opencaesar.oml.RelationRestrictionAxiom
-import io.opencaesar.oml.RelationTargetRestrictionAxiom
-import io.opencaesar.oml.RelationCardinalityRestrictionAxiom
-import io.opencaesar.oml.ForwardRelation
-import io.opencaesar.oml.ReverseRelation
-import io.opencaesar.oml.ScalarPropertyRestrictionAxiom
-import io.opencaesar.oml.ScalarPropertyCardinalityRestrictionAxiom
-import io.opencaesar.oml.ScalarPropertyValueRestrictionAxiom
-import io.opencaesar.oml.StructuredPropertyRestrictionAxiom
-import io.opencaesar.oml.StructuredPropertyRangeRestrictionAxiom
-import io.opencaesar.oml.StructuredPropertyCardinalityRestrictionAxiom
-import io.opencaesar.oml.StructuredPropertyValueRestrictionAxiom
 
 /**
  * Transform OML to Bikeshed
@@ -149,10 +150,8 @@ class Oml2Bikeshed {
 		«description.toNamespace("# Namespace # {#Namespace}")»
 		«description.toImport("# Extensions # {#Extensions}", DescriptionExtension)»
 		«description.toImport("# Usages # {#Iclusions}", DescriptionUsage)»
-		«description.toImport("# Concept Instances # {#ConceptInstances}", ConceptInstance)»
-		«description.toImport("# External Concept Instances # {#ExternalConceptInstances}", ConceptInstanceReference)»
-		«description.toImport("# Relation Instances # {#ConceptInstances}", RelationInstance)»
-		«description.toImport("# External Relation Instances # {#ExternalConceptInstances}", RelationInstanceReference)»
+		«description.toStatement("# Concept Instances # {#ConceptInstances}", ConceptInstance)»
+		«description.toStatement("# Relation Instances # {#RelationInstances}", RelationInstance)»
 	'''
 
 	private def dispatch String toDiv(DescriptionBundle bundle) '''
@@ -404,10 +403,49 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(DifferentFromPredicate predicate) '''
 		differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
 	'''
+	
+	private def dispatch String toBikeshed(NamedInstance instance) '''
+		«instance.sectionHeader»
+		
+		«val types = switch (instance) {
+			ConceptInstance: instance.findTypeAssertions.map[type].sortBy[name]
+			RelationInstance: instance.findTypeAssertions.map[type].sortBy[name]
+			default: #[]
+		}»
+		«val scope = instance.ontology»
+		
+		«IF !types.empty»
+		*Types:*
+		«types.map[scope.toBikeshedReference(it)].join(', ')»
+		«ENDIF»
+		
+		«IF instance instanceof RelationInstance»
+			*Source:* «scope.toBikeshedReference(instance.source)»
+			
+			*Target:* «scope.toBikeshedReference(instance.target)»
+		«ENDIF»
+		
+		«val propertyValueAssertions = instance.findPropertyValueAssertions.sortBy[property.name]»
+		«IF !propertyValueAssertions.empty»
+		*Properties:*
+			«FOR propertyValueAssertion : propertyValueAssertions»
+				«scope.toBikeshedPropertyValue(propertyValueAssertion)»
+			«ENDFOR»
+		«ENDIF»
+		
 
+		«val linkAssertions = instance.findLinkAssertionsWithSource.sortBy[relation.name]»
+		«IF !linkAssertions.empty»
+		*Links:*
+			«FOR linkAssertion : linkAssertions»
+			 * «scope.toBikeshedReference(linkAssertion.relation)» «scope.toBikeshedReference(linkAssertion.target)»
+			«ENDFOR»
+		«ENDIF»
+	'''
+	
 	//----------------------------------------------------------------------------------------------------------
 
-	private def String getRelationshipAttributes(RelationEntity entity) {
+	private static def String getRelationshipAttributes(RelationEntity entity) {
 		val ArrayList<String> pnames=new ArrayList
 		if (entity.functional) pnames.add("Functional")
 		if (entity.inverseFunctional) pnames.add("InverseFunctional")
@@ -419,10 +457,22 @@ class Oml2Bikeshed {
 		pnames.join(", ")
 	}
 	
-	private def String toBikeshedReference(Ontology scope, Member member) 
+	private static def String toBikeshedReference(Ontology scope, Member member) 
 	'''<a spec="«member.ontology.iri»" lt="«member.name»">«member.getReferenceName(scope)»</a>'''
 	
-	private def String getPlainDescription(Member member) {
+	private static def String toBikeshedPropertyValue(Ontology scope, PropertyValueAssertion assertion) {
+		val valueText = switch (assertion) {
+			ScalarPropertyValueAssertion: assertion.value.literalValue
+			StructuredPropertyValueAssertion: '''
+				«FOR subAssertion : assertion.value.ownedPropertyValues»
+				 * «scope.toBikeshedPropertyValue(subAssertion)»
+				«ENDFOR»
+			'''
+		}
+		''' * «scope.toBikeshedReference(assertion.property)» «valueText»'''
+	}
+	
+	private static def String getPlainDescription(Member member) {
 		val desc=member.description
 		if (desc.startsWith("http")) ""
 		else 
@@ -433,7 +483,7 @@ class Oml2Bikeshed {
 	 * Tricky bit: if description starts with a url we treat it as an
 	 * external definition.
 	 */
-	private def String getSectionHeader(Member member) {
+	private static def String getSectionHeader(Member member) {
 		val desc=member.description
 
 		if (desc.startsWith("http"))
@@ -442,36 +492,32 @@ class Oml2Bikeshed {
 		'''## <dfn>«member.name»</dfn> ## {#«member.name.toFirstUpper»}'''
 	}
 	
-	private def String getTitle(Ontology ontology) {
+	private static def String getTitle(Ontology ontology) {
 		ontology.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/title") ?: ontology.prefix
 	}
 	
-	private def String getDescription(AnnotatedElement element) {
+	private static def String getDescription(AnnotatedElement element) {
 		element.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/description") ?: ""
 	}
 	
-	private def String getCreator(AnnotatedElement element) {
+	static def String getCreator(AnnotatedElement element) {
 		element.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/creator") ?: "Unknown"
 	}
 
-	private def String getCopyright(AnnotatedElement element) {
+	static def String getCopyright(AnnotatedElement element) {
 		(element.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/rights") ?: "").replaceAll('\n', '')
 	}
 	
-	private def String getComment(AnnotatedElement element) {
+	private static def String getComment(AnnotatedElement element) {
 		element.getAnnotationLexicalValue("http://www.w3.org/2000/01/rdf-schema#comment") ?: ""
 	}
 	
-	private def String getComment(Reference reference) {
-		reference.getAnnotationLexicalValue("http://www.w3.org/2000/01/rdf-schema#comment") ?: ""
-	}
-
-	private def String getReferenceName(Member member, Ontology ontology) {
+	private static def String getReferenceName(Member member, Ontology ontology) {
 		val localName = member.getNameIn(ontology)
 		localName ?: member.abbreviatedIri
 	}
 	
-	private dispatch def String getPropertyDescription(ScalarProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
+	private dispatch static def String getPropertyDescription(ScalarProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
 		val baseDescription = '''<a spec="«context.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
 		
 		val restrictionDescriptions = restrictions
@@ -511,7 +557,7 @@ class Oml2Bikeshed {
 		}
 	}
 	
-	private dispatch def String getPropertyDescription(StructuredProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
+	private static dispatch def String getPropertyDescription(StructuredProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
 		val baseDescription = '''<a spec="«context.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
 		
 		val restrictionDescriptions = restrictions
@@ -551,7 +597,7 @@ class Oml2Bikeshed {
 		}
 	}
 	
-	private def Entity getRestrictedType(Relation relation, Entity baseType, Ontology context, Iterable<RelationRestrictionAxiom> restrictions) {
+	private static def Entity getRestrictedType(Relation relation, Entity baseType, Ontology context, Iterable<RelationRestrictionAxiom> restrictions) {
 		val restriction = restrictions
 			.filter(RelationRangeRestrictionAxiom)
 			.filter[kind == RangeRestrictionKind::ALL && it.relation == relation]
@@ -564,7 +610,7 @@ class Oml2Bikeshed {
 		}
 	}
 	
-	private def String noteRelationRestrictions(Ontology context, Relation relation, Iterable<RelationRestrictionAxiom> restrictions) {
+	private static def String noteRelationRestrictions(Ontology context, Relation relation, Iterable<RelationRestrictionAxiom> restrictions) {
 		if (relation !== null) {
 			val description = restrictions
 				.filter[it.relation == relation]

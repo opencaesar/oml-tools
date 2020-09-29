@@ -185,7 +185,7 @@ class Oml2BikeshedApp {
 		// create the index file as bikeshed spec
 		val indexFile = new File(outputFolderPath+File.separator+'index.bs')
 		val indexContents = new StringBuffer
-		indexContents.append(Oml2Index.addHeader)
+		indexContents.append(Oml2Index.addHeader(publishUrl, Oml2Bikeshed.getCreator(rootOntology), Oml2Bikeshed.getCopyright(rootOntology)))
 		var index = 1
 		
 		val groupsByDomain = new LinkedHashMap<String, Oml2Index.Group>
