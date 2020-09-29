@@ -19,6 +19,8 @@ public class OmlMergeTask extends DefaultTask {
     
     public File outputCatalogFolder;
     
+    public boolean generateOutputCatalog;
+
     public boolean debug;
 
     @TaskAction
@@ -45,6 +47,9 @@ public class OmlMergeTask extends DefaultTask {
 		if (outputCatalogFolder != null) {
 			args.add("-o");
 			args.add(outputCatalogFolder.getAbsolutePath());
+		}
+		if (generateOutputCatalog) {
+			args.add("-g");
 		}
 		if (debug) {
 			args.add("-d");

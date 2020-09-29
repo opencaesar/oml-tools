@@ -55,16 +55,22 @@ public class OmlMergeApp {
     private String outputFolderPath = null;
 
     @Parameter(
-            names = {"-d", "--debug"},
-            description = "Shows debug logging statements",
+            names = {"--generate-output-catalog", "-g"},
+            description = "Generate a catalog file in the output folder path",
             order = 5)
+    private boolean generateOutputCatalog;
+
+    @Parameter(
+            names = {"--debug", "-d"},
+            description = "Shows debug logging statements",
+            order = 6)
     private boolean debug;
 
     @Parameter(
             names = {"--help", "-h"},
             description = "Displays summary of options",
             help = true,
-            order = 6)
+            order = 7)
     private boolean help;
 
     private final Logger LOGGER = Logger.getLogger(OmlMergeApp.class);
@@ -105,15 +111,17 @@ public class OmlMergeApp {
         File outputFolder = new File(outputFolderPath);
         outputFolder.mkdirs();
 
-        File outputCatalogFile = outputFolder.toPath().resolve("oml.catalog.xml").toFile();
-        BufferedWriter bw = new BufferedWriter(new FileWriter(outputCatalogFile));
-        bw.write(
-                "<?xml version='1.0'?>\n" +
-                        "<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"public\">\n" +
-                        "\t<rewriteURI uriStartString=\"http://\" rewritePrefix=\"./\" />\n" +
-                        "</catalog>"
-        );
-        bw.close();
+        if (generateOutputCatalog) {
+	        File outputCatalogFile = outputFolder.toPath().resolve("oml.catalog.xml").toFile();
+	        BufferedWriter bw = new BufferedWriter(new FileWriter(outputCatalogFile));
+	        bw.write(
+	                "<?xml version='1.0'?>\n" +
+	                        "<catalog xmlns=\"urn:oasis:names:tc:entity:xmlns:xml:catalog\" prefer=\"public\">\n" +
+	                        "\t<rewriteURI uriStartString=\"http://\" rewritePrefix=\"./\" />\n" +
+	                        "</catalog>"
+	        );
+	        bw.close();
+        }
 
         List<InputFiles> allInputs = new ArrayList<>();
 
