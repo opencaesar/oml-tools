@@ -8,18 +8,23 @@ import com.google.common.io.CharStreams
 import io.opencaesar.oml.Member
 import io.opencaesar.oml.Ontology
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
+import io.opencaesar.oml.util.OmlCatalog
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStreamReader
+import java.net.URL
 import java.util.ArrayList
 import java.util.Collection
 import java.util.HashMap
+import java.util.LinkedHashMap
+import java.util.List
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.log4j.xml.DOMConfigurator
+import org.apache.xml.resolver.Catalog
 import org.eclipse.emf.common.util.Diagnostic
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.EObject
@@ -29,10 +34,14 @@ import org.eclipse.emf.ecore.util.EcoreUtil
 import org.eclipse.xtext.resource.XtextResourceSet
 
 import static extension io.opencaesar.oml.util.OmlRead.*
-import io.opencaesar.oml.util.OmlCatalog
-import java.util.LinkedHashMap
 
 class Oml2BikeshedApp {
+
+	val static OML = "oml"
+	
+	val static OMLXMI = "omlxmi"
+	
+	val static omlExtensions = #[OML, OMLXMI]
 	
 	@Parameter(
 		names=#["--input-catalog-path","-i"], 
@@ -45,7 +54,7 @@ class Oml2BikeshedApp {
 	@Parameter(
 		names=#["--root-ontology-iri","-r"], 
 		description="Root OML ontology IRI (Required)",
-		required=true, 
+		required=false, 
 		order=2)
 	package String rootOntologyIri = null
 
@@ -93,7 +102,7 @@ class Oml2BikeshedApp {
 		help=true, 
 		order=8)
 	package boolean force
-	
+		
 	val LOGGER = LogManager.getLogger(Oml2BikeshedApp)
 	
 	val logoString = '''<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml/images/oml.svg"></a>'''
@@ -144,10 +153,20 @@ class Oml2BikeshedApp {
 		val inputResourceSet = new XtextResourceSet
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 		
-		
-		var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
-		val rootOntology = inputResourceSet.getResource(rootUri, true).contents.filter(Ontology).head
-		val inputOntologies = (#[rootOntology] + rootOntology.allImportsWithSource.map[importedOntology]).toSet.sortBy[iri]
+		var List<Ontology> inputOntologies = new ArrayList<Ontology> 
+		if (rootOntologyIri !== null) {
+			var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
+			val rootOntology = inputResourceSet.getResource(rootUri, true).contents.filter(Ontology).head
+			inputOntologies += (#[rootOntology] + rootOntology.allImportsWithSource.map[importedOntology]).toSet.sortBy[iri]
+		} else {
+			val omlFiles = collectInputOmlFiles(inputCatalog)
+			for (omlFile : omlFiles) {
+				val ontologyUri = URI.createFileURI(omlFile.absolutePath)
+				var ontology = inputResourceSet.getResource(ontologyUri, true).contents.filter(Ontology).head
+				inputOntologies += ontology  
+			}
+			inputOntologies = inputOntologies.sortBy[iri]
+		}
 		
 		val outputFiles = new HashMap<File, String>
 
@@ -163,7 +182,6 @@ class Oml2BikeshedApp {
 		}
 
 		// create the script file
-		val scriptFile = new File(outputFolderPath+File.separator+'publish.sh').canonicalFile
 		val scriptContents = new StringBuffer
 		val forceToken=if(force) "-f " else ""
 		scriptContents.append('''
@@ -172,7 +190,7 @@ class Oml2BikeshedApp {
 		scriptContents.append('''
 			bikeshed «forceToken»spec index.bs
 		''')
-		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
+		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
@@ -180,16 +198,19 @@ class Oml2BikeshedApp {
 				bikeshed «forceToken»spec «relativePath».bs
 			''')
 		}
-		outputFiles.put(scriptFile, scriptContents.toString)
+		val publishShFile = new File(outputFolderPath+File.separator+'publish.sh').canonicalFile
+		outputFiles.put(publishShFile, scriptContents.toString)
+		val publishBatFile = new File(outputFolderPath+File.separator+'publish.bat').canonicalFile
+		outputFiles.put(publishBatFile, scriptContents.toString)
 
 		// create the index file as bikeshed spec
 		val indexFile = new File(outputFolderPath+File.separator+'index.bs')
 		val indexContents = new StringBuffer
-		indexContents.append(Oml2Index.addHeader(publishUrl, Oml2Bikeshed.getCreator(rootOntology), Oml2Bikeshed.getCopyright(rootOntology)))
+		indexContents.append(Oml2Index.addHeader(publishUrl))
 		var index = 1
 		
 		val groupsByDomain = new LinkedHashMap<String, Oml2Index.Group>
-		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
+		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
@@ -217,7 +238,7 @@ class Oml2BikeshedApp {
 		}
 
 		// create the ontology files
-		for (inputResource : inputResourceSet.resources.filter[URI.fileExtension == 'oml'].sortBy[URI.toString]) {
+		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
@@ -271,21 +292,35 @@ class Oml2BikeshedApp {
 
 	// Utility methods
 
-	def Collection<File> collectInputFiles(File directory) {
+	def Collection<File> collectInputOmlFiles(OmlCatalog catalog) {
 		val files = new ArrayList<File>
-		for (file : directory.listFiles()) {
-			if (file.isFile) {
-				val ext = getFileExtension(file)
-				if (ext == "oml") {
-					files.add(file)
-				}
-			} else if (file.isDirectory) {
-				files.addAll(collectInputFiles(file))
-			}
+		for (entry : catalog.entries.filter[entryType == Catalog.REWRITE_URI]) {
+			val folderPath = entry.getEntryArg(1)
+			val folder = new File(URI.createURI(folderPath).toFileString)
+			files.addAll(collectInputOmlFiles(folder))
+		}
+		for (subCatalogPath : catalog.nestedCatalogs) {
+			val subCatalog = OmlCatalog.create(new URL(subCatalogPath))
+			files.addAll(collectInputOmlFiles(subCatalog))
 		}
 		return files
 	}
 	
+	def Collection<File> collectInputOmlFiles(File folder) {
+		val files = new ArrayList<File>
+		for (file : folder.listFiles()) {
+			if (file.isFile) {
+				val ext = getFileExtension(file)
+				if (omlExtensions.contains(ext)) {
+					files.add(file)
+				}
+			} else if (file.isDirectory) {
+				files.addAll(collectInputOmlFiles(file))
+			}
+		}
+		return files
+	}
+
 	static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
 		val resolved = URI.createURI(catalog.resolveURI(rootOntologyIri))
 		
@@ -294,11 +329,11 @@ class Oml2BikeshedApp {
 			if (new File(filename).isFile) {
 				return resolved
 			}
-			if (new File(filename + '.oml').isFile) {
-				return URI.createURI(resolved.toString + '.oml')
+			if (new File(filename+'.'+OML).isFile) {
+				return URI.createFileURI(filename+'.'+OML)
 			}
-			if (new File(filename + '.omlxmi').isFile) {
-				return URI.createURI(resolved.toString + '.omlxmi')
+			if (new File(filename+'.'+OMLXMI).isFile) {
+				return URI.createFileURI(filename+'.'+OMLXMI)
 			}
 		}
 		

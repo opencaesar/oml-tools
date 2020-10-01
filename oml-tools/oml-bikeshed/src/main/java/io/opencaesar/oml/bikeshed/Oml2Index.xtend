@@ -12,7 +12,7 @@ import java.util.ArrayList
  */
 class Oml2Index {
 
-	static def String addHeader(String url, String editor, String copyright) '''
+	static def String addHeader(String url) '''
 		<pre class='metadata'>
 		Title: OML Ontologies Index
 		Shortname: Index
@@ -20,8 +20,8 @@ class Oml2Index {
 		Status: LS-COMMIT
 		ED: «url»
 		Repository: «url»
-		Editor: «editor»
-		!Copyright: «copyright»
+		Editor: (see individual ontologies)
+		!Copyright: (see individual ontologies)
 		Boilerplate: copyright no, conformance no
 		Local Boilerplate: logo yes
 		Markup Shorthands: markdown yes

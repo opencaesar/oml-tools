@@ -19,8 +19,11 @@ gradlew.bat owl-bikeshed:run --args="..."
 Args:
 ```
 --input-catalog-path | -i path/to/input/oml/catalog [Required]
+--root-ontology-iri | -r iri-of-root-ontology [Optional]
 --output-folder-path | -o path/to/output/bikeshed/folder [Required]
 --publish-url | -u URL where the Bikeshed spec will be published [Required]
 ```
+
+Note:when '-r' is specified, only the root ontology and its import closure will be included; otherwise the entire catalog will be include
 
 ## [Run as Gradle Task](../oml-bikeshed-gradle/README.md)
