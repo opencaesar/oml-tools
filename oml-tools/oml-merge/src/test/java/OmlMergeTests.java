@@ -1,5 +1,8 @@
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -140,6 +143,18 @@ public class OmlMergeTests {
         Assert.assertTrue(differences.size() == 1);
         Set<Path> resultPaths = Files.walk(test4_output).collect(Collectors.toSet());
         Assert.assertTrue(resultPaths.size() == 7);
+    }
+    
+    @Test
+    public void testNormalizedHash() throws IOException {
+        Assert.assertEquals(normalizedHash("a"), normalizedHash("a"));
+        Assert.assertNotEquals(normalizedHash("a"), normalizedHash("b"));
+        Assert.assertEquals(normalizedHash("\na\nb\n"), normalizedHash("\r\na\r\nb\r\n"));
+        Assert.assertEquals(normalizedHash("\na\nb\n"), normalizedHash("\ra\rb\r"));
+    }
+    
+    private ByteBuffer normalizedHash(String input) throws IOException {
+        return ByteBuffer.wrap(OmlMergeApp.normalizedHash(new ByteArrayInputStream(input.getBytes(StandardCharsets.UTF_8))));
     }
 
     public static void deleteDirectoryRecursively(File dir) {
