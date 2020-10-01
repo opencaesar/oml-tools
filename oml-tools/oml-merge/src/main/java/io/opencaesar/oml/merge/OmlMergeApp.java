@@ -1,5 +1,6 @@
 package io.opencaesar.oml.merge;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,15 +12,16 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.zip.CRC32;
-import java.util.zip.CheckedInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -185,7 +187,7 @@ public class OmlMergeApp {
                     uniqueFiles.put(f.relativePath, f);
                 } else {
                     UniqueFile uf = uniqueFiles.get(f.relativePath);
-                    if (uf.extension.equals(f.extension) && uf.checksum == f.checksum)
+                    if (uf.extension.equals(f.extension) && Arrays.equals(uf.hash, f.hash))
                         uf.inputs.add(inputFiles.input);
                     else {
                         uf.differentInputs.add(inputFiles.input);
@@ -218,16 +220,31 @@ public class OmlMergeApp {
 
         return differences;
     }
-
-    public static long fileChecksum(File f) throws IOException {
-        FileInputStream fileInput = new FileInputStream(f);
-        byte[] buffer = new byte[1024];
-        CheckedInputStream cis = new CheckedInputStream(fileInput, new CRC32());
-        while (cis.read(buffer, 0, buffer.length) > 0) {
+    
+    /**
+     * Returns the SHA-256 hash of the contents of the given InputStream with CR and CRLF
+     * line endings normalized to LF.
+     */
+    public static byte[] normalizedHash(InputStream is) throws IOException {
+        try (BufferedInputStream bis = new BufferedInputStream(is)) {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            int b;
+            while ((b = bis.read()) != -1) {
+                if (b == '\r') {
+                    // Replace CR with LF
+                    b = '\n';
+                    // Ignore LF immediately after CR
+                    bis.mark(1);
+                    if (bis.read() != '\n') {
+                        bis.reset();
+                    }
+                }
+                digest.update((byte) b);
+            }
+            return digest.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new AssertionError(e);
         }
-        long value = cis.getChecksum().getValue();
-        cis.close();
-        return value;
     }
 
     public static Collection<UniqueFile> collectOMLUniqueFiles(File directory) throws IOException {
@@ -290,13 +307,15 @@ public class OmlMergeApp {
     public static class PathAndExtension {
         public final Path absolutePath;
         public final String extension;
-        public long checksum;
+        public byte[] hash;
 
         public PathAndExtension(File file, String extension) throws IOException {
             String path = file.getAbsolutePath();
             this.extension = extension;
             this.absolutePath = new File(path.substring(0, path.length() - 1 - extension.length())).toPath();
-            this.checksum = fileChecksum(file);
+            try (FileInputStream fis = new FileInputStream(file)) {
+                this.hash = normalizedHash(fis);
+            }
         }
     }
 
@@ -304,7 +323,7 @@ public class OmlMergeApp {
         public final Path top;
         public final Path relativePath;
         public final String extension;
-        public final long checksum;
+        public final byte[] hash;
         public final List<String> inputs = new ArrayList<>();
         public final List<String> differentInputs = new ArrayList<>();
 
@@ -312,7 +331,7 @@ public class OmlMergeApp {
             this.top = top;
             this.relativePath = top.relativize(pe.absolutePath);
             this.extension = pe.extension;
-            this.checksum = pe.checksum;
+            this.hash = pe.hash;
         }
 
         public String toError() {
