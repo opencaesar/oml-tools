@@ -38,10 +38,6 @@ subprojects {
 	sourceCompatibility = '1.8'
 	targetCompatibility = '1.8'
 
-	configurations.all {
-		exclude group: 'asm'
-	}
-
 	task createVersion {
 	    doLast {
 	        def version = project.version.toString()
