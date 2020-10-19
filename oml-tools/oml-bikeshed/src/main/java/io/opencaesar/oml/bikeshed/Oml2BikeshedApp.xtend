@@ -183,19 +183,19 @@ class Oml2BikeshedApp {
 
 		// create the script file
 		val scriptContents = new StringBuffer
-		val forceToken=if(force) "-f " else ""
+		val forceToken=if(force) "-f" else "--die-on=link-error"
 		scriptContents.append('''
 			cd "$(dirname "$0")"
 		''')
 		scriptContents.append('''
-			bikeshed «forceToken»spec index.bs
+			bikeshed «forceToken» spec index.bs
 		''')
 		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
 			val inputFile = new File(inputResource.URI.toFileString)
 			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
 			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
 			scriptContents.append('''
-				bikeshed «forceToken»spec «relativePath».bs
+				bikeshed «forceToken» spec «relativePath».bs
 			''')
 		}
 		val publishShFile = new File(outputFolderPath+File.separator+'publish.sh').canonicalFile

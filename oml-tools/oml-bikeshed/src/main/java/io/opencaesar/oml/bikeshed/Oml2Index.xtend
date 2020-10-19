@@ -24,7 +24,7 @@ class Oml2Index {
 		!Copyright: (see individual ontologies)
 		Boilerplate: copyright no, conformance no
 		Local Boilerplate: logo yes
-		Markup Shorthands: markdown yes
+		Markup Shorthands: markdown yes, css no
 		Use Dfn Panels: yes
 		Abstract: Documentation generated from OML ontologies
 		Favicon: https://opencaesar.github.io/assets/img/oml.png

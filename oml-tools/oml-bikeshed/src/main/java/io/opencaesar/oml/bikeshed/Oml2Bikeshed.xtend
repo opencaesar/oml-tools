@@ -120,7 +120,7 @@ class Oml2Bikeshed {
 		!Copyright: «ontology.copyright»
 		Boilerplate: copyright no, conformance no
 		Local Boilerplate: logo yes
-		Markup Shorthands: markdown yes
+		Markup Shorthands: markdown yes, css no
 		Use Dfn Panels: yes
 		External Infotrees: anchors.bsdata yes
 		Abstract: «ontology.description.replaceAll('\n', '\n ')»
@@ -518,7 +518,7 @@ class Oml2Bikeshed {
 	}
 	
 	private dispatch static def String getPropertyDescription(ScalarProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
-		val baseDescription = '''<a spec="«context.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
+		val baseDescription = '''<a spec="«property.ontology.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
 		
 		val restrictionDescriptions = restrictions
 			.filter(ScalarPropertyRestrictionAxiom)
@@ -558,7 +558,7 @@ class Oml2Bikeshed {
 	}
 	
 	private static dispatch def String getPropertyDescription(StructuredProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
-		val baseDescription = '''<a spec="«context.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
+		val baseDescription = '''<a spec="«property.ontology.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
 		
 		val restrictionDescriptions = restrictions
 			.filter(StructuredPropertyRestrictionAxiom)
