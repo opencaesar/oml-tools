@@ -12,7 +12,7 @@ buildscript {
 
 subprojects {
 	group = 'io.opencaesar.oml'
-	version = '0.7.12'
+	version = '0.7.13'
 
 	ext.versions = [
 	    oml: '0.7.+',

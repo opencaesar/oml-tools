@@ -59,6 +59,7 @@ import io.opencaesar.oml.VocabularyBundleExtension
 import io.opencaesar.oml.VocabularyBundleInclusion
 import io.opencaesar.oml.VocabularyExtension
 import java.util.ArrayList
+import java.util.Collection
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.Resource
 
@@ -410,7 +411,6 @@ class Oml2Bikeshed {
 		«val types = switch (instance) {
 			ConceptInstance: instance.findTypeAssertions.map[type].sortBy[name]
 			RelationInstance: instance.findTypeAssertions.map[type].sortBy[name]
-			default: #[]
 		}»
 		«val scope = instance.ontology»
 		
@@ -517,7 +517,7 @@ class Oml2Bikeshed {
 		localName ?: member.abbreviatedIri
 	}
 	
-	private dispatch static def String getPropertyDescription(ScalarProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
+	private dispatch static def String getPropertyDescription(ScalarProperty property, Ontology context, Collection<PropertyRestrictionAxiom> restrictions) {
 		val baseDescription = '''<a spec="«property.ontology.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
 		
 		val restrictionDescriptions = restrictions
@@ -557,7 +557,7 @@ class Oml2Bikeshed {
 		}
 	}
 	
-	private static dispatch def String getPropertyDescription(StructuredProperty property, Ontology context, Iterable<PropertyRestrictionAxiom> restrictions) {
+	private static dispatch def String getPropertyDescription(StructuredProperty property, Ontology context, Collection<PropertyRestrictionAxiom> restrictions) {
 		val baseDescription = '''<a spec="«property.ontology.iri»" lt="«property.name»">«property.getReferenceName(context)»</a>'''
 		
 		val restrictionDescriptions = restrictions
@@ -597,7 +597,7 @@ class Oml2Bikeshed {
 		}
 	}
 	
-	private static def Entity getRestrictedType(Relation relation, Entity baseType, Ontology context, Iterable<RelationRestrictionAxiom> restrictions) {
+	private static def Entity getRestrictedType(Relation relation, Entity baseType, Ontology context, Collection<RelationRestrictionAxiom> restrictions) {
 		val restriction = restrictions
 			.filter(RelationRangeRestrictionAxiom)
 			.filter[kind == RangeRestrictionKind::ALL && it.relation == relation]
@@ -610,7 +610,7 @@ class Oml2Bikeshed {
 		}
 	}
 	
-	private static def String noteRelationRestrictions(Ontology context, Relation relation, Iterable<RelationRestrictionAxiom> restrictions) {
+	private static def String noteRelationRestrictions(Ontology context, Relation relation, Collection<RelationRestrictionAxiom> restrictions) {
 		if (relation !== null) {
 			val description = restrictions
 				.filter[it.relation == relation]
