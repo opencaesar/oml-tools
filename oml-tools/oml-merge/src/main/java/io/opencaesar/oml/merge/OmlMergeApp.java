@@ -126,7 +126,7 @@ public class OmlMergeApp {
         outputFolder.mkdirs();
 
         if (generateOutputCatalog) {
-	        File outputCatalogFile = outputFolder.toPath().resolve("oml.catalog.xml").toFile();
+	        File outputCatalogFile = outputFolder.toPath().resolve("catalog.xml").toFile();
 	        BufferedWriter bw = new BufferedWriter(new FileWriter(outputCatalogFile));
 	        bw.write(
 	                "<?xml version='1.0'?>\n" +
