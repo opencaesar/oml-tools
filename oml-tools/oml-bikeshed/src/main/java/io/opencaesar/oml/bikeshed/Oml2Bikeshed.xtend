@@ -73,7 +73,7 @@ import static extension io.opencaesar.oml.util.OmlSearch.*
  * To produce documentation for a given ontology in OML we use Bikeshed as an intermediate form
  * that can be leveraged to produce the html output from a simpler Markdown specification.
  * 
- * See: OML Reference https://opencaesar.github.io/oml-spec/
+ * See: OML Reference https://opencaesar.github.io/oml/
  * See: Bikeshed Reference https://tabatkins.github.io/bikeshed/
  * 
  */
