@@ -277,7 +277,7 @@ class Oml2BikeshedApp {
 		return files
 	}
 	
-	def Collection<File> collectInputOmlFiles(File path) {
+	def List<File> collectInputOmlFiles(File path) {
 		val files = if (path.isDirectory()) {
 			Arrays.asList(path.listFiles())
 		} else {
@@ -290,7 +290,7 @@ class Oml2BikeshedApp {
 			} else if (file.isFile) {
 				val ext = getFileExtension(file)
 				if (omlExtensions.contains(ext)) {
-					files.add(file)
+					omlFiles.add(file)
 				}
 			} else { // must be a file name with no extension
 				for (String ext : omlExtensions) {
@@ -301,7 +301,7 @@ class Oml2BikeshedApp {
 				}
 			}
 		}
-		return files
+		return omlFiles
 	}
 
 	static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
