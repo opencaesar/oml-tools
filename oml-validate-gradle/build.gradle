@@ -1,0 +1,7 @@
+ext.title = 'OML Validate Gradle'
+description = 'A gradle interface to OML Validate'
+
+dependencies {
+	implementation gradleApi()
+    implementation project (':oml-validate')
+}

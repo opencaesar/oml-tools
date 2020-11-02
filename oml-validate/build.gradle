@@ -1,0 +1,14 @@
+apply plugin: 'application'
+
+ext.title = 'Oml Validate'
+description = 'A tool to validate a set of Oml ontologies'
+mainClassName = 'io.opencaesar.oml.validate.OmlValidateApp'
+applicationName = 'oml-validate'
+
+dependencies {
+    implementation 'com.beust:jcommander:1.72'
+
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
+
+    testImplementation 'junit:junit:4.12'
+}
