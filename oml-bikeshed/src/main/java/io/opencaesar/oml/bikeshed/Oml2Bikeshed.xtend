@@ -239,15 +239,41 @@ class Oml2Bikeshed {
 			*Target:*
 			«val target = entity.target»
 			<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>
+			«IF entity.forwardRelation !== null»
 
 			*Forward Relation:*
-			<dfn attribute for=«entity.name»>«entity.forward.name»</dfn>
-			«entity.forward.description»
-			«IF entity.reverse !== null»
+			<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
+			«entity.forwardRelation.description»
+			«ENDIF»
+			«IF entity.reverseRelation !== null»
 
 			*Reverse Relation:*
-			<dfn attribute for=«entity.name»>«entity.reverse.name»</dfn>
-			«entity.reverse.description»
+			<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
+			«entity.reverseRelation.description»
+			«ENDIF»
+			«IF entity.sourceRelation !== null»
+
+			*Source Relation:*
+			<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
+			«entity.sourceRelation.description»
+			«ENDIF»
+			«IF entity.inverseSourceRelation !== null»
+
+			*Inverse Source Relation:*
+			<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
+			«entity.inverseSourceRelation.description»
+			«ENDIF»
+			«IF entity.targetRelation !== null»
+
+			*Target Relation:*
+			<dfn attribute for=«entity.name»>«entity.targetRelation.name»</dfn>
+			«entity.targetRelation.description»
+			«ENDIF»
+			«IF entity.inverseTargetRelation !== null»
+
+			*Inverse Target Relation:*
+			<dfn attribute for=«entity.name»>«entity.inverseTargetRelation.name»</dfn>
+			«entity.inverseTargetRelation.description»
 			«ENDIF»
 		«ENDIF»
 		
@@ -285,24 +311,24 @@ class Oml2Bikeshed {
 		«val relationRestrictions = entity.findRelationRestrictions.toList »
 
 		«val domainRelationsDirect = entity.findRelationEntitiesWithSource»
-		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation).map[it.entity] »
+		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation).map[it.relationEntity] »
 		«val domainRelations = (domainRelationsDirect + domainRelationsWithRangeRestrictions).toSet »
 		
 		«IF !domainRelations.empty »
 		*Relations with domain:*
-			«FOR dr : domainRelations.sortBy[name]»
-			* «entity.name» «entity.ontology.toBikeshedReference(dr.forward)» «entity.ontology.toBikeshedReference(getRestrictedType(dr.forward, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forward, relationRestrictions)»
+			«FOR dr : domainRelations.filter[forwardRelation !== null].sortBy[name]»
+			* «entity.name» «entity.ontology.toBikeshedReference(dr.forwardRelation)» «entity.ontology.toBikeshedReference(getRestrictedType(dr.forwardRelation, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forwardRelation, relationRestrictions)»
 			«ENDFOR»
 		«ENDIF»
 		
 		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget»
-		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.entity] »
+		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.relationEntity] »
 		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet »
 				
 		«IF !rangeRelations.empty »
 		*Relations with range:*
 			«FOR dr : rangeRelations.sortBy[name]»
-			* «entity.ontology.toBikeshedReference(getRestrictedType(dr.reverse, dr.source, entity.ontology, relationRestrictions))» «entity.ontology.toBikeshedReference(dr.forward)» «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverse, relationRestrictions)»
+			* «entity.ontology.toBikeshedReference(getRestrictedType(dr.reverseRelation, dr.source, entity.ontology, relationRestrictions))» «entity.ontology.toBikeshedReference(dr.forwardRelation)» «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverseRelation, relationRestrictions)»
 			«ENDFOR»
 		«ENDIF»
 		
@@ -418,11 +444,16 @@ class Oml2Bikeshed {
 		*Types:*
 		«types.map[scope.toBikeshedReference(it)].join(', ')»
 		«ENDIF»
-		
+
 		«IF instance instanceof RelationInstance»
-			*Source:* «scope.toBikeshedReference(instance.source)»
-			
-			*Target:* «scope.toBikeshedReference(instance.target)»
+			«FOR source : instance.sources»
+			*Source:* «scope.toBikeshedReference(source)»
+
+			«ENDFOR»
+			«FOR target : instance.targets»
+			*Target:* «scope.toBikeshedReference(target)»
+
+			«ENDFOR»
 		«ENDIF»
 		
 		«val propertyValueAssertions = instance.findPropertyValueAssertions.sortBy[property.name]»
