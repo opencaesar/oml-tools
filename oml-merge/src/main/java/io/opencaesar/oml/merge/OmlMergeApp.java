@@ -365,7 +365,7 @@ public class OmlMergeApp {
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
             if (!file.getName().endsWith(".zip") || !file.exists()) {
-                throw new ParameterException("Parameter " + name + " should be a path to an existing ZIP archive file.");
+                throw new ParameterException("Value " + value + " is not a path to an existing ZIP archive file.");
             }
         }
     }
@@ -375,7 +375,7 @@ public class OmlMergeApp {
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
             if (!file.exists() || !file.isDirectory()) {
-                throw new ParameterException("Parameter " + name + " should be a path to an existing folder.");
+                throw new ParameterException("Value " + value + " is not a path to an existing folder.");
             }
         }
     }
@@ -385,7 +385,7 @@ public class OmlMergeApp {
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
             if (!file.getName().endsWith("catalog.xml") || !file.exists()) {
-                throw new ParameterException("Parameter " + name + " should be an existing catalog.xml path");
+                throw new ParameterException("Value " + value + " is not a path to an existing catalog.xml");
             }
         }
     }
