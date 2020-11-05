@@ -130,8 +130,8 @@ class Oml2Bikeshed {
 	private def dispatch String toDiv(Vocabulary vocabulary) '''
 		«vocabulary.toNamespace("# Namespace # {#Namespace}")»			
 		«vocabulary.toImport("# Imports # {#Extensions}", VocabularyExtension)»
-		«vocabulary.toStatement("# Concepts # {#concepts}", Concept)»
 		«vocabulary.toStatement("# Aspects # {#Aspects}", Aspect)»
+		«vocabulary.toStatement("# Concepts # {#concepts}", Concept)»
 		«vocabulary.toStatement("# Relation Entities # {#Relations}", RelationEntity)»
 		«vocabulary.toStatement("# Structures # {#Structures}", Structure)»
 		«vocabulary.toStatement("# Scalars # {#Scalars}", #[FacetedScalar, EnumeratedScalar])»
@@ -181,11 +181,11 @@ class Oml2Bikeshed {
 		«ENDIF»
 	'''
 	
-	private def <T extends Element> String toStatement(Ontology ontology, String heading, Class<T>...types) '''
+	private def <T extends Member> String toStatement(Ontology ontology, String heading, Class<T>...types) '''
 		«val elements = types.map[ontology.statements.filter(it)].flatten»
 		«IF !elements.empty»
 		«heading»
-		«FOR element : elements»
+		«FOR element : elements.sortBy[name]»
 		«element.toBikeshed»
 		
 		«ENDFOR»
@@ -297,38 +297,41 @@ class Oml2Bikeshed {
 		«val properties = (propertiesDirect + propertiesWithRestrictions).toSet»
 		
 		«IF !properties.empty »
-		*Properties with domain:*
-		«properties.sortBy[name].map[getPropertyDescription(entity.ontology, propertyRestrictions)].join(', ')»
+		*Properties:*
+		«FOR property : properties.sortBy[name]»
+			* «property.getPropertyDescription(entity.ontology, propertyRestrictions)»
+		«ENDFOR»
 		«ENDIF»
 
 		«val keys = entity.findKeys»
 		«IF !keys.empty»
+		*Keys:*
 		«FOR key : keys»
 			* Key «key.properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
 		«ENDFOR»
 		«ENDIF»
 		
-		«val relationRestrictions = entity.findRelationRestrictions.toList »
+		«val relationRestrictions = entity.findRelationRestrictions»
 
 		«val domainRelationsDirect = entity.findRelationEntitiesWithSource»
 		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation).map[it.relationEntity] »
 		«val domainRelations = (domainRelationsDirect + domainRelationsWithRangeRestrictions).toSet »
 		
 		«IF !domainRelations.empty »
-		*Relations with domain:*
-			«FOR dr : domainRelations.filter[forwardRelation !== null].sortBy[name]»
-			* «entity.name» «entity.ontology.toBikeshedReference(dr.forwardRelation)» «entity.ontology.toBikeshedReference(getRestrictedType(dr.forwardRelation, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forwardRelation, relationRestrictions)»
+		*Relations with source:*
+			«FOR dr : domainRelations.sortBy[name]»
+			* «entity.name» ← «entity.ontology.toBikeshedReference(dr)» → «entity.ontology.toBikeshedReference(getRestrictedType(dr.forwardRelation, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forwardRelation, relationRestrictions)»
 			«ENDFOR»
 		«ENDIF»
 		
 		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget»
-		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.relationEntity] »
-		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet »
+		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.relationEntity]»
+		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet»
 				
 		«IF !rangeRelations.empty »
-		*Relations with range:*
+		*Relations with target:*
 			«FOR dr : rangeRelations.sortBy[name]»
-			* «entity.ontology.toBikeshedReference(getRestrictedType(dr.reverseRelation, dr.source, entity.ontology, relationRestrictions))» «entity.ontology.toBikeshedReference(dr.forwardRelation)» «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverseRelation, relationRestrictions)»
+			* «entity.ontology.toBikeshedReference(getRestrictedType(dr.reverseRelation, dr.source, entity.ontology, relationRestrictions))» ← «entity.ontology.toBikeshedReference(dr)» → «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverseRelation, relationRestrictions)»
 			«ENDFOR»
 		«ENDIF»
 		
