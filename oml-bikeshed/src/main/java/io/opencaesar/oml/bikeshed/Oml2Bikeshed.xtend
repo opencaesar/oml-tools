@@ -107,6 +107,16 @@ class Oml2Bikeshed {
 		a[data-link-type=biblio] {
 		    white-space: pre-wrap;
 		}
+		table.def th {
+			white-space: nowrap;
+		}
+		table.def ul {
+			padding-left: 1em;
+		}
+		table.def dfn code {
+			font-family: sans-serif;
+			color: #005A9C;
+		}
 		</style>
 	'''
 		
@@ -226,59 +236,12 @@ class Oml2Bikeshed {
 		
 		<table class='def'>
 		«IF entity instanceof RelationEntity»
-			«val attr=entity.relationshipAttributes»
-			«IF attr !== null»
-				«defRow('Attributes', attr)»
-			«ENDIF»
-			
 			«val source = entity.source»
 			«defRow('Source', '''<a spec="«source.ontology.iri»" lt="«source.name»">«source.getReferenceName(entity.ontology)»</a>''')»
 
 			«val target = entity.target»
 			«defRow('Target', '''<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>''')»
-			
-			«IF entity.forwardRelation !== null»
-				«defRow('Forward Relation', '''
-					<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
-					«entity.forwardRelation.description»
-				''')»
-			«ENDIF»
-			
-			«IF entity.reverseRelation !== null»
-				«defRow('Reverse Relation', '''
-					<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
-					«entity.reverseRelation.description»
-				''')»
-			«ENDIF»
-			
-			«IF entity.sourceRelation !== null»
-				«defRow('Source Relation', '''
-					<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
-					«entity.sourceRelation.description»
-				''')»
-			«ENDIF»
-
-			«IF entity.targetRelation !== null»
-				«defRow('Target Relation', '''
-					<dfn attribute for=«entity.name»>«entity.targetRelation.name»</dfn>
-					«entity.targetRelation.description»
-				''')»
-			«ENDIF»
-
-			«IF entity.inverseSourceRelation !== null»
-				«defRow('Inverse Source Relation', '''
-					<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
-					«entity.inverseSourceRelation.description»
-				''')»
-			«ENDIF»
-			
-			«IF entity.inverseTargetRelation !== null»
-				«defRow('Inverse Target Relation', '''
-					<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
-					«entity.inverseSourceRelation.description»
-				''')»
-			«ENDIF»
-			
+	
 		«ENDIF»
 		
 	
@@ -290,6 +253,76 @@ class Oml2Bikeshed {
 		«val subEntities = entity.findSpecializingTerms.filter(Entity)»
 		«IF !subEntities.empty»
 			«defRow('Subtypes', subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
+		«ENDIF»
+		
+		«IF entity instanceof RelationEntity»
+		
+			«IF entity.forwardRelation !== null»
+				«defRow('Forward Relation', '''
+					<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
+					«val relationDescription = entity.forwardRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«IF entity.reverseRelation !== null»
+				«defRow('Reverse Relation', '''
+					<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
+					«val relationDescription = entity.reverseRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«IF entity.sourceRelation !== null»
+				«defRow('Source Relation', '''
+					<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
+					«val relationDescription = entity.forwardRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+
+			«IF entity.targetRelation !== null»
+				«defRow('Target Relation', '''
+					<dfn attribute for=«entity.name»>«entity.targetRelation.name»</dfn>
+					«val relationDescription = entity.targetRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+
+			«IF entity.inverseSourceRelation !== null»
+				«defRow('Inverse Source Relation', '''
+					<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
+					«val relationDescription = entity.inverseSourceRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«IF entity.inverseTargetRelation !== null»
+				«defRow('Inverse Target Relation', '''
+					<dfn attribute for=«entity.name»>«entity.inverseTargetRelation.name»</dfn>
+					«val relationDescription = entity.forwardRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«val attr=entity.relationshipAttributes»
+			«IF attr !== null»
+				«defRow('Attributes', attr)»
+			«ENDIF»
+						
+			
 		«ENDIF»
 		
 		«val propertyRestrictions = entity.findPropertyRestrictions.toList»
@@ -682,7 +715,7 @@ class Oml2Bikeshed {
 	
 	private static def String defRow(String header, String content) '''
 		<tr>
-			<th style='white-space: nowrap'>«header»</th>
+			<th>«header»</th>
 			<td>«content»</td>
 		</tr>
 	'''
