@@ -107,6 +107,16 @@ class Oml2Bikeshed {
 		a[data-link-type=biblio] {
 		    white-space: pre-wrap;
 		}
+		table.def th {
+			white-space: nowrap;
+		}
+		table.def ul {
+			padding-left: 1em;
+		}
+		table.def dfn code {
+			font-family: sans-serif;
+			color: #005A9C;
+		}
 		</style>
 	'''
 		
@@ -204,18 +214,16 @@ class Oml2Bikeshed {
 		
 		«term.plainDescription»
 		
+		<table class='def'>
 		«val superTerms = term.findSpecializedTerms»
 		«IF !superTerms.empty»
-
-		*Super terms:*
-		«superTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].join(', ')»
+			«defRow('Super terms', superTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»
 		«val subTerms = term.findSpecializingTerms»
 		«IF !subTerms.empty»
-
-		*Sub terms:*
-		«subTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].join(', ')»
-		«ENDIF»
+			«defRow('Sub terms', subTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
+		«ENDIF»		
+		</table>
 		
 	'''
 
@@ -226,68 +234,95 @@ class Oml2Bikeshed {
 		
 		«entity.plainDescription»
 		
+		<table class='def'>
 		«IF entity instanceof RelationEntity»
-			«val attr=entity.relationshipAttributes»
-			«IF attr !== null»
-			*Attributes:* «attr»
-			«ENDIF»
-			
-			*Source:*
 			«val source = entity.source»
-			<a spec="«source.ontology.iri»" lt="«source.name»">«source.getReferenceName(entity.ontology)»</a>
+			«defRow('Source', '''<a spec="«source.ontology.iri»" lt="«source.name»">«source.getReferenceName(entity.ontology)»</a>''')»
 
-			*Target:*
 			«val target = entity.target»
-			<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>
-			«IF entity.forwardRelation !== null»
-
-			*Forward Relation:*
-			<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
-			«entity.forwardRelation.description»
-			«ENDIF»
-			«IF entity.reverseRelation !== null»
-
-			*Reverse Relation:*
-			<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
-			«entity.reverseRelation.description»
-			«ENDIF»
-			«IF entity.sourceRelation !== null»
-
-			*Source Relation:*
-			<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
-			«entity.sourceRelation.description»
-			«ENDIF»
-			«IF entity.inverseSourceRelation !== null»
-
-			*Inverse Source Relation:*
-			<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
-			«entity.inverseSourceRelation.description»
-			«ENDIF»
-			«IF entity.targetRelation !== null»
-
-			*Target Relation:*
-			<dfn attribute for=«entity.name»>«entity.targetRelation.name»</dfn>
-			«entity.targetRelation.description»
-			«ENDIF»
-			«IF entity.inverseTargetRelation !== null»
-
-			*Inverse Target Relation:*
-			<dfn attribute for=«entity.name»>«entity.inverseTargetRelation.name»</dfn>
-			«entity.inverseTargetRelation.description»
-			«ENDIF»
+			«defRow('Target', '''<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>''')»
+			
 		«ENDIF»
 		
+	
 		«val superEntities = entity.findSpecializedTerms»
 		«IF !superEntities.empty»
-
-		*Supertypes:*
-		«superEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
+			«defRow('Supertypes', superEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
+		
 		«val subEntities = entity.findSpecializingTerms.filter(Entity)»
 		«IF !subEntities.empty»
+			«defRow('Subtypes', subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
+		«ENDIF»
+		
+		«IF entity instanceof RelationEntity»
+		
+			«IF entity.forwardRelation !== null»
+				«defRow('Forward Relation', '''
+					<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
+					«val relationDescription = entity.forwardRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«IF entity.reverseRelation !== null»
+				«defRow('Reverse Relation', '''
+					<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
+					«val relationDescription = entity.reverseRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«IF entity.sourceRelation !== null»
+				«defRow('Source Relation', '''
+					<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
+					«val relationDescription = entity.forwardRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
 
-		*Subtypes:*
-		«subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
+			«IF entity.targetRelation !== null»
+				«defRow('Target Relation', '''
+					<dfn attribute for=«entity.name»>«entity.targetRelation.name»</dfn>
+					«val relationDescription = entity.targetRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+
+			«IF entity.inverseSourceRelation !== null»
+				«defRow('Inverse Source Relation', '''
+					<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
+					«val relationDescription = entity.inverseSourceRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«IF entity.inverseTargetRelation !== null»
+				«defRow('Inverse Target Relation', '''
+					<dfn attribute for=«entity.name»>«entity.inverseTargetRelation.name»</dfn>
+					«val relationDescription = entity.forwardRelation.description»
+					«IF !relationDescription.empty»
+						<p>«relationDescription»</p>
+					«ENDIF»
+				''')»
+			«ENDIF»
+			
+			«val attr=entity.relationshipAttributes»
+			«IF attr !== null»
+				«defRow('Attributes', attr)»
+			«ENDIF»
+						
+			
 		«ENDIF»
 		
 		«val propertyRestrictions = entity.findPropertyRestrictions.toList»
@@ -295,20 +330,14 @@ class Oml2Bikeshed {
 		«val propertiesDirect = entity.findFeaturePropertiesWithDomain»
 		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedTerm].filter(FeatureProperty) »
 		«val properties = (propertiesDirect + propertiesWithRestrictions).toSet»
-		
+
 		«IF !properties.empty »
-		*Properties:*
-		«FOR property : properties.sortBy[name]»
-			* «property.getPropertyDescription(entity.ontology, propertyRestrictions)»
-		«ENDFOR»
+			«defRow('Properties', properties.sortBy[name].map[getPropertyDescription(entity.ontology, propertyRestrictions)].toUL)»
 		«ENDIF»
 
 		«val keys = entity.findKeys»
 		«IF !keys.empty»
-		*Keys:*
-		«FOR key : keys»
-			* Key «key.properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')»
-		«ENDFOR»
+			«defRow('Keys', keys.map[properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')].toUL)»
 		«ENDIF»
 		
 		«val relationRestrictions = entity.findRelationRestrictions»
@@ -318,22 +347,21 @@ class Oml2Bikeshed {
 		«val domainRelations = (domainRelationsDirect + domainRelationsWithRangeRestrictions).toSet »
 		
 		«IF !domainRelations.empty »
-		*Relations with source:*
-			«FOR dr : domainRelations.sortBy[name]»
-			* «entity.name» ← «entity.ontology.toBikeshedReference(dr)» → «entity.ontology.toBikeshedReference(getRestrictedType(dr.forwardRelation, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forwardRelation, relationRestrictions)»
-			«ENDFOR»
+			«defRow('Relations with source', domainRelations.sortBy[name].map[dr|'''
+				«entity.name» ← «entity.ontology.toBikeshedReference(dr)» → «entity.ontology.toBikeshedReference(getRestrictedType(dr.forwardRelation, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forwardRelation, relationRestrictions)»
+			'''].toUL)»
 		«ENDIF»
 		
 		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget»
 		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.relationEntity]»
 		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet»
-				
+
 		«IF !rangeRelations.empty »
-		*Relations with target:*
-			«FOR dr : rangeRelations.sortBy[name]»
-			* «entity.ontology.toBikeshedReference(getRestrictedType(dr.reverseRelation, dr.source, entity.ontology, relationRestrictions))» ← «entity.ontology.toBikeshedReference(dr)» → «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverseRelation, relationRestrictions)»
-			«ENDFOR»
+			«defRow('Relations with target', rangeRelations.sortBy[name].map[dr|'''
+				«entity.ontology.toBikeshedReference(getRestrictedType(dr.reverseRelation, dr.source, entity.ontology, relationRestrictions))» ← «entity.ontology.toBikeshedReference(dr)» → «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverseRelation, relationRestrictions)»
+			'''].toUL)»
 		«ENDIF»
+		</table>
 		
 	'''
 		
@@ -344,16 +372,18 @@ class Oml2Bikeshed {
 		«scalar.comment»
 		
 		«scalar.plainDescription»
-
-		«IF null!==scalar.length»*length:* «scalar.length.toString»«ENDIF»
-		«IF null!==scalar.minLength»*min length:* «scalar.minLength.toString»«ENDIF»
-		«IF null!==scalar.maxLength»*max length:* «scalar.maxLength.toString»«ENDIF»
-		«IF null!==scalar.pattern»*pattern:* «scalar.pattern.toString»«ENDIF»
-		«IF null!==scalar.language»*language:* «scalar.language.toString»«ENDIF»
-		«IF null!==scalar.minInclusive»*min inclusive:* «scalar.minInclusive.lexicalValue»«ENDIF»
-		«IF null!==scalar.minExclusive»*min exclusive:* «scalar.minExclusive.lexicalValue»«ENDIF»
-		«IF null!==scalar.maxInclusive»*max inclusive:* «scalar.maxInclusive.lexicalValue»«ENDIF»
-		«IF null!==scalar.maxExclusive»*max exclusive:* «scalar.maxExclusive.lexicalValue»«ENDIF»
+		
+		<table class='def'>
+		«IF null!==scalar.length»«defRow('length', scalar.length.toString)»«ENDIF»
+		«IF null!==scalar.minLength»«defRow('min length', scalar.minLength.toString)»«ENDIF»
+		«IF null!==scalar.maxLength»«defRow('max length', scalar.maxLength.toString)»«ENDIF»
+		«IF null!==scalar.pattern»«defRow('pattern', scalar.pattern.toString)»«ENDIF»
+		«IF null!==scalar.language»«defRow('language', scalar.language.toString)»«ENDIF»
+		«IF null!==scalar.minInclusive»«defRow('min inclusive', scalar.minInclusive.lexicalValue)»«ENDIF»
+		«IF null!==scalar.minExclusive»«defRow('min exclusive', scalar.minExclusive.lexicalValue)»«ENDIF»
+		«IF null!==scalar.maxInclusive»«defRow('max inclusive', scalar.maxInclusive.lexicalValue)»«ENDIF»
+		«IF null!==scalar.maxExclusive»«defRow('max exclusive', scalar.maxExclusive.lexicalValue)»«ENDIF»
+		</table>
 	'''
 	
 	// EnumerationScalar
@@ -364,7 +394,9 @@ class Oml2Bikeshed {
 		
 		«scalar.plainDescription»
 		
-		*Values*: «scalar.literals.map['''«it.lexicalValue»'''].join(', ')»
+		<table class='def'>
+			«defRow('Values', scalar.literals.map[lexicalValue].toUL)»
+		</table>
 		
 	'''
 
@@ -384,16 +416,17 @@ class Oml2Bikeshed {
 		
 		«property.plainDescription»
 		
-		«val domain = property.domain»
-		*Domain:* <a spec="«domain.ontology?.iri»" lt="«domain.name»">«domain.getReferenceName(domain.ontology)»</a>
-		
-		«val range = property.range»
-		*Scalar value type:* <a spec="«range.ontology?.iri»" lt="«range.name»">«range.getReferenceName(range.ontology)»</a>
-		
-		
-		«IF property.functional»
-		*Attributes:* Functional
-		«ENDIF»
+		<table class='def'>
+			«val domain = property.domain»
+			«defRow('Domain', '''<a spec="«domain.ontology?.iri»" lt="«domain.name»">«domain.getReferenceName(domain.ontology)»</a>''')»
+	
+			«val range = property.range»
+			«defRow('Range', '''<a spec="«range.ontology?.iri»" lt="«range.name»">«range.getReferenceName(range.ontology)»</a>''')»
+			
+			«IF property.functional»
+				«defRow('Attributes', 'Functional')»
+			«ENDIF»
+		</table>
 		
 	'''
 
@@ -443,37 +476,29 @@ class Oml2Bikeshed {
 		}»
 		«val scope = instance.ontology»
 		
+		<table class='def'>
 		«IF !types.empty»
-		*Types:*
-		«types.map[scope.toBikeshedReference(it)].join(', ')»
+			«defRow('Types', types.map[scope.toBikeshedReference(it)].toUL)»
 		«ENDIF»
 
 		«IF instance instanceof RelationInstance»
-			«FOR source : instance.sources»
-			*Source:* «scope.toBikeshedReference(source)»
-
-			«ENDFOR»
-			«FOR target : instance.targets»
-			*Target:* «scope.toBikeshedReference(target)»
-
-			«ENDFOR»
+			«IF !instance.sources.empty»
+				«defRow('Source', instance.sources.map[scope.toBikeshedReference(it)].toUL)»
+			«ENDIF»
+			«IF !instance.targets.empty»
+				«defRow('Target', instance.targets.map[scope.toBikeshedReference(it)].toUL)»
+			«ENDIF»
 		«ENDIF»
 		
 		«val propertyValueAssertions = instance.findPropertyValueAssertions.sortBy[property.name]»
 		«IF !propertyValueAssertions.empty»
-		*Properties:*
-			«FOR propertyValueAssertion : propertyValueAssertions»
-				«scope.toBikeshedPropertyValue(propertyValueAssertion)»
-			«ENDFOR»
+			«defRow('Properties', propertyValueAssertions.map[scope.toBikeshedPropertyValue(it)].toUL)»
 		«ENDIF»
 		
 
 		«val linkAssertions = instance.findLinkAssertionsWithSource.sortBy[relation.name]»
 		«IF !linkAssertions.empty»
-		*Links:*
-			«FOR linkAssertion : linkAssertions»
-			 * «scope.toBikeshedReference(linkAssertion.relation)» «scope.toBikeshedReference(linkAssertion.target)»
-			«ENDFOR»
+			«defRow('Links', linkAssertions.map[scope.toBikeshedReference(relation) + ' ' + scope.toBikeshedReference(target)].toUL)»
 		«ENDIF»
 	'''
 	
@@ -488,7 +513,7 @@ class Oml2Bikeshed {
 		if (entity.reflexive) pnames.add("Reflexive")
 		if (entity.irreflexive) pnames.add("Irreflexive")
 		if (entity.transitive) pnames.add("Transitive")
-		pnames.join(", ")
+		pnames.toUL
 	}
 	
 	private static def String toBikeshedReference(Ontology scope, Member member) 
@@ -503,7 +528,8 @@ class Oml2Bikeshed {
 				«ENDFOR»
 			'''
 		}
-		''' * «scope.toBikeshedReference(assertion.property)» «valueText»'''
+		'''
+		«scope.toBikeshedReference(assertion.property)» «valueText»'''
 	}
 	
 	private static def String getPlainDescription(Member member) {
@@ -686,4 +712,19 @@ class Oml2Bikeshed {
 		}
 		""
 	}
+	
+	private static def String defRow(String header, String content) '''
+		<tr>
+			<th>«header»</th>
+			<td>«content»</td>
+		</tr>
+	'''
+	
+	
+	private static def String toUL(Iterable<String> items) '''
+		<ul>
+			«items.map['<li>' + it + '</li>'].join('\n')»
+		</ul>
+	'''
+	
 }
