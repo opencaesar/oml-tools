@@ -241,7 +241,7 @@ class Oml2Bikeshed {
 
 			«val target = entity.target»
 			«defRow('Target', '''<a spec="«target.ontology.iri»" lt="«target.name»">«target.getReferenceName(entity.ontology)»</a>''')»
-	
+			
 		«ENDIF»
 		
 	
