@@ -17,14 +17,14 @@ Requirements: JDK 8
     ./gradlew build
 ```
 
-## [OML Bikeshed](oml-tools/oml-bikeshed)[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-bikeshed/_latestVersion)
+## [OML Bikeshed](oml-bikeshed)[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-bikeshed/_latestVersion)
 
 A tool to generate Bikeshed specification from an OML catalog
 
-## [OML Merge](oml-tools/oml-merge)[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge/_latestVersion)
+## [OML Merge](oml-merge)[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge/_latestVersion)
 
 A tool to merge two or more OML catalogs into a new OML catalog. 
 
-## [OML Validate](oml-tools/oml-validate)[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-validate/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-validate/_latestVersion)
+## [OML Validate](oml-validate)[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-validate/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-validate/_latestVersion)
 
 A tool to validate an OML catalog.
