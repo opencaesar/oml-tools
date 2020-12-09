@@ -18,9 +18,12 @@ gradlew.bat owl-merge:run --args="..."
 ```
 Args:
 ```
---input-catalog-path | -i path/to/input/oml/catalog.xml [Required, one or more]
---output-catalog-path | -o path/to/output/oml/catalog.xml [Required]
+--input-catalog-path | -i path/to/input/oml/catalog.xml [Optional, one or more]
+--input-zip-path | -z path/to/input/oml/archive.zip [Optional, one or more]
+--input-folder-path | -f path/to/input/oml/folder [Optional, one or more]
+--output-folder-path | -o path/to/output/oml/folder [Required]
 ```
+Note that one of the input arguments is required.
 
 ## Run as Gradle Task
 ```
@@ -35,10 +38,9 @@ buildscript {
 	}
 }
 task omlMerge(type:io.opencaesar.oml.merge.OmlMergeTask) {
-	inputCatalogPaths = [
-        file('path/to/input/oml/catalog.xml'),
-        file('path/to/input/oml/catalog.xml')
-    ] [Required, one or more]
-	outputCatalogPath = file('path/to/output/oml/catalog.xml') [Required]
+	inputCatalogPaths = [ file('path/to/input/oml/catalog.xml') ] [Optional, one or more files]
+	inputZipPaths = [ file('path/to/input/oml/archive.zip') ] [Optional, one or more files]
+	inputFolderPaths = [ file('path/to/input/oml/folder') ] [Optional, one or more files]
+	outputFolderPath = file('path/to/output/oml/folder') [Required]
 }               
 ```
