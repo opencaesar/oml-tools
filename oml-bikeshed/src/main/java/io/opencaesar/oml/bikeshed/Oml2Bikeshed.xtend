@@ -215,11 +215,11 @@ class Oml2Bikeshed {
 		«term.plainDescription»
 		
 		<table class='def'>
-		«val superTerms = term.findSpecializedTerms»
+		«val superTerms = term.findGeneralTerms»
 		«IF !superTerms.empty»
 			«defRow('Super terms', superTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»
-		«val subTerms = term.findSpecializingTerms»
+		«val subTerms = term.findSpecificTerms»
 		«IF !subTerms.empty»
 			«defRow('Sub terms', subTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»		
@@ -245,12 +245,12 @@ class Oml2Bikeshed {
 		«ENDIF»
 		
 	
-		«val superEntities = entity.findSpecializedTerms»
+		«val superEntities = entity.findGeneralTerms»
 		«IF !superEntities.empty»
 			«defRow('Supertypes', superEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
 		
-		«val subEntities = entity.findSpecializingTerms.filter(Entity)»
+		«val subEntities = entity.findSpecificTerms.filter(Entity)»
 		«IF !subEntities.empty»
 			«defRow('Subtypes', subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
