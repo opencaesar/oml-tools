@@ -280,7 +280,7 @@ class Oml2Bikeshed {
 			«IF entity.sourceRelation !== null»
 				«defRow('Source Relation', '''
 					<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
-					«val relationDescription = entity.forwardRelation.description»
+					«val relationDescription = entity.sourceRelation.description»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
 					«ENDIF»
@@ -310,7 +310,7 @@ class Oml2Bikeshed {
 			«IF entity.inverseTargetRelation !== null»
 				«defRow('Inverse Target Relation', '''
 					<dfn attribute for=«entity.name»>«entity.inverseTargetRelation.name»</dfn>
-					«val relationDescription = entity.forwardRelation.description»
+					«val relationDescription = entity.inverseTargetRelation.description»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
 					«ENDIF»
