@@ -34,6 +34,7 @@ import io.opencaesar.oml.Ontology;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlRead;
+import io.opencaesar.oml.util.OmlXMIResourceFactory;
 
 public class OmlValidateApp {
 
@@ -113,6 +114,8 @@ public class OmlValidateApp {
 		
 		// initialize OML resource set
 		OmlStandaloneSetup.doSetup();
+		OmlXMIResourceFactory.register();
+		
 		final XtextResourceSet inputResourceSet = new XtextResourceSet();
 		inputResourceSet.eAdapters().add(new ECrossReferenceAdapter());
 
