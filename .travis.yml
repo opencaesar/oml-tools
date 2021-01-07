@@ -1,5 +1,5 @@
 language: java
-install: true
+install: false
 
 jdk:
   - openjdk11
