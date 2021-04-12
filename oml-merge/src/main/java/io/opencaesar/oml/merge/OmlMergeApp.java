@@ -224,6 +224,10 @@ public class OmlMergeApp {
     /**
      * Returns the SHA-256 hash of the contents of the given InputStream with CR and CRLF
      * line endings normalized to LF.
+     * 
+     * @param is an input stream to return the hash of
+     * @return byte[] representing the SHA-256 hash of the input stream's contents
+     * @throws java.io.IOException if there is an errpr reading the input stream
      */
     public static byte[] normalizedHash(InputStream is) throws IOException {
         try (BufferedInputStream bis = new BufferedInputStream(is)) {

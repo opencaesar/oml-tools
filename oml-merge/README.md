@@ -1,6 +1,6 @@
 # OML Merge
 
-[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-merge/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-merge/_latestVersion)
+[![Release](https://img.shields.io/github/v/tag/opencaesar/oml-tools?label=release)](https://github.com/opencaesar/oml-tools/releases/latest)
 
 A tool to merge one or more OML catalogs into a new OML catalog.
 
@@ -8,12 +8,10 @@ A tool to merge one or more OML catalogs into a new OML catalog.
 
 MacOS/Linux:
 ```
-cd oml-merge
 ./gradlew owl-merge:run --args="..."
 ```
 Windows:
 ```
-cd oml-merge
 gradlew.bat owl-merge:run --args="..."
 ```
 Args:
@@ -29,9 +27,7 @@ Note that one of the input arguments is required.
 ```
 buildscript {
 	repositories {
-		maven { url 'https://dl.bintray.com/opencaesar/oml-tools' }
   		mavenCentral()
-		jcenter()
 	}
 	dependencies {
 		classpath 'io.opencaesar.oml:oml-merge-gradle:+'

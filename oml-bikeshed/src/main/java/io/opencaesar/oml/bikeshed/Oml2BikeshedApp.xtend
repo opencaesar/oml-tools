@@ -105,8 +105,10 @@ class Oml2BikeshedApp {
 	
 	val logoString = '''<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml/images/oml.svg"></a>'''
 
-	/*
+	/**
 	 * Main method
+	 * 
+	 * @param args command line arguments for the app
 	 */
 	def static void main(String ... args) {
 		val app = new Oml2BikeshedApp

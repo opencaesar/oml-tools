@@ -1,6 +1,6 @@
 # OML Bikeshed
 
-[ ![Download](https://api.bintray.com/packages/opencaesar/oml-tools/oml-bikeshed/images/download.svg) ](https://bintray.com/opencaesar/oml-tools/oml-bikeshed/_latestVersion)
+[![Release](https://img.shields.io/github/v/tag/opencaesar/oml-tools?label=release)](https://github.com/opencaesar/oml-tools/releases/latest)
 
 A tool to generate Bikeshed specification from an OML catalog.
 
@@ -8,12 +8,10 @@ A tool to generate Bikeshed specification from an OML catalog.
 
 MacOS/Linux:
 ```
-cd oml-bikeshed
 ./gradlew oml-bikeshed:run --args="..."
 ```
 Windows:
 ```
-cd oml-bikeshed
 gradlew.bat oml-bikeshed:run --args="..."
 ```
 Args:
@@ -30,9 +28,7 @@ Note:when '-r' is specified, only the root ontology and its import closure will 
 ```
 buildscript {
 	repositories {
-		maven { url 'https://dl.bintray.com/opencaesar/oml-tools' }
   		mavenCentral()
-		jcenter()
 	}
 	dependencies {
 		classpath 'io.opencaesar.oml:oml-bikeshed-gradle:+'

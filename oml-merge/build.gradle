@@ -6,9 +6,10 @@ mainClassName = 'io.opencaesar.oml.merge.OmlMergeApp'
 applicationName = 'oml-merge'
 
 dependencies {
-    implementation 'com.beust:jcommander:1.72'
-    implementation 'log4j:log4j:1.2.17'
-    implementation 'com.google.guava:guava:27.1-jre'
+	implementation "com.beust:jcommander:${versions.jcommander}"
+	implementation "log4j:log4j:${versions.log4j}"
+	implementation "org.slf4j:slf4j-simple:${versions.slf4j}"
+	testImplementation "junit:junit:${versions.junit}"
 
-    testImplementation 'junit:junit:4.12'
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
 }
