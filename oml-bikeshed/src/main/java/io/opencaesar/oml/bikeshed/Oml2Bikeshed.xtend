@@ -1,3 +1,21 @@
+/**
+ * 
+ * Copyright 2019-2021 California Institute of Technology ("Caltech").
+ * U.S. Government sponsorship acknowledged.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * 
+ */
 package io.opencaesar.oml.bikeshed
 
 import io.opencaesar.oml.AnnotatedElement
@@ -181,7 +199,7 @@ class Oml2Bikeshed {
 	'''
 	
 	private def <T extends Element> String toImport(Ontology ontology, String heading, Class<T>...types) '''
-		«val elements = types.map[type|ontology.importsWithSource.filter(type)].flatten»
+		«val elements = types.map[type|ontology.imports.filter(type)].flatten»
 		«IF !elements.empty»
 		«heading»
 		«FOR element : elements»
@@ -204,7 +222,7 @@ class Oml2Bikeshed {
 
 	private def dispatch String toBikeshed(Import ^import) '''
 		«val importURI = URI.createURI(^import.uri).trimFileExtension.appendFileExtension('html')»
-			* «^import.importPrefix»: [«^import.importedOntology?.iri»](«importURI»)
+			* «^import.effectivePrefix»: [«^import.importedOntology?.iri»](«importURI»)
 	'''
 
 	private def dispatch String toBikeshed(SpecializableTerm term) '''
@@ -215,11 +233,11 @@ class Oml2Bikeshed {
 		«term.plainDescription»
 		
 		<table class='def'>
-		«val superTerms = term.findGeneralTerms»
+		«val superTerms = term.findSuperTerms»
 		«IF !superTerms.empty»
 			«defRow('Super terms', superTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»
-		«val subTerms = term.findSpecificTerms»
+		«val subTerms = term.findSubTerms»
 		«IF !subTerms.empty»
 			«defRow('Sub terms', subTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»		
@@ -245,12 +263,12 @@ class Oml2Bikeshed {
 		«ENDIF»
 		
 	
-		«val superEntities = entity.findGeneralTerms»
+		«val superEntities = entity.findSuperTerms»
 		«IF !superEntities.empty»
 			«defRow('Supertypes', superEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
 		
-		«val subEntities = entity.findSpecificTerms.filter(Entity)»
+		«val subEntities = entity.findSubTerms.filter(Entity)»
 		«IF !subEntities.empty»
 			«defRow('Subtypes', subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
@@ -271,46 +289,6 @@ class Oml2Bikeshed {
 				«defRow('Reverse Relation', '''
 					<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
 					«val relationDescription = entity.reverseRelation.description»
-					«IF !relationDescription.empty»
-						<p>«relationDescription»</p>
-					«ENDIF»
-				''')»
-			«ENDIF»
-			
-			«IF entity.sourceRelation !== null»
-				«defRow('Source Relation', '''
-					<dfn attribute for=«entity.name»>«entity.sourceRelation.name»</dfn>
-					«val relationDescription = entity.sourceRelation.description»
-					«IF !relationDescription.empty»
-						<p>«relationDescription»</p>
-					«ENDIF»
-				''')»
-			«ENDIF»
-
-			«IF entity.targetRelation !== null»
-				«defRow('Target Relation', '''
-					<dfn attribute for=«entity.name»>«entity.targetRelation.name»</dfn>
-					«val relationDescription = entity.targetRelation.description»
-					«IF !relationDescription.empty»
-						<p>«relationDescription»</p>
-					«ENDIF»
-				''')»
-			«ENDIF»
-
-			«IF entity.inverseSourceRelation !== null»
-				«defRow('Inverse Source Relation', '''
-					<dfn attribute for=«entity.name»>«entity.inverseSourceRelation.name»</dfn>
-					«val relationDescription = entity.inverseSourceRelation.description»
-					«IF !relationDescription.empty»
-						<p>«relationDescription»</p>
-					«ENDIF»
-				''')»
-			«ENDIF»
-			
-			«IF entity.inverseTargetRelation !== null»
-				«defRow('Inverse Target Relation', '''
-					<dfn attribute for=«entity.name»>«entity.inverseTargetRelation.name»</dfn>
-					«val relationDescription = entity.inverseTargetRelation.description»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
 					«ENDIF»
@@ -379,10 +357,10 @@ class Oml2Bikeshed {
 		«IF null!==scalar.maxLength»«defRow('max length', scalar.maxLength.toString)»«ENDIF»
 		«IF null!==scalar.pattern»«defRow('pattern', scalar.pattern.toString)»«ENDIF»
 		«IF null!==scalar.language»«defRow('language', scalar.language.toString)»«ENDIF»
-		«IF null!==scalar.minInclusive»«defRow('min inclusive', scalar.minInclusive.lexicalValue)»«ENDIF»
-		«IF null!==scalar.minExclusive»«defRow('min exclusive', scalar.minExclusive.lexicalValue)»«ENDIF»
-		«IF null!==scalar.maxInclusive»«defRow('max inclusive', scalar.maxInclusive.lexicalValue)»«ENDIF»
-		«IF null!==scalar.maxExclusive»«defRow('max exclusive', scalar.maxExclusive.lexicalValue)»«ENDIF»
+		«IF null!==scalar.minInclusive»«defRow('min inclusive', scalar.minInclusive.stringValue)»«ENDIF»
+		«IF null!==scalar.minExclusive»«defRow('min exclusive', scalar.minExclusive.stringValue)»«ENDIF»
+		«IF null!==scalar.maxInclusive»«defRow('max inclusive', scalar.maxInclusive.stringValue)»«ENDIF»
+		«IF null!==scalar.maxExclusive»«defRow('max exclusive', scalar.maxExclusive.stringValue)»«ENDIF»
 		</table>
 	'''
 	
@@ -395,7 +373,7 @@ class Oml2Bikeshed {
 		«scalar.plainDescription»
 		
 		<table class='def'>
-			«defRow('Values', scalar.literals.map[lexicalValue].toUL)»
+			«defRow('Values', scalar.literals.map[stringValue].toUL)»
 		</table>
 		
 	'''
@@ -496,7 +474,7 @@ class Oml2Bikeshed {
 		«ENDIF»
 		
 
-		«val linkAssertions = instance.findLinkAssertionsWithSource.sortBy[relation.name]»
+		«val linkAssertions = instance.findLinkAssertions.sortBy[relation.name]»
 		«IF !linkAssertions.empty»
 			«defRow('Links', linkAssertions.map[scope.toBikeshedReference(relation) + ' ' + scope.toBikeshedReference(target)].toUL)»
 		«ENDIF»
@@ -521,7 +499,7 @@ class Oml2Bikeshed {
 	
 	private static def String toBikeshedPropertyValue(Ontology scope, PropertyValueAssertion assertion) {
 		val valueText = switch (assertion) {
-			ScalarPropertyValueAssertion: assertion.value.literalValue
+			ScalarPropertyValueAssertion: assertion.value.stringValue
 			StructuredPropertyValueAssertion: '''
 				«FOR subAssertion : assertion.value.ownedPropertyValues»
 				 * «scope.toBikeshedPropertyValue(subAssertion)»
@@ -552,28 +530,39 @@ class Oml2Bikeshed {
 		'''## <dfn>«member.name»</dfn> ## {#«member.name.toFirstUpper»}'''
 	}
 	
+	private static def String getAnnotationStringValue(AnnotatedElement element, String abbreviatedIri) {
+		var property = element.getMemberByAbbreviatedIri(abbreviatedIri) as AnnotationProperty
+		if (property !== null) {
+			var value = element.getAnnotationValue(property)
+			if (value !== null) {
+				return value.stringValue	
+			}
+		}
+		return null
+	}
+
 	private static def String getTitle(Ontology ontology) {
-		ontology.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/title") ?: ontology.prefix
+		ontology.getAnnotationStringValue("dc:title") ?: ontology.prefix
 	}
 	
 	private static def String getDescription(AnnotatedElement element) {
-		element.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/description") ?: ""
+		element.getAnnotationStringValue("dc:description") ?: ""
 	}
 	
 	static def String getCreator(AnnotatedElement element) {
-		element.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/creator") ?: "Unknown"
+		element.getAnnotationStringValue("dc:creator") ?: "Unknown"
 	}
 
 	static def String getCopyright(AnnotatedElement element) {
-		(element.getAnnotationLexicalValue("http://purl.org/dc/elements/1.1/rights") ?: "").replaceAll('\n', '')
+		(element.getAnnotationStringValue("dc:rights") ?: "").replaceAll('\n', '')
 	}
 	
 	private static def String getComment(AnnotatedElement element) {
-		element.getAnnotationLexicalValue("http://www.w3.org/2000/01/rdf-schema#comment") ?: ""
+		element.getAnnotationStringValue("rdfs:comment") ?: ""
 	}
 	
 	private static def String getReferenceName(Member member, Ontology ontology) {
-		val localName = member.getNameIn(ontology)
+		val localName = member.getAbbreviatedIriIn(ontology)
 		localName ?: member.abbreviatedIri
 	}
 	
@@ -602,7 +591,7 @@ class Oml2Bikeshed {
 						'''must have «kind» «axiom.cardinality»'''
 					}
 					ScalarPropertyValueRestrictionAxiom: {
-						'''must have value «axiom.value.literalValue»'''
+						'''must have value «axiom.value.stringValue»'''
 					}
 					default: axiom.toString
 				}
