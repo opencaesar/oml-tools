@@ -30,7 +30,7 @@ buildscript {
 		classpath 'io.opencaesar.oml:oml-validate-gradle:+'
 	}
 }
-task omlValidate(type:io.opencaesar.oml.validate.OwlValidateTask) {
+task omlValidate(type:io.opencaesar.oml.validate.OmlValidateTask) {
 	inputCatalogPath = file('path/to/input/oml/catalog.xml') [Required]
 	outputReportPath = file('path/to/output/report.txt') [Optional]
 }               
