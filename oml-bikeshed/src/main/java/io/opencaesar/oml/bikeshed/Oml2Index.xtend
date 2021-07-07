@@ -18,14 +18,11 @@
  */
 package io.opencaesar.oml.bikeshed
 
-import io.opencaesar.oml.AnnotatedElement
-import io.opencaesar.oml.AnnotationProperty
 import io.opencaesar.oml.Ontology
 import java.net.URI
 import java.util.ArrayList
-import org.eclipse.emf.ecore.resource.Resource
 
-import static extension io.opencaesar.oml.util.OmlRead.*
+import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
 
 /**
  * Generate the index file. We produce this as a bikeshed spec as well in order to 
@@ -56,46 +53,30 @@ class Oml2Index {
 	static def String addFooter() '''
 	'''
 	
-	val Resource inputResource
+	val Ontology ontology
 	val String relativePath
 	val int index
 	
-	new(Resource inputResource, String relativePath, int index) {
-		this.inputResource = inputResource
+	new(Ontology ontology, String relativePath, int index) {
+		this.ontology = ontology
 		this.relativePath = relativePath
 		this.index = index
 	}
 	
 	def String getDomain() {
-		new URI(inputResource.ontology.iri).host
+		new URI(ontology.iri).host
 	}
 	
 	def String run() '''
-		«val ontology = inputResource.ontology»
 		
 		## \[«ontology.title»](./«relativePath».html) ## {#heading-«ontology.prefix»-«index»}
-		«ontology.description»		
-		
+		«ontology.description»
+		«IF ontology.isDeprecated»
+		<div class=note>
+		This ontology has been deprecated
+		</div>
+		«ENDIF»
 	'''
-	
-	private static def String getAnnotationStringValue(AnnotatedElement element, String abbreviatedIri) {
-		var property = element.getMemberByAbbreviatedIri(abbreviatedIri) as AnnotationProperty
-		if (property !== null) {
-			var value = element.getAnnotationValue(property)
-			if (value !== null) {
-				return value.stringValue	
-			}
-		}
-		return null
-	}
-
-	private static def String getTitle(Ontology ontology) {
-		ontology.getAnnotationStringValue("dc:title") ?: ontology.prefix 
-	}
-
-	private static def String getDescription(Ontology ontology) {
-		ontology.getAnnotationStringValue("http://purl.org/dc/elements/1.1/description") ?: ""
-	}
 	
 	static class Group {
 		val members = new ArrayList<Oml2Index>

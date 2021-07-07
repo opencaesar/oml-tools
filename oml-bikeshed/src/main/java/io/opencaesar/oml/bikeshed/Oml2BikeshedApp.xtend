@@ -32,7 +32,6 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.io.InputStreamReader
-import java.net.URL
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.Collection
@@ -121,7 +120,7 @@ class Oml2BikeshedApp {
 		
 	val LOGGER = LogManager.getLogger(Oml2BikeshedApp)
 	
-	val logoString = '''<a href="https://www.openapis.org/" class="logo"><img alt="OpenAPI Initiative" height="48" src="https://opencaesar.github.io/oml/images/oml.svg"></a>'''
+	val logoString = '''<a href="http://www.opencaesar.io/oml/" class="logo"><img alt="OML Specification" height="48" src="https://opencaesar.github.io/oml/images/oml.svg"></a>'''
 
 	/**
 	 * Main method
@@ -164,8 +163,7 @@ class Oml2BikeshedApp {
 		LOGGER.info("Output Folder= " + outputFolderPath)
 		
 		val inputCatalogFile = new File(inputCatalogPath)
-		val inputFolder = inputCatalogFile.parentFile
-		val inputCatalog = OmlCatalog.create(inputCatalogFile.toURI.toURL)
+        val inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogFile.toString))
 		
 		OmlStandaloneSetup.doSetup
 		val inputResourceSet = new XtextResourceSet
@@ -202,10 +200,9 @@ class Oml2BikeshedApp {
 		scriptContents.append('''
 			bikeshed «forceToken» spec index.bs
 		''')
-		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
-			val inputFile = new File(inputResource.URI.toFileString)
-			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
-			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
+		for (ontology : inputOntologies) {
+		    val uri = URI.createURI(ontology.iri)
+			val relativePath = uri.authority+uri.path
 			scriptContents.append('''
 				bikeshed «forceToken» spec «relativePath».bs
 			''')
@@ -222,11 +219,10 @@ class Oml2BikeshedApp {
 		var index = 1
 		
 		val groupsByDomain = new LinkedHashMap<String, Oml2Index.Group>
-		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
-			val inputFile = new File(inputResource.URI.toFileString)
-			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
-			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
-			val oml2index = new Oml2Index(inputResource, relativePath, index++)
+        for (ontology : inputOntologies) {
+            val uri = URI.createURI(ontology.iri)
+            val relativePath = uri.authority+uri.path
+			val oml2index = new Oml2Index(ontology, relativePath, index++)
 			groupsByDomain.computeIfAbsent(oml2index.domain, [new Oml2Index.Group]).add(oml2index)
 		}
 		
@@ -239,23 +235,20 @@ class Oml2BikeshedApp {
 		outputFiles.put(new File(outputFolderPath+File.separator+'logo.include'), logoString)
 		
 		// create the anchors.bsdata files
-		val allInputFolders = inputResourceSet.resources.map[new File(URI.toFileString).parentFile].toSet
-		for (folder : allInputFolders) {
-			val relativePath = inputFolder.toURI().relativize(folder.toURI()).getPath()
-			val anchoreResourceURI = URI.createURI(inputFolder.toURI+File.separator+relativePath+File.separator+'anchors.bsdata') 
-			val anchorsFile = new File(outputFolderPath+File.separator+relativePath+File.separator+'anchors.bsdata')
-			outputFiles.put(anchorsFile, new Oml2Anchors(anchoreResourceURI, inputResourceSet).run)
+		val relativePaths = inputOntologies.map[URI.createURI(iri).trimSegments(1)].map[authority+path].toSet
+		for (relativePath : relativePaths) {
+            var anchors = new Oml2Anchors(outputFolderPath, relativePath, inputOntologies).run
+			outputFiles.put(new File(outputFolderPath+File.separator+relativePath+File.separator+'anchors.bsdata'), anchors)
 			// this may write the same logo file multiple times
 			outputFiles.put(new File(outputFolderPath+File.separator+relativePath+File.separator+'logo.include'), logoString)
 		}
 
 		// create the ontology files
-		for (inputResource : inputResourceSet.resources.filter[omlExtensions.contains(URI.fileExtension)].sortBy[URI.toString]) {
-			val inputFile = new File(inputResource.URI.toFileString)
-			var relativePath = inputFolder.toURI().relativize(inputFile.toURI()).getPath()
-			relativePath = relativePath.substring(0, relativePath.lastIndexOf('.'))
+        for (ontology : inputOntologies) {
+            val uri = URI.createURI(ontology.iri)
+            val relativePath = uri.authority+uri.path
 			val bikeshedFile = new File(outputFolderPath+File.separator+relativePath+'.bs')
-			outputFiles.put(bikeshedFile, new Oml2Bikeshed(inputResource, publishUrl, relativePath).run)
+			outputFiles.put(bikeshedFile, new Oml2Bikeshed(ontology, publishUrl, relativePath).run)
 		}
 
 		// save output files				
@@ -291,7 +284,7 @@ class Oml2BikeshedApp {
 			files.addAll(collectInputOmlFiles(folder))
 		}
 		for (subCatalogPath : catalog.nestedCatalogs) {
-			val subCatalog = OmlCatalog.create(new URL(subCatalogPath))
+			val subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath))
 			files.addAll(collectInputOmlFiles(subCatalog))
 		}
 		return files

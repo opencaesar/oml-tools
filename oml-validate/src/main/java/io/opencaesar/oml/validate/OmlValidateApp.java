@@ -22,7 +22,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -138,7 +137,7 @@ public class OmlValidateApp {
 		inputResourceSet.eAdapters().add(new ECrossReferenceAdapter());
 
 		// load the OML catalog
-		final OmlCatalog inputCatalog = OmlCatalog.create(new File(inputCatalogPath).toURI().toURL());
+		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogPath));
 
 		// validate each ontology in turn
 		try {
@@ -180,7 +179,7 @@ public class OmlValidateApp {
 			files.addAll(collectInputOmlFiles(path));
 		});
 		for (String subCatalogPath : catalog.getNestedCatalogs()) {
-			final OmlCatalog subCatalog = OmlCatalog.create(new URL(subCatalogPath));
+			final OmlCatalog subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath));
 			files.addAll(collectInputOmlFiles(subCatalog));
 		}
 		return files;

@@ -18,7 +18,6 @@
  */
 package io.opencaesar.oml.bikeshed
 
-import io.opencaesar.oml.AnnotatedElement
 import io.opencaesar.oml.AnnotationProperty
 import io.opencaesar.oml.Aspect
 import io.opencaesar.oml.Concept
@@ -33,10 +32,9 @@ import io.opencaesar.oml.DescriptionUsage
 import io.opencaesar.oml.DifferentFromPredicate
 import io.opencaesar.oml.Element
 import io.opencaesar.oml.Entity
-import io.opencaesar.oml.EntityPredicate
 import io.opencaesar.oml.EnumeratedScalar
 import io.opencaesar.oml.FacetedScalar
-import io.opencaesar.oml.FeatureProperty
+import io.opencaesar.oml.FeaturePredicate
 import io.opencaesar.oml.ForwardRelation
 import io.opencaesar.oml.Import
 import io.opencaesar.oml.Member
@@ -50,7 +48,6 @@ import io.opencaesar.oml.RelationCardinalityRestrictionAxiom
 import io.opencaesar.oml.RelationEntity
 import io.opencaesar.oml.RelationEntityPredicate
 import io.opencaesar.oml.RelationInstance
-import io.opencaesar.oml.RelationPredicate
 import io.opencaesar.oml.RelationRangeRestrictionAxiom
 import io.opencaesar.oml.RelationRestrictionAxiom
 import io.opencaesar.oml.RelationTargetRestrictionAxiom
@@ -63,6 +60,7 @@ import io.opencaesar.oml.ScalarPropertyRangeRestrictionAxiom
 import io.opencaesar.oml.ScalarPropertyRestrictionAxiom
 import io.opencaesar.oml.ScalarPropertyValueAssertion
 import io.opencaesar.oml.ScalarPropertyValueRestrictionAxiom
+import io.opencaesar.oml.SemanticProperty
 import io.opencaesar.oml.SpecializableTerm
 import io.opencaesar.oml.Structure
 import io.opencaesar.oml.StructuredProperty
@@ -71,6 +69,7 @@ import io.opencaesar.oml.StructuredPropertyRangeRestrictionAxiom
 import io.opencaesar.oml.StructuredPropertyRestrictionAxiom
 import io.opencaesar.oml.StructuredPropertyValueAssertion
 import io.opencaesar.oml.StructuredPropertyValueRestrictionAxiom
+import io.opencaesar.oml.TypePredicate
 import io.opencaesar.oml.Vocabulary
 import io.opencaesar.oml.VocabularyBundle
 import io.opencaesar.oml.VocabularyBundleExtension
@@ -79,8 +78,8 @@ import io.opencaesar.oml.VocabularyExtension
 import java.util.ArrayList
 import java.util.Collection
 import org.eclipse.emf.common.util.URI
-import org.eclipse.emf.ecore.resource.Resource
 
+import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
 import static extension io.opencaesar.oml.util.OmlIndex.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
@@ -97,18 +96,18 @@ import static extension io.opencaesar.oml.util.OmlSearch.*
  */
 class Oml2Bikeshed {
 
-	val Resource inputResource 
+	val Ontology context 
 	val String url
 	val String relativePath
 
-	new(Resource inputResource, String url, String relativePath) {
-		this.inputResource = inputResource
+	new(Ontology context, String url, String relativePath) {
+		this.context = context
 		this.url = url
 		this.relativePath = relativePath
 	}
 	
 	def String run() {
-		inputResource.ontology.toBikeshed
+		context.toBikeshed
 	}
 	
 	private def dispatch String toBikeshed(Element element) '''
@@ -118,6 +117,11 @@ class Oml2Bikeshed {
 		<pre class='metadata'>
 		«ontology.toPre»
 		</pre>
+		«IF ontology.isDeprecated»
+		<div class=note>
+		This ontology has been deprecated
+		</div>
+		«ENDIF»
 		<div export=true>
 		«ontology.toDiv»
 		</div>
@@ -305,8 +309,8 @@ class Oml2Bikeshed {
 		
 		«val propertyRestrictions = entity.findPropertyRestrictions.toList»
 
-		«val propertiesDirect = entity.findFeaturePropertiesWithDomain»
-		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedTerm].filter(FeatureProperty) »
+		«val propertiesDirect = entity.findSemanticPropertiesWithDomain»
+		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedFeature].filter(SemanticProperty) »
 		«val properties = (propertiesDirect + propertiesWithRestrictions).toSet»
 
 		«IF !properties.empty »
@@ -425,28 +429,32 @@ class Oml2Bikeshed {
 		«rule.antecedent.map[toBikeshed].join(" ∧ ")» -> «rule.consequent.map[toBikeshed].join(" ∧ ")»
 	'''
 	
-	private def dispatch String toBikeshed(EntityPredicate predicate) '''
-		«predicate.entity.name»(«predicate.variable.toString»)
+	private def dispatch String toBikeshed(TypePredicate predicate) '''
+		«predicate.type.name»(«predicate.variable.toString»)
 	'''
 		
 	private def dispatch String toBikeshed(RelationEntityPredicate predicate) '''
 		«predicate.entity.name»(«predicate.variable1.toString», «predicate.entityVariable.toString», «predicate.variable2.toString»)
 	'''
 	
-	private def dispatch String toBikeshed(RelationPredicate predicate) '''
-		«predicate.relation.name»(«predicate.variable1.toString», «predicate.variable2.toString»)
+	private def dispatch String toBikeshed(FeaturePredicate predicate) '''
+		«predicate.feature.name»(«predicate.variable1.toString», «predicate.variable2.toString»)
 	'''
 
-	private def dispatch String toBikeshed(SameAsPredicate predicate) '''
-		sameAs(«predicate.variable1.toString», «predicate.variable2.toString»)
-	'''
+    private def dispatch String toBikeshed(SameAsPredicate predicate) '''
+        sameAs(«predicate.variable1.toString», «predicate.variable2.toString»)
+    '''
 
-	private def dispatch String toBikeshed(DifferentFromPredicate predicate) '''
-		differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
-	'''
+    private def dispatch String toBikeshed(DifferentFromPredicate predicate) '''
+        differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
+    '''
 	
 	private def dispatch String toBikeshed(NamedInstance instance) '''
 		«instance.sectionHeader»
+		
+		«instance.comment»
+		
+		«instance.plainDescription»
 		
 		«val types = switch (instance) {
 			ConceptInstance: instance.findTypeAssertions.map[type].sortBy[name]
@@ -458,7 +466,6 @@ class Oml2Bikeshed {
 		«IF !types.empty»
 			«defRow('Types', types.map[scope.toBikeshedReference(it)].toUL)»
 		«ENDIF»
-
 		«IF instance instanceof RelationInstance»
 			«IF !instance.sources.empty»
 				«defRow('Source', instance.sources.map[scope.toBikeshedReference(it)].toUL)»
@@ -467,17 +474,15 @@ class Oml2Bikeshed {
 				«defRow('Target', instance.targets.map[scope.toBikeshedReference(it)].toUL)»
 			«ENDIF»
 		«ENDIF»
-		
 		«val propertyValueAssertions = instance.findPropertyValueAssertions.sortBy[property.name]»
 		«IF !propertyValueAssertions.empty»
 			«defRow('Properties', propertyValueAssertions.map[scope.toBikeshedPropertyValue(it)].toUL)»
 		«ENDIF»
-		
-
 		«val linkAssertions = instance.findLinkAssertions.sortBy[relation.name]»
 		«IF !linkAssertions.empty»
 			«defRow('Links', linkAssertions.map[scope.toBikeshedReference(relation) + ' ' + scope.toBikeshedReference(target)].toUL)»
 		«ENDIF»
+		</table>
 	'''
 	
 	//----------------------------------------------------------------------------------------------------------
@@ -510,12 +515,17 @@ class Oml2Bikeshed {
 		«scope.toBikeshedReference(assertion.property)» «valueText»'''
 	}
 	
-	private static def String getPlainDescription(Member member) {
-		val desc=member.description
-		if (desc.startsWith("http")) ""
-		else 
-			desc
-	}
+	private static def String getPlainDescription(Member member) '''
+		«IF member.isDeprecated»
+		<div class=note>
+		This ontology member has been deprecated
+		</div>
+		«ENDIF»
+		«val desc=member.description»
+		«IF !desc.startsWith("http")»
+		«desc»
+		«ENDIF»
+	'''
 	
 	/**
 	 * Tricky bit: if description starts with a url we treat it as an
@@ -528,37 +538,6 @@ class Oml2Bikeshed {
 		'''## <dfn>«member.name»</dfn> see \[«member.name»](«desc») ## {#«member.name.toFirstUpper»}'''
 		else
 		'''## <dfn>«member.name»</dfn> ## {#«member.name.toFirstUpper»}'''
-	}
-	
-	private static def String getAnnotationStringValue(AnnotatedElement element, String abbreviatedIri) {
-		var property = element.getMemberByAbbreviatedIri(abbreviatedIri) as AnnotationProperty
-		if (property !== null) {
-			var value = element.getAnnotationValue(property)
-			if (value !== null) {
-				return value.stringValue	
-			}
-		}
-		return null
-	}
-
-	private static def String getTitle(Ontology ontology) {
-		ontology.getAnnotationStringValue("dc:title") ?: ontology.prefix
-	}
-	
-	private static def String getDescription(AnnotatedElement element) {
-		element.getAnnotationStringValue("dc:description") ?: ""
-	}
-	
-	static def String getCreator(AnnotatedElement element) {
-		element.getAnnotationStringValue("dc:creator") ?: "Unknown"
-	}
-
-	static def String getCopyright(AnnotatedElement element) {
-		(element.getAnnotationStringValue("dc:rights") ?: "").replaceAll('\n', '')
-	}
-	
-	private static def String getComment(AnnotatedElement element) {
-		element.getAnnotationStringValue("rdfs:comment") ?: ""
 	}
 	
 	private static def String getReferenceName(Member member, Ontology ontology) {
