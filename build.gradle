@@ -28,12 +28,10 @@ subprojects {
 	    withSourcesJar()
 	}
 
-	classes {
-	    doLast {
-	        def version = project.version.toString()
-	        def file = new File("$projectDir/src/main/resources/version.txt")
-	        file.write(version)
+	tasks.named('jar') {
+	    manifest {
+	        attributes('Implementation-Title': project.name,
+	                   'Implementation-Version': project.version)
 	    }
 	}
-
 }

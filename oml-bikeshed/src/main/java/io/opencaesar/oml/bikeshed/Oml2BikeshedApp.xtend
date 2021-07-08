@@ -22,7 +22,6 @@ import com.beust.jcommander.IParameterValidator
 import com.beust.jcommander.JCommander
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
-import com.google.common.io.CharStreams
 import io.opencaesar.oml.Ontology
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
 import io.opencaesar.oml.util.OmlCatalog
@@ -31,7 +30,6 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.io.InputStreamReader
 import java.util.ArrayList
 import java.util.Arrays
 import java.util.Collection
@@ -370,16 +368,8 @@ class Oml2BikeshedApp {
 	 * @return version string from build.properties or UNKNOWN
 	 */
 	def String getAppVersion() {
-		var version = "UNKNOWN"
-		try {
-			val input = Thread.currentThread().getContextClassLoader().getResourceAsStream("version.txt")
-			val reader = new InputStreamReader(input)
-			version = CharStreams.toString(reader);
-		} catch (IOException e) {
-			val errorMsg = "Could not read version.txt file." + e
-			LOGGER.error(errorMsg, e)
-		}
-		version
+    	var version = this.getClass().getPackage().getImplementationVersion();
+    	return (version !== null) ? version : "<SNAPSHOT>";
 	}
 	
 }

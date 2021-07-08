@@ -19,7 +19,6 @@
 package io.opencaesar.oml.merge;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +26,6 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -312,19 +310,8 @@ public class OmlMergeApp {
      * @return version string from build.properties or UNKNOWN
      */
     public String getAppVersion() {
-        String version = "UNKNOWN";
-        try {
-            InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("version.txt");
-            if (null != input) {
-                InputStreamReader isReader = new InputStreamReader(input);
-                BufferedReader reader = new BufferedReader(isReader);
-                version = reader.readLine();
-            }
-        } catch (IOException e) {
-            String errorMsg = "Could not read version.txt file." + e;
-            LOGGER.error(errorMsg, e);
-        }
-        return version;
+    	var version = this.getClass().getPackage().getImplementationVersion();
+    	return (version != null) ? version : "<SNAPSHOT>";
     }
 
     public static class PathAndExtension {
@@ -359,11 +346,10 @@ public class OmlMergeApp {
 
         public String toError() {
             StringBuffer buff = new StringBuffer();
-            buff
-                    .append("Different contents for path: ").append(relativePath).append(".").append(extension)
-                    .append("\nbetween ")
-                    .append(inputs.size()).append(" equivalent inputs and ")
-                    .append(differentInputs.size()).append(" different inputs.");
+            buff.append("Different contents for path: ").append(relativePath).append(".").append(extension)
+            	.append("\nbetween ")
+                .append(inputs.size()).append(" equivalent inputs and ")
+                .append(differentInputs.size()).append(" different inputs.");
             inputs.forEach(input -> buff.append("\n equivalent content from: ").append(input));
             differentInputs.forEach(input -> buff.append("\n different content from: ").append(input));
             buff.append("\n");

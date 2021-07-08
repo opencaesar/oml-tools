@@ -19,9 +19,6 @@
 package io.opencaesar.oml.validate;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -45,7 +42,6 @@ import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.google.common.io.CharStreams;
 
 import io.opencaesar.oml.Ontology;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
@@ -237,18 +233,8 @@ public class OmlValidateApp {
 	 * @return version string from build.properties or UNKNOWN
 	 */
     public String getAppVersion() {
-        String version = "UNKNOWN";
-        try {
-            InputStream input = Thread.currentThread().getContextClassLoader().getResourceAsStream("version.txt");
-            if (null != input) {
-                InputStreamReader reader = new InputStreamReader(input);
-                version = CharStreams.toString(reader);
-            }
-        } catch (IOException e) {
-            String errorMsg = "Could not read version.txt file." + e;
-            LOGGER.error(errorMsg, e);
-        }
-        return version;
+    	var version = this.getClass().getPackage().getImplementationVersion();
+    	return (version != null) ? version : "<SNAPSHOT>";
     }
 	
 }
