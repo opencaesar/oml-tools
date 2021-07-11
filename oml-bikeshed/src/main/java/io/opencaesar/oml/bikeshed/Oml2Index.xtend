@@ -30,12 +30,12 @@ import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
  */
 class Oml2Index {
 
-	static def String addHeader(String url) '''
+	static def String addHeader(String url, String title, String version) '''
 		<pre class='metadata'>
-		Title: OML Ontologies Index
+		Title: «title?:"OML Ontologies Index"» «version?:""»
 		Shortname: Index
 		Level: 1
-		Status: LS-COMMIT
+		Status: LS
 		ED: «url»
 		Repository: «url»
 		Editor: (see individual ontologies)

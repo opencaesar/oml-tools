@@ -61,14 +61,32 @@ class Oml2BikeshedApp {
 		description="Path of OML input catalog (Required)",
 		validateWith=InputCatalogPath, 
 		required=true, 
-		order=1)
+		order=1
+	)
 	String inputCatalogPath = null
+
+	@Parameter(
+		names=#["--input-catalog-title", "-it"], 
+		description="Title of OML input catalog (Optional)", 
+		required=false, 
+		order=2
+	)
+	String inputCatalogTitle
+
+	@Parameter(
+		names=#["--input-catalog-version", "-iv"], 
+		description="Version of OML input catalog (Optional)", 
+		required=false, 
+		order=3
+	)
+	String inputCatalogVersion
 
 	@Parameter(
 		names=#["--root-ontology-iri","-r"], 
 		description="Root OML ontology IRI (Required)",
 		required=false, 
-		order=2)
+		order=4
+	)
 	String rootOntologyIri = null
 
 	@Parameter(
@@ -76,7 +94,7 @@ class Oml2BikeshedApp {
 		description="Path of Bikeshed output folder", 
 		validateWith=OutputFolderPath, 
 		required=true, 
-		order=3
+		order=5
 	)
 	String outputFolderPath = "."
 
@@ -84,14 +102,22 @@ class Oml2BikeshedApp {
 		names=#["--publish-url", "-u"], 
 		description="URL where the Bikeshed documentation will be published", 
 		required=true, 
-		order=4
+		order=6
 	)
 	String publishUrl
 
 	@Parameter(
+		names=#["--force","-f"], 
+		description="Run bikeshed with force option -f", 
+		help=true, 
+		order=7
+	)
+	boolean force
+		
+	@Parameter(
 		names=#["-debug", "--d"], 
 		description="Shows debug logging statements", 
-		order=5
+		order=8
 	)
 	boolean debug
 
@@ -99,23 +125,18 @@ class Oml2BikeshedApp {
 		names=#["--help","-h"], 
 		description="Displays summary of options", 
 		help=true, 
-		order=6)
+		order=9
+	)
 	boolean help
 
 	@Parameter(
 		names=#["--version","-v"], 
 		description="Displays app version", 
 		help=true, 
-		order=7)
+		order=10
+	)
 	boolean version
 	
-	@Parameter(
-		names=#["--force","-f"], 
-		description="Run bikeshed with force option -f", 
-		help=true, 
-		order=8)
-	boolean force
-		
 	val LOGGER = LogManager.getLogger(Oml2BikeshedApp)
 	
 	val logoString = '''<a href="http://www.opencaesar.io/oml/" class="logo"><img alt="OML Specification" height="48" src="https://opencaesar.github.io/oml/images/oml.svg"></a>'''
@@ -213,7 +234,7 @@ class Oml2BikeshedApp {
 		// create the index file as bikeshed spec
 		val indexFile = new File(outputFolderPath+File.separator+'index.bs')
 		val indexContents = new StringBuffer
-		indexContents.append(Oml2Index.addHeader(publishUrl))
+		indexContents.append(Oml2Index.addHeader(publishUrl, inputCatalogTitle, inputCatalogVersion))
 		var index = 1
 		
 		val groupsByDomain = new LinkedHashMap<String, Oml2Index.Group>

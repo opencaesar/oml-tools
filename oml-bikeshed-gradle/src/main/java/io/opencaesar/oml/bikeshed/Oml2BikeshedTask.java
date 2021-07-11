@@ -28,6 +28,10 @@ import org.gradle.api.tasks.TaskExecutionException;
 public class Oml2BikeshedTask extends DefaultTask {
 	
 	public String inputCatalogPath;
+	
+	public String inputCatalogTitle;
+	
+	public String inputCatalogVersion;
     
     public String outputFolderPath;
     
@@ -41,6 +45,14 @@ public class Oml2BikeshedTask extends DefaultTask {
 		if (inputCatalogPath != null) {
 			args.add("-i");
 			args.add(inputCatalogPath);
+		}
+		if (inputCatalogTitle != null) {
+			args.add("-it");
+			args.add(inputCatalogTitle);
+		}
+		if (inputCatalogVersion != null) {
+			args.add("-iv");
+			args.add(inputCatalogVersion);
 		}
 		if (outputFolderPath != null) {
 			args.add("-o");
