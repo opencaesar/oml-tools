@@ -42,6 +42,6 @@ task oml2Bikeshed(type:io.opencaesar.oml.bikeshed.Oml2BikeshedTask) {
 	inputCatalogVersion = project.version [Optional]
 	rootOntologyIri = iri-of-root-ontology [Optional]
 	outputFolderPath = file('path/to/output/bikeshed/folder') [Required]
-    publishUrl = 'URL where the Bikeshed spec will be published' [Required]
+	publishUrl = 'URL where the Bikeshed spec will be published' [Required]
 }               
 ```
