@@ -17,6 +17,8 @@ gradlew.bat oml-bikeshed:run --args="..."
 Args:
 ```
 --input-catalog-path | -i path/to/input/oml/catalog [Required]
+--input-catalog-title | -it title [Optional]
+--input-catalog-version | -iv version [Optional]
 --root-ontology-iri | -r iri-of-root-ontology [Optional]
 --output-folder-path | -o path/to/output/bikeshed/folder [Required]
 --publish-url | -u URL where the Bikeshed spec will be published [Required]
@@ -35,9 +37,11 @@ buildscript {
 	}
 }
 task oml2Bikeshed(type:io.opencaesar.oml.bikeshed.Oml2BikeshedTask) {
-	inputPath = file('path/to/input/oml/folder') [Required]
+	inputCatalogPath = file('path/to/input/oml/catalog') [Required]
+	inputCatalogTitle = project.title [Optional]
+	inputCatalogVersion = project.version [Optional]
 	rootOntologyIri = iri-of-root-ontology [Optional]
-	outputPath = file('path/to/output/bikeshed/folder') [Required]
+	outputFolderPath = file('path/to/output/bikeshed/folder') [Required]
     publishUrl = 'URL where the Bikeshed spec will be published' [Required]
 }               
 ```
