@@ -214,9 +214,6 @@ class Oml2BikeshedApp {
 		val scriptContents = new StringBuffer
 		val forceToken=if(force) "-f" else "--die-on=link-error"
 		scriptContents.append('''
-			cd "$(dirname "$0")"
-		''')
-		scriptContents.append('''
 			bikeshed «forceToken» spec index.bs
 		''')
 		for (ontology : inputOntologies) {
@@ -227,9 +224,17 @@ class Oml2BikeshedApp {
 			''')
 		}
 		val publishShFile = new File(outputFolderPath+File.separator+'publish.sh').canonicalFile
-		outputFiles.put(publishShFile, scriptContents.toString)
+		outputFiles.put(publishShFile, '''
+			#!/bin/sh
+			cd "$(dirname "$0")"
+			«scriptContents»
+		''')
 		val publishBatFile = new File(outputFolderPath+File.separator+'publish.bat').canonicalFile
-		outputFiles.put(publishBatFile, scriptContents.toString)
+		outputFiles.put(publishBatFile, '''
+			pushd "%~dp0"
+			«scriptContents»
+			popd
+		''')
 
 		// create the index file as bikeshed spec
 		val indexFile = new File(outputFolderPath+File.separator+'index.bs')
@@ -287,7 +292,9 @@ class Oml2BikeshedApp {
 			    out.close()
 			}
 		]
-
+		
+		publishShFile.setExecutable(true)
+		
 		LOGGER.info("=================================================================")
 		LOGGER.info("                          E N D")
 		LOGGER.info("=================================================================")

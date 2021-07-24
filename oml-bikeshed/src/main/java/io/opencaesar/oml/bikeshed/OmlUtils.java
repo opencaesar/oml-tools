@@ -78,7 +78,7 @@ public class OmlUtils {
 
 	public static String getCopyright(AnnotatedElement element) {
 		var value = getAnnotationStringValue(element, "dc:rights");
-		return ((value != null) ? value : "").replaceAll("\n", ""); 
+		return ((value != null) ? value : "").replaceAll("\\R", "");
 	}
 	
 	public static String getComment(AnnotatedElement element) {
