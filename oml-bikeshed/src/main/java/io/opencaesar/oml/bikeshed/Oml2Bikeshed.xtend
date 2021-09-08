@@ -96,18 +96,20 @@ import static extension io.opencaesar.oml.util.OmlSearch.*
  */
 class Oml2Bikeshed {
 
-	val Ontology context 
+	val Ontology contextOntology
+	val OmlSearchContext context
 	val String url
 	val String relativePath
 
-	new(Ontology context, String url, String relativePath) {
+	new(Ontology contextOntology, OmlSearchContext context, String url, String relativePath) {
+		this.contextOntology = contextOntology
 		this.context = context
 		this.url = url
 		this.relativePath = relativePath
 	}
 	
 	def String run() {
-		context.toBikeshed
+		contextOntology.toBikeshed
 	}
 	
 	private def dispatch String toBikeshed(Element element) '''
@@ -117,7 +119,7 @@ class Oml2Bikeshed {
 		<pre class='metadata'>
 		«ontology.toPre»
 		</pre>
-		«IF ontology.isDeprecated»
+		«IF ontology.isDeprecated(context)»
 		<div class=note>
 		This ontology has been deprecated
 		</div>
@@ -143,20 +145,20 @@ class Oml2Bikeshed {
 	'''
 		
 	private def String toPre(Ontology ontology) '''
-		Title: «ontology.title»
+		Title: «ontology.getTitle(context)»
 		Shortname: «ontology.prefix»
 		Level: 1
 		Status: LS-COMMIT
 		ED: «url»/«relativePath»
 		Repository: «url»
-		Editor: «ontology.creator.replaceAll(',', '')»
-		!Copyright: «ontology.copyright»
+		Editor: «ontology.getCreator(context).replaceAll(',', '')»
+		!Copyright: «ontology.getCopyright(context)»
 		Boilerplate: copyright no, conformance no
 		Local Boilerplate: logo yes
 		Markup Shorthands: markdown yes, css no
 		Use Dfn Panels: yes
 		External Infotrees: anchors.bsdata yes
-		Abstract: «ontology.description.replaceAll('\n', '\n ')»
+		Abstract: «ontology.getDescription(context).replaceAll('\n', '\n ')»
 	'''
 
 	private def dispatch String toDiv(Vocabulary vocabulary) '''
@@ -198,7 +200,7 @@ class Oml2Bikeshed {
 	private def String toNamespace(Ontology ontology, String heading) '''
 		«heading»
 		«val ontologyURI = ontology.eResource.URI.trimFileExtension.appendFileExtension('html').lastSegment»
-			* «ontology.prefix»: [«ontology.iri»](«ontologyURI»)
+			* [«ontology.iri»](«ontologyURI»)  [«ontology.prefix»]
 			
 	'''
 	
@@ -225,23 +227,23 @@ class Oml2Bikeshed {
 	'''
 
 	private def dispatch String toBikeshed(Import ^import) '''
-		«val importURI = URI.createURI(^import.uri).trimFileExtension.appendFileExtension('html')»
-			* «^import.effectivePrefix»: [«^import.importedOntology?.iri»](«importURI»)
+		«val importURI = URI.createURI(^import.iri).trimFileExtension.appendFileExtension('html')»
+			* [«^import.importedOntology?.iri»](«importURI»)«IF ^import.prefix !== null» [«^import.prefix»]«ENDIF»
 	'''
 
 	private def dispatch String toBikeshed(SpecializableTerm term) '''
 		«term.sectionHeader»
 		
-		«term.comment»
+		«term.getComment(context)»
 		
 		«term.plainDescription»
 		
 		<table class='def'>
-		«val superTerms = term.findSuperTerms»
+		«val superTerms = term.findSuperTerms.filter[t|context.contains(t)]»
 		«IF !superTerms.empty»
 			«defRow('Super terms', superTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»
-		«val subTerms = term.findSubTerms»
+		«val subTerms = term.findSubTerms.filter[t|context.contains(t)]»
 		«IF !subTerms.empty»
 			«defRow('Sub terms', subTerms.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(term.ontology)»</a>'''].toUL)»
 		«ENDIF»		
@@ -252,7 +254,7 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(Entity entity) '''
 		«entity.sectionHeader»
 		
-		«entity.comment»
+		«entity.getComment(context)»
 		
 		«entity.plainDescription»
 		
@@ -267,12 +269,12 @@ class Oml2Bikeshed {
 		«ENDIF»
 		
 	
-		«val superEntities = entity.findSuperTerms»
+		«val superEntities = entity.findSuperTerms.filter[t|context.contains(t)]»
 		«IF !superEntities.empty»
 			«defRow('Supertypes', superEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
 		
-		«val subEntities = entity.findSubTerms.filter(Entity)»
+		«val subEntities = entity.findSubTerms.filter(Entity).filter[t|context.contains(t)]»
 		«IF !subEntities.empty»
 			«defRow('Subtypes', subEntities.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].toUL)»
 		«ENDIF»
@@ -282,7 +284,7 @@ class Oml2Bikeshed {
 			«IF entity.forwardRelation !== null»
 				«defRow('Forward Relation', '''
 					<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
-					«val relationDescription = entity.forwardRelation.description»
+					«val relationDescription = entity.forwardRelation.getDescription(context)»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
 					«ENDIF»
@@ -292,7 +294,7 @@ class Oml2Bikeshed {
 			«IF entity.reverseRelation !== null»
 				«defRow('Reverse Relation', '''
 					<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
-					«val relationDescription = entity.reverseRelation.description»
+					«val relationDescription = entity.reverseRelation.getDescription(context)»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
 					«ENDIF»
@@ -307,9 +309,9 @@ class Oml2Bikeshed {
 			
 		«ENDIF»
 		
-		«val propertyRestrictions = entity.findPropertyRestrictions.toList»
+		«val propertyRestrictions = entity.findPropertyRestrictions.filter[r|context.contains(r)].toList»
 
-		«val propertiesDirect = entity.findSemanticPropertiesWithDomain»
+		«val propertiesDirect = entity.findSemanticPropertiesWithDomain.filter[p|context.contains(p)]»
 		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedFeature].filter(SemanticProperty) »
 		«val properties = (propertiesDirect + propertiesWithRestrictions).toSet»
 
@@ -317,14 +319,14 @@ class Oml2Bikeshed {
 			«defRow('Properties', properties.sortBy[name].map[getPropertyDescription(entity.ontology, propertyRestrictions)].toUL)»
 		«ENDIF»
 
-		«val keys = entity.findKeys»
+		«val keys = entity.findKeys.filter[k|context.contains(k)]»
 		«IF !keys.empty»
 			«defRow('Keys', keys.map[properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')].toUL)»
 		«ENDIF»
 		
-		«val relationRestrictions = entity.findRelationRestrictions»
+		«val relationRestrictions = entity.findRelationRestrictions.filter[r|context.contains(r)].toList»
 
-		«val domainRelationsDirect = entity.findRelationEntitiesWithSource»
+		«val domainRelationsDirect = entity.findRelationEntitiesWithSource.filter[e|context.contains(e)]»
 		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation).map[it.relationEntity] »
 		«val domainRelations = (domainRelationsDirect + domainRelationsWithRangeRestrictions).toSet »
 		
@@ -334,7 +336,7 @@ class Oml2Bikeshed {
 			'''].toUL)»
 		«ENDIF»
 		
-		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget»
+		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget.filter[e|context.contains(e)]»
 		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.relationEntity]»
 		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet»
 
@@ -351,7 +353,7 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(FacetedScalar scalar) '''
 		«scalar.sectionHeader»
 		
-		«scalar.comment»
+		«scalar.getComment(context)»
 		
 		«scalar.plainDescription»
 		
@@ -372,7 +374,7 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(EnumeratedScalar scalar) '''
 		«scalar.sectionHeader»
 		
-		«scalar.comment»
+		«scalar.getComment(context)»
 		
 		«scalar.plainDescription»
 		
@@ -385,7 +387,7 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(AnnotationProperty property) '''
 		«property.sectionHeader»
 		
-		«property.comment»
+		«property.getComment(context)»
 
 		«property.plainDescription»
 		
@@ -394,7 +396,7 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(ScalarProperty property) '''
 		«property.sectionHeader»
 		
-		«property.comment»
+		«property.getComment(context)»
 		
 		«property.plainDescription»
 		
@@ -416,7 +418,7 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(StructuredProperty property) '''
 		«property.sectionHeader»
 		
-		«property.comment»
+		«property.getComment(context)»
 		
 		«property.plainDescription»
 		
@@ -452,13 +454,13 @@ class Oml2Bikeshed {
 	private def dispatch String toBikeshed(NamedInstance instance) '''
 		«instance.sectionHeader»
 		
-		«instance.comment»
+		«instance.getComment(context)»
 		
 		«instance.plainDescription»
 		
 		«val types = switch (instance) {
-			ConceptInstance: instance.findTypeAssertions.map[type].sortBy[name]
-			RelationInstance: instance.findTypeAssertions.map[type].sortBy[name]
+			ConceptInstance: instance.findTypeAssertions.map[type].filter[t|context.contains(t)].sortBy[name]
+			RelationInstance: instance.findTypeAssertions.map[type].filter[t|context.contains(t)].sortBy[name]
 		}»
 		«val scope = instance.ontology»
 		
@@ -474,11 +476,11 @@ class Oml2Bikeshed {
 				«defRow('Target', instance.targets.map[scope.toBikeshedReference(it)].toUL)»
 			«ENDIF»
 		«ENDIF»
-		«val propertyValueAssertions = instance.findPropertyValueAssertions.sortBy[property.name]»
+		«val propertyValueAssertions = instance.findPropertyValueAssertions.filter[a|context.contains(a)].sortBy[property.name]»
 		«IF !propertyValueAssertions.empty»
 			«defRow('Properties', propertyValueAssertions.map[scope.toBikeshedPropertyValue(it)].toUL)»
 		«ENDIF»
-		«val linkAssertions = instance.findLinkAssertions.sortBy[relation.name]»
+		«val linkAssertions = instance.findLinkAssertions.filter[a|context.contains(a)].sortBy[relation.name]»
 		«IF !linkAssertions.empty»
 			«defRow('Links', linkAssertions.map[scope.toBikeshedReference(relation) + ' ' + scope.toBikeshedReference(target)].toUL)»
 		«ENDIF»
@@ -515,13 +517,13 @@ class Oml2Bikeshed {
 		«scope.toBikeshedReference(assertion.property)» «valueText»'''
 	}
 	
-	private static def String getPlainDescription(Member member) '''
-		«IF member.isDeprecated»
+	private def String getPlainDescription(Member member) '''
+		«IF member.isDeprecated(context)»
 		<div class=note>
 		This ontology member has been deprecated
 		</div>
 		«ENDIF»
-		«val desc=member.description»
+		«val desc=member.getDescription(context)»
 		«IF !desc.startsWith("http")»
 		«desc»
 		«ENDIF»
@@ -531,8 +533,8 @@ class Oml2Bikeshed {
 	 * Tricky bit: if description starts with a url we treat it as an
 	 * external definition.
 	 */
-	private static def String getSectionHeader(Member member) {
-		val desc=member.description
+	private def String getSectionHeader(Member member) {
+		val desc=member.getDescription(context)
 
 		if (desc.startsWith("http"))
 		'''## <dfn>«member.name»</dfn> see \[«member.name»](«desc») ## {#«member.name.toFirstUpper»}'''

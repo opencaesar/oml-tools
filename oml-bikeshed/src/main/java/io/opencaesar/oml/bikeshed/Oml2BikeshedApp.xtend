@@ -202,6 +202,8 @@ class Oml2BikeshedApp {
 			}
 			inputOntologies = inputOntologies.sortBy[iri]
 		}
+
+		val context = new OmlSearchContext(inputOntologies)
 		
 		// validate ontologies
 		for (ontology : inputOntologies) {
@@ -246,7 +248,7 @@ class Oml2BikeshedApp {
         for (ontology : inputOntologies) {
             val uri = URI.createURI(ontology.iri)
             val relativePath = uri.authority+uri.path
-			val oml2index = new Oml2Index(ontology, relativePath, index++)
+			val oml2index = new Oml2Index(ontology, context, relativePath, index++)
 			groupsByDomain.computeIfAbsent(oml2index.domain, [new Oml2Index.Group]).add(oml2index)
 		}
 		
@@ -272,7 +274,7 @@ class Oml2BikeshedApp {
             val uri = URI.createURI(ontology.iri)
             val relativePath = uri.authority+uri.path
 			val bikeshedFile = new File(outputFolderPath+File.separator+relativePath+'.bs')
-			outputFiles.put(bikeshedFile, new Oml2Bikeshed(ontology, publishUrl, relativePath).run)
+			outputFiles.put(bikeshedFile, new Oml2Bikeshed(ontology, context, publishUrl, relativePath).run)
 		}
 
 		// save output files				

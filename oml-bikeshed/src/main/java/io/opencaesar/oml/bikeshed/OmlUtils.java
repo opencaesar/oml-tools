@@ -27,10 +27,12 @@ import io.opencaesar.oml.util.OmlSearch;
 
 public class OmlUtils {
 
-	private static String getAnnotationStringValue(AnnotatedElement element, String abbreviatedIri) {
-		var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element, abbreviatedIri);
+	private static String getAnnotationStringValue(AnnotatedElement element, String abbreviatedIri, OmlSearchContext context) {
+		var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);
 		if (property != null) {
-			var value = OmlSearch.findAnnotationValue(element, property);
+            final var value = OmlSearch.findAnnotationValues(element, property).stream()
+            		.filter(a -> context.contains(a))
+            		.findFirst().orElse(null);
 			if (value != null) {
 				return OmlRead.getStringValue(value);	
 			}
@@ -38,11 +40,13 @@ public class OmlUtils {
 		return null;
 	}
 
-    private static boolean getAnnotationBooleanValue(AnnotatedElement element, String abbreviatedIri) {
-		final var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element, abbreviatedIri);
+    private static boolean getAnnotationBooleanValue(AnnotatedElement element, String abbreviatedIri, OmlSearchContext context) {
+		final var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);
         if (property != null) {
             final var annotation = OmlSearch.findAnnotations(element).stream()
-            		.filter(a -> a.getProperty() == property).findFirst().orElse(null);
+            		.filter(a -> context.contains(a))
+            		.filter(a -> a.getProperty() == property)
+            		.findFirst().orElse(null);
             if (annotation == null) {
                 return false;   
             }
@@ -57,32 +61,32 @@ public class OmlUtils {
         return false;
     }
 
-	public static String getTitle(Ontology ontology) {
-		var value = getAnnotationStringValue(ontology, "dc:title");
+	public static String getTitle(Ontology ontology, OmlSearchContext context) {
+		var value = getAnnotationStringValue(ontology, "dc:title", context);
 		return (value != null) ? value : ontology.getPrefix(); 
 	}
 
-	public static String getDescription(AnnotatedElement element) {
-		var value = getAnnotationStringValue(element, "dc:description");
+	public static String getDescription(AnnotatedElement element, OmlSearchContext context) {
+		var value = getAnnotationStringValue(element, "dc:description", context);
 		return (value != null) ? value : ""; 
 	}
 	
-	public static boolean isDeprecated(AnnotatedElement element) {
-        return getAnnotationBooleanValue(element, "owl:deprecated");
+	public static boolean isDeprecated(AnnotatedElement element, OmlSearchContext context) {
+        return getAnnotationBooleanValue(element, "owl:deprecated", context);
     }
 
-	public static String getCreator(AnnotatedElement element) {
-		var value = getAnnotationStringValue(element, "dc:creator");
+	public static String getCreator(AnnotatedElement element, OmlSearchContext context) {
+		var value = getAnnotationStringValue(element, "dc:creator", context);
 		return (value != null) ? value : "Unknown"; 
 	}
 
-	public static String getCopyright(AnnotatedElement element) {
-		var value = getAnnotationStringValue(element, "dc:rights");
+	public static String getCopyright(AnnotatedElement element, OmlSearchContext context) {
+		var value = getAnnotationStringValue(element, "dc:rights", context);
 		return ((value != null) ? value : "").replaceAll("\\R", "");
 	}
 	
-	public static String getComment(AnnotatedElement element) {
-		var value = getAnnotationStringValue(element, "rdfs:comment");
+	public static String getComment(AnnotatedElement element, OmlSearchContext context) {
+		var value = getAnnotationStringValue(element, "rdfs:comment", context);
 		return (value != null) ? value : ""; 
 	}
 	

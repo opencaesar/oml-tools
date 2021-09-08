@@ -1,9 +1,9 @@
 subprojects {
 	group = 'io.opencaesar.oml'
-	version = '0.9.4'
+	version = '1.0.0'
 
 	ext.versions = [
-	    oml: '0.9.+',
+	    oml: '1.0.+',
 		plantuml: '1.2019.0',
 		jcommander: '1.72',
 		log4j: '1.2.17',

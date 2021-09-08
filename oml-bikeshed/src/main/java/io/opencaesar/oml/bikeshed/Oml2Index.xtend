@@ -54,11 +54,13 @@ class Oml2Index {
 	'''
 	
 	val Ontology ontology
+	val OmlSearchContext context
 	val String relativePath
 	val int index
 	
-	new(Ontology ontology, String relativePath, int index) {
+	new(Ontology ontology, OmlSearchContext context, String relativePath, int index) {
 		this.ontology = ontology
+		this.context = context
 		this.relativePath = relativePath
 		this.index = index
 	}
@@ -69,9 +71,9 @@ class Oml2Index {
 	
 	def String run() '''
 		
-		## \[«ontology.title»](./«relativePath».html) ## {#heading-«ontology.prefix»-«index»}
-		«ontology.description»
-		«IF ontology.isDeprecated»
+		## \[«ontology.getTitle(context)»](./«relativePath».html) ## {#heading-«ontology.prefix»-«index»}
+		«ontology.getDescription(context)»
+		«IF ontology.isDeprecated(context)»
 		<div class=note>
 		This ontology has been deprecated
 		</div>
