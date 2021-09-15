@@ -32,21 +32,25 @@ public class OmlValidator {
 		final Diagnostician diagnostician = new Diagnostician() {
 			@Override
 			public String getObjectLabel(EObject eObject) {
-			    final String name;
-			    if (eObject instanceof Member) {
-			    	name = ((Member)eObject).getAbbreviatedIri();
-			    } else if (eObject instanceof Ontology) {
-			    	name = ((Ontology)eObject).getIri();
+			    if (eObject != null) {
+					final String name;
+				    if (eObject instanceof Member) {
+				    	name = ((Member)eObject).getAbbreviatedIri();
+				    } else if (eObject instanceof Ontology) {
+				    	name = ((Ontology)eObject).getIri();
+				    } else {
+				    	name = EcoreUtil.getID(eObject);
+				    }
+				    return eObject.eClass().getName()+" "+name;
 			    } else {
-			    	name = EcoreUtil.getID(eObject);
+			    	return "<null>";
 			    }
-			    return eObject.eClass().getName()+" "+name;
 			}
 		};
 		
 		final Diagnostic diagnostic = diagnostician.validate(ontology);
 		if (diagnostic.getSeverity() == Diagnostic.ERROR) {
-	        final StringBuilder sb = new StringBuilder ( diagnostic.getMessage() );
+	        final StringBuilder sb = new StringBuilder(diagnostic.getMessage());
 	        for (final Diagnostic child : diagnostic.getChildren()) {
 	            if (child.getSeverity () == Diagnostic.ERROR) {
 	                sb.append ( System.lineSeparator () );
