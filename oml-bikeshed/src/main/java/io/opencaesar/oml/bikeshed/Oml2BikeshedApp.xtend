@@ -43,8 +43,8 @@ import org.apache.log4j.LogManager
 import org.apache.log4j.xml.DOMConfigurator
 import org.apache.xml.resolver.Catalog
 import org.eclipse.emf.common.util.URI
+import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
-import org.eclipse.xtext.resource.XtextResourceSet
 
 import static extension io.opencaesar.oml.util.OmlRead.*
 
@@ -185,7 +185,7 @@ class Oml2BikeshedApp {
         val inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogFile.toString))
 		
 		OmlStandaloneSetup.doSetup
-		val inputResourceSet = new XtextResourceSet
+		val inputResourceSet = new ResourceSetImpl
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 		
 		var List<Ontology> inputOntologies = new ArrayList<Ontology> 
