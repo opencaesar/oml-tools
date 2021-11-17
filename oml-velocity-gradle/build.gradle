@@ -1,0 +1,7 @@
+ext.title = 'OML Velocity Gradle'
+description = 'A gradle interface to OML Velocity'
+
+dependencies {
+	implementation gradleApi()
+    implementation project (':oml-velocity')
+}

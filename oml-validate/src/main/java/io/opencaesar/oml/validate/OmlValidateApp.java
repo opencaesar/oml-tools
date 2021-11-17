@@ -47,12 +47,13 @@ import com.beust.jcommander.ParameterException;
 import io.opencaesar.oml.Ontology;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
+import io.opencaesar.oml.util.OmlConstants;
 import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.util.OmlXMIResourceFactory;
 
 public class OmlValidateApp {
 
-	private static final List<String> omlExtensions = Arrays.asList(new String[] {"oml", "omlxmi"});
+	private static final List<String> omlExtensions = Arrays.asList(OmlConstants.OML_EXTENSIONS);
 	
 	@Parameter(
 		names= {"--input-catalog-path", "-i"}, 

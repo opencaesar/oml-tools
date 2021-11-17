@@ -25,6 +25,7 @@ import com.beust.jcommander.ParameterException
 import io.opencaesar.oml.Ontology
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
 import io.opencaesar.oml.util.OmlCatalog
+import io.opencaesar.oml.util.OmlConstants
 import io.opencaesar.oml.validate.OmlValidator
 import java.io.BufferedWriter
 import java.io.File
@@ -50,12 +51,6 @@ import static extension io.opencaesar.oml.util.OmlRead.*
 
 class Oml2BikeshedApp {
 
-	val static OML = "oml"
-	
-	val static OMLXMI = "omlxmi"
-	
-	val static omlExtensions = #[OML, OMLXMI]
-	
 	@Parameter(
 		names=#["--input-catalog-path","-i"], 
 		description="Path of OML input catalog (Required)",
@@ -330,11 +325,11 @@ class Oml2BikeshedApp {
 				omlFiles.addAll(collectInputOmlFiles(file))
 			} else if (file.isFile) {
 				val ext = getFileExtension(file)
-				if (omlExtensions.contains(ext)) {
+				if (OmlConstants.OML_EXTENSIONS.contains(ext)) {
 					omlFiles.add(file)
 				}
 			} else { // must be a file name with no extension
-				for (String ext : omlExtensions) {
+				for (String ext : OmlConstants.OML_EXTENSIONS) {
 					val f = new File(path.toString()+'.'+ext)
 					if (f.exists()) {
 						omlFiles.add(f)
@@ -353,11 +348,10 @@ class Oml2BikeshedApp {
 			if (new File(filename).isFile) {
 				return resolved
 			}
-			if (new File(filename+'.'+OML).isFile) {
-				return URI.createFileURI(filename+'.'+OML)
-			}
-			if (new File(filename+'.'+OMLXMI).isFile) {
-				return URI.createFileURI(filename+'.'+OMLXMI)
+			for (String ext : OmlConstants.OML_EXTENSIONS) {
+				if (new File(filename+'.'+ext).isFile) {
+					return URI.createFileURI(filename+'.'+ext)
+				}
 			}
 		}
 		
