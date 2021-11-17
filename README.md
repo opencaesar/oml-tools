@@ -28,3 +28,7 @@ A tool to merge two or more OML catalogs into a new OML catalog.
 ## [OML Validate](oml-validate/README.md)
 
 A tool to validate an OML catalog.
+
+## [OML Velocity](oml-velocity/README.md)
+
+A tool to instantiate OML velocity templates.
