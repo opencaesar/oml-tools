@@ -24,20 +24,53 @@ import java.util.Collection;
 import java.util.List;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
+import org.gradle.work.Incremental;
 
-public class OmlMergeTask extends DefaultTask {
+public abstract class OmlMergeTask extends DefaultTask {
 
+	@Input
 	public Collection<File> inputZipPaths = null;
 	
+    public void setInputZipPaths(Collection<File> files) {
+    	inputZipPaths = files;
+   		getInputFiles().from(files);
+    }
+
+    @Input
 	public Collection<File> inputFolderPaths = null;
 	
+    public void setInputFolderPaths(Collection<File> files) {
+    	inputFolderPaths = files;
+  		getInputFiles().from(files);
+    }
+
+    @Input
 	public Collection<File> inputCatalogPaths = null;
+
+    public void setInputCatalogPaths(Collection<File> files) {
+    	inputCatalogPaths = files;
+  		getInputFiles().from(files);
+    }
+
+    @Incremental
+    @InputFiles
+    public abstract ConfigurableFileCollection getInputFiles();
+
+	@OutputDirectory
+	public abstract DirectoryProperty getOutputCatalogFolder();
     
-    public File outputCatalogFolder;
-    
-    public boolean generateOutputCatalog;
+	@Optional
+    @Input
+    public abstract Property<Boolean> getGenerateOutputCatalog();
 
     public boolean debug;
 
@@ -62,18 +95,20 @@ public class OmlMergeTask extends DefaultTask {
 				args.add(inputCatalogPath.getAbsolutePath());
 			}
 		}
-		if (outputCatalogFolder != null) {
+		if (getOutputCatalogFolder().isPresent()) {
 			args.add("-o");
-			args.add(outputCatalogFolder.getAbsolutePath());
+			args.add(getOutputCatalogFolder().get().getAsFile().getAbsolutePath());
 		}
-		if (generateOutputCatalog) {
-			args.add("-g");
+		if (getGenerateOutputCatalog().isPresent()) {
+			if (getGenerateOutputCatalog().get()) {
+				args.add("-g");
+			}
 		}
 		if (debug) {
 			args.add("-d");
 		}
 		try {
-			OmlMergeApp.main(args.toArray(new String[args.size()]));
+    		OmlMergeApp.main(args.toArray(new String[args.size()]));
 		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}

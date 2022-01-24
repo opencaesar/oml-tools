@@ -139,7 +139,7 @@ public class OmlValidateApp {
 
 		// validate each ontology in turn
 		try {
-			List<Ontology> ontologies = collectInputOmlFiles(inputCatalog).stream().
+			List<Ontology> ontologies = collectOmlFiles(inputCatalog).stream().
 				map(f -> URI.createFileURI(f.getAbsolutePath())).
 				map(u -> inputResourceSet.getResource(u, true)).
 				map(r -> OmlRead.getOntology(r)).
@@ -169,21 +169,21 @@ public class OmlValidateApp {
 	
 	// Utility methods
 
-	private List<File> collectInputOmlFiles(OmlCatalog catalog) throws Exception {
+	public static List<File> collectOmlFiles(OmlCatalog catalog) throws Exception {
 		final List<File> files = new ArrayList<>();
 		catalog.getEntries().stream().filter(e -> e.getEntryType() == Catalog.REWRITE_URI).forEach(e -> {
 			String folderPath = e.getEntryArg(1);
 			File path = new File(URI.createURI(folderPath).toFileString());
-			files.addAll(collectInputOmlFiles(path));
+			files.addAll(collectOmlFiles(path));
 		});
 		for (String subCatalogPath : catalog.getNestedCatalogs()) {
 			final OmlCatalog subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath));
-			files.addAll(collectInputOmlFiles(subCatalog));
+			files.addAll(collectOmlFiles(subCatalog));
 		}
 		return files;
 	}
 	
-	private List<File> collectInputOmlFiles(File path) {
+	private static List<File> collectOmlFiles(File path) {
 		final List<File> files;
 		if (path.isDirectory()) {
 			files = Arrays.asList(path.listFiles());
@@ -193,7 +193,7 @@ public class OmlValidateApp {
 		final List<File> omlFiles = new ArrayList<>();
 		for (File file : files) {
 			if (file.isDirectory()) {
-				omlFiles.addAll(collectInputOmlFiles(file));
+				omlFiles.addAll(collectOmlFiles(file));
 			} else if (file.isFile()) {
 				String ext = getFileExtension(file);
 				if (omlExtensions.contains(ext)) {
@@ -211,7 +211,7 @@ public class OmlValidateApp {
 		return omlFiles;
 	}
 	
-	private String getFileExtension(File file) {
+	private static String getFileExtension(File file) {
         String fileName = file.getName();
         if(fileName.lastIndexOf(".") != -1) {
         	return fileName.substring(fileName.lastIndexOf(".")+1);

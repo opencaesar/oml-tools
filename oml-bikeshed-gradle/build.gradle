@@ -4,4 +4,5 @@ description = 'A gradle interface to OML Bikeshed'
 dependencies {
 	implementation gradleApi()
     implementation project (':oml-bikeshed')
+	implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
 }

@@ -18,19 +18,50 @@
  */
 package io.opencaesar.oml.validate;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.emf.common.util.URI;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
+import org.gradle.work.Incremental;
 
-public class OmlValidateTask extends DefaultTask {
+import io.opencaesar.oml.util.OmlCatalog;
+
+public abstract class OmlValidateTask extends DefaultTask {
 	
+	@Input
 	public String inputCatalogPath;
     
-    public String outputReportPath;
-    
+    public void setInputCatalogPath(String s) {
+    	try {
+    		inputCatalogPath = s;
+    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
+    		Collection<File> files = OmlValidateApp.collectOmlFiles(inputCatalog);
+    		files.add(new File(s));
+    		getInputFiles().from(files);
+    	} catch (Exception e) {
+    		System.out.println(e);
+    	}
+    }
+
+    @Incremental
+    @InputFiles
+    public abstract ConfigurableFileCollection getInputFiles();
+
+    @OutputFile
+	public abstract RegularFileProperty getOutputReportPath();
+
+    public boolean debug;
+
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<String>();
@@ -38,12 +69,15 @@ public class OmlValidateTask extends DefaultTask {
 			args.add("-i");
 			args.add(inputCatalogPath);
 		}
-		if (outputReportPath != null) {
+		if (getOutputReportPath().isPresent()) {
 			args.add("-o");
-			args.add(outputReportPath);
+			args.add(getOutputReportPath().get().getAsFile().getAbsolutePath());
+		}
+		if (debug) {
+			args.add("-d");
 		}
 		try {
-        	OmlValidateApp.main(args.toArray(new String[0]));
+    		OmlValidateApp.main(args.toArray(new String[0]));
 		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}

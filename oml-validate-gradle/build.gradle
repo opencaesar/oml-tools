@@ -4,4 +4,5 @@ description = 'A gradle interface to OML Validate'
 dependencies {
 	implementation gradleApi()
     implementation project (':oml-validate')
+	implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
 }

@@ -22,48 +22,65 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputDirectory;
+import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
+import org.gradle.work.Incremental;
 
-public class OmlVelocityTask extends DefaultTask {
+public abstract class OmlVelocityTask extends DefaultTask {
 	
-	public String templateFolder;
+    @Incremental
+	@InputDirectory
+	public abstract DirectoryProperty getTemplateFolder();
     
-	public String templateInclude;
+    @Optional
+	@Input
+	public abstract Property<String> getTemplateInclude();
 
-	public String templateRename;
+    @Optional
+	@Input
+	public abstract Property<String> getTemplateRename();
 
-	public List<String> templateKeyValues;
+    @Optional
+	@Input
+	public abstract ListProperty<String> getTemplateKeyValues();
 
-	public String outputFolder;
+	@OutputDirectory
+	public abstract DirectoryProperty getOutputFolder();
     
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<String>();
-		if (templateFolder != null) {
+		if (getTemplateFolder().isPresent()) {
 			args.add("-t");
-			args.add(templateFolder);
+			args.add(getTemplateFolder().get().getAsFile().getAbsolutePath());
 		}
-		if (templateInclude != null) {
+		if (getTemplateInclude().isPresent()) {
 			args.add("-i");
-			args.add(templateInclude);
+			args.add(getTemplateInclude().get());
 		}
-		if (templateRename != null) {
+		if (getTemplateRename().isPresent()) {
 			args.add("-r");
-			args.add(templateRename);
+			args.add(getTemplateRename().get());
 		}
-		if (templateKeyValues != null) {
-			for (String templateKeyValue : templateKeyValues) {
+		if (getTemplateKeyValues().isPresent()) {
+			for (String templateKeyValue : getTemplateKeyValues().get()) {
 				args.add("-k");
 				args.add(templateKeyValue);
 			}
 		}
-		if (outputFolder != null) {
+		if (getOutputFolder().isPresent()) {
 			args.add("-o");
-			args.add(outputFolder);
+			args.add(getOutputFolder().get().getAsFile().getAbsolutePath());
 		}
 		try {
-        	OmlVelocityApp.main(args.toArray(new String[0]));
+    		OmlVelocityApp.main(args.toArray(new String[0]));
 		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}

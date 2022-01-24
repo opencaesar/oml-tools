@@ -189,7 +189,7 @@ class Oml2BikeshedApp {
 			val rootOntology = inputResourceSet.getResource(rootUri, true).contents.filter(Ontology).head
 			inputOntologies += (#[rootOntology] + rootOntology.allImports.map[importedOntology]).toSet.sortBy[iri]
 		} else {
-			val omlFiles = collectInputOmlFiles(inputCatalog)
+			val omlFiles = collectOmlFiles(inputCatalog)
 			for (omlFile : omlFiles) {
 				val ontologyUri = URI.createFileURI(omlFile.absolutePath)
 				var ontology = inputResourceSet.getResource(ontologyUri, true).contents.filter(Ontology).head
@@ -299,21 +299,21 @@ class Oml2BikeshedApp {
 	
 	// Utility methods
 
-	def Collection<File> collectInputOmlFiles(OmlCatalog catalog) {
+	def static Collection<File> collectOmlFiles(OmlCatalog catalog) {
 		val files = new ArrayList<File>
 		for (entry : catalog.entries.filter[entryType == Catalog.REWRITE_URI]) {
 			val folderPath = entry.getEntryArg(1)
 			val folder = new File(URI.createURI(folderPath).toFileString)
-			files.addAll(collectInputOmlFiles(folder))
+			files.addAll(collectOmlFiles(folder))
 		}
 		for (subCatalogPath : catalog.nestedCatalogs) {
 			val subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath))
-			files.addAll(collectInputOmlFiles(subCatalog))
+			files.addAll(collectOmlFiles(subCatalog))
 		}
 		return files
 	}
 	
-	def List<File> collectInputOmlFiles(File path) {
+	def static List<File> collectOmlFiles(File path) {
 		val files = if (path.isDirectory()) {
 			Arrays.asList(path.listFiles())
 		} else {
@@ -322,7 +322,7 @@ class Oml2BikeshedApp {
 		val omlFiles = new ArrayList<File>
 		for (file : files) {
 			if (file.isDirectory) {
-				omlFiles.addAll(collectInputOmlFiles(file))
+				omlFiles.addAll(collectOmlFiles(file))
 			} else if (file.isFile) {
 				val ext = getFileExtension(file)
 				if (OmlConstants.OML_EXTENSIONS.contains(ext)) {
@@ -358,7 +358,7 @@ class Oml2BikeshedApp {
 		return resolved
 	}
 
-	private def String getFileExtension(File file) {
+	private static def String getFileExtension(File file) {
         val fileName = file.getName()
         if(fileName.lastIndexOf(".") != -1)
         	return fileName.substring(fileName.lastIndexOf(".")+1)

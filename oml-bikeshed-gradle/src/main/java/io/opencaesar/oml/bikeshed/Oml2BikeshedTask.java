@@ -18,27 +18,67 @@
  */
 package io.opencaesar.oml.bikeshed;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.emf.common.util.URI;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputDirectory;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
+import org.gradle.work.Incremental;
 
-public class Oml2BikeshedTask extends DefaultTask {
+import io.opencaesar.oml.util.OmlCatalog;
+
+public abstract class Oml2BikeshedTask extends DefaultTask {
 	
+	@Input
 	public String inputCatalogPath;
 	
-	public String inputCatalogTitle;
-	
-	public String inputCatalogVersion;
-    
-    public String outputFolderPath;
-    
-    public String rootOntologyIri;
-    
-    public String publishUrl;
+    public void setInputCatalogPath(String s) {
+    	try {
+    		inputCatalogPath = s;
+    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
+    		Collection<File> files = Oml2BikeshedApp.collectOmlFiles(inputCatalog);
+    		files.add(new File(s));
+    		getInputFiles().from(files);
+    	} catch (Exception e) {
+    		System.out.println(e);
+    	}
+    }
 
+    @Incremental
+    @InputFiles
+    public abstract ConfigurableFileCollection getInputFiles();
+
+    @Optional
+    @Input
+	public abstract Property<String> getInputCatalogTitle();
+	
+    @Optional
+	@Input
+	public abstract Property<String> getInputCatalogVersion();
+    
+    @OutputDirectory
+	public abstract DirectoryProperty getOutputFolderPath();
+
+    @Optional
+    @Input
+    public abstract Property<String> getRootOntologyIri();
+    
+	@Input
+    public abstract Property<String> getPublishUrl();
+
+    public boolean debug;
+    
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<String>();
@@ -46,28 +86,31 @@ public class Oml2BikeshedTask extends DefaultTask {
 			args.add("-i");
 			args.add(inputCatalogPath);
 		}
-		if (inputCatalogTitle != null) {
+		if (getInputCatalogTitle().isPresent()) {
 			args.add("-it");
-			args.add(inputCatalogTitle);
+			args.add(getInputCatalogTitle().get());
 		}
-		if (inputCatalogVersion != null) {
+		if (getInputCatalogVersion().isPresent()) {
 			args.add("-iv");
-			args.add(inputCatalogVersion);
+			args.add(getInputCatalogVersion().get());
 		}
-		if (outputFolderPath != null) {
+		if (getOutputFolderPath().isPresent()) {
 			args.add("-o");
-			args.add(outputFolderPath);
+			args.add(getOutputFolderPath().get().getAsFile().getAbsolutePath());
 		}
-		if (publishUrl != null) {
+		if (getPublishUrl().isPresent()) {
 			args.add("-u");
-			args.add(publishUrl);
+			args.add(getPublishUrl().get());
 		}
-		if (rootOntologyIri != null) {
+		if (getRootOntologyIri().isPresent()) {
 			args.add("-r");
-			args.add(rootOntologyIri);
+			args.add(getRootOntologyIri().get());
+		}
+		if (debug) {
+			args.add("-d");
 		}
 		try {
-        	Oml2BikeshedApp.main(args.toArray(new String[0]));
+    		Oml2BikeshedApp.main(args.toArray(new String[0]));
 		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}
