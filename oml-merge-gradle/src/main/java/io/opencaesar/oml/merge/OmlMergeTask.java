@@ -40,6 +40,7 @@ public abstract class OmlMergeTask extends DefaultTask {
 	private Collection<File> inputZipPaths;
 
 	@Input
+	@Optional
 	public Collection<File> getInputZipPaths() { return inputZipPaths; }
 
     public void setInputZipPaths(Collection<File> files) {
@@ -50,6 +51,7 @@ public abstract class OmlMergeTask extends DefaultTask {
     private Collection<File> inputFolderPaths = null;
 
 	@Input
+	@Optional
 	public Collection<File> getInputFolderPaths() { return inputFolderPaths; }
 
     public void setInputFolderPaths(Collection<File> files) {
@@ -60,6 +62,7 @@ public abstract class OmlMergeTask extends DefaultTask {
     private Collection<File> inputCatalogPaths;
 
 	@Input
+	@Optional
 	public Collection<File> getInputCatalogPaths() { return inputCatalogPaths; }
 
     public void setInputCatalogPaths(Collection<File> files) {
