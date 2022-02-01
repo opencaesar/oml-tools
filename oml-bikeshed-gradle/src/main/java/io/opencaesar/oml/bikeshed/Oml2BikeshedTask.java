@@ -25,6 +25,7 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
@@ -40,9 +41,11 @@ import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class Oml2BikeshedTask extends DefaultTask {
 	
+	private String inputCatalogPath;
+
 	@Input
-	public String inputCatalogPath;
-	
+	public String getInputCatalogPath() { return inputCatalogPath; }
+
     public void setInputCatalogPath(String s) {
     	try {
     		inputCatalogPath = s;
@@ -51,7 +54,7 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
     		files.add(new File(s));
     		getInputFiles().from(files);
     	} catch (Exception e) {
-    		System.out.println(e);
+			throw new GradleException(e.getLocalizedMessage(), e);
     	}
     }
 
@@ -77,11 +80,13 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 	@Input
     public abstract Property<String> getPublishUrl();
 
-    public boolean debug;
+	@Input
+	@Optional
+	public abstract Property<Boolean> getDebug();
     
     @TaskAction
     public void run() {
-		List<String> args = new ArrayList<String>();
+		List<String> args = new ArrayList<>();
 		if (inputCatalogPath != null) {
 			args.add("-i");
 			args.add(inputCatalogPath);
@@ -106,7 +111,7 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 			args.add("-r");
 			args.add(getRootOntologyIri().get());
 		}
-		if (debug) {
+		if (getDebug().isPresent() && getDebug().get()) {
 			args.add("-d");
 		}
 		try {

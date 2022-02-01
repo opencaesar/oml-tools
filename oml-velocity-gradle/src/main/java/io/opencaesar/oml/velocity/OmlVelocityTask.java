@@ -56,7 +56,7 @@ public abstract class OmlVelocityTask extends DefaultTask {
     
     @TaskAction
     public void run() {
-		List<String> args = new ArrayList<String>();
+		List<String> args = new ArrayList<>();
 		if (getTemplateFolder().isPresent()) {
 			args.add("-t");
 			args.add(getTemplateFolder().get().getAsFile().getAbsolutePath());
