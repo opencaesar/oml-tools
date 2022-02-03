@@ -36,27 +36,27 @@ import org.gradle.work.Incremental;
 public abstract class OmlVelocityTask extends DefaultTask {
 	
     @Incremental
-	@InputDirectory
-	public abstract DirectoryProperty getTemplateFolder();
+    @InputDirectory
+    public abstract DirectoryProperty getTemplateFolder();
     
     @Optional
-	@Input
-	public abstract Property<String> getTemplateInclude();
+    @Input
+    public abstract Property<String> getTemplateInclude();
 
     @Optional
-	@Input
-	public abstract Property<String> getTemplateRename();
+    @Input
+    public abstract Property<String> getTemplateRename();
 
     @Optional
-	@Input
-	public abstract ListProperty<String> getTemplateKeyValues();
+    @Input
+    public abstract ListProperty<String> getTemplateKeyValues();
 
-	@OutputDirectory
-	public abstract DirectoryProperty getOutputFolder();
+    @OutputDirectory
+    public abstract DirectoryProperty getOutputFolder();
     
     @TaskAction
     public void run() {
-		List<String> args = new ArrayList<String>();
+		List<String> args = new ArrayList<>();
 		if (getTemplateFolder().isPresent()) {
 			args.add("-t");
 			args.add(getTemplateFolder().get().getAsFile().getAbsolutePath());

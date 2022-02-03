@@ -25,22 +25,19 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
-import org.gradle.api.tasks.Input;
-import org.gradle.api.tasks.InputFiles;
-import org.gradle.api.tasks.OutputFile;
-import org.gradle.api.tasks.TaskAction;
-import org.gradle.api.tasks.TaskExecutionException;
+import org.gradle.api.provider.Property;
+import org.gradle.api.tasks.*;
 import org.gradle.work.Incremental;
 
 import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class OmlValidateTask extends DefaultTask {
 	
-	@Input
-	public String inputCatalogPath;
-    
+    public String inputCatalogPath;
+
     public void setInputCatalogPath(String s) {
     	try {
     		inputCatalogPath = s;
@@ -49,7 +46,7 @@ public abstract class OmlValidateTask extends DefaultTask {
     		files.add(new File(s));
     		getInputFiles().from(files);
     	} catch (Exception e) {
-    		System.out.println(e);
+			throw new GradleException(e.getLocalizedMessage(), e);
     	}
     }
 
@@ -58,13 +55,15 @@ public abstract class OmlValidateTask extends DefaultTask {
     public abstract ConfigurableFileCollection getInputFiles();
 
     @OutputFile
-	public abstract RegularFileProperty getOutputReportPath();
+    public abstract RegularFileProperty getOutputReportPath();
 
-    public boolean debug;
+    @Input
+    @Optional
+    public abstract Property<Boolean> getDebug();
 
     @TaskAction
     public void run() {
-		List<String> args = new ArrayList<String>();
+		List<String> args = new ArrayList<>();
 		if (inputCatalogPath != null) {
 			args.add("-i");
 			args.add(inputCatalogPath);
@@ -73,7 +72,7 @@ public abstract class OmlValidateTask extends DefaultTask {
 			args.add("-o");
 			args.add(getOutputReportPath().get().getAsFile().getAbsolutePath());
 		}
-		if (debug) {
+		if (getDebug().isPresent() && getDebug().get()) {
 			args.add("-d");
 		}
 		try {

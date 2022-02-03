@@ -37,24 +37,21 @@ import org.gradle.work.Incremental;
 
 public abstract class OmlMergeTask extends DefaultTask {
 
-	@Input
-	public Collection<File> inputZipPaths = null;
-	
+    public Collection<File> inputZipPaths;
+
     public void setInputZipPaths(Collection<File> files) {
     	inputZipPaths = files;
    		getInputFiles().from(files);
     }
 
-    @Input
-	public Collection<File> inputFolderPaths = null;
-	
+    public Collection<File> inputFolderPaths = null;
+
     public void setInputFolderPaths(Collection<File> files) {
     	inputFolderPaths = files;
   		getInputFiles().from(files);
     }
 
-    @Input
-	public Collection<File> inputCatalogPaths = null;
+    public Collection<File> inputCatalogPaths;
 
     public void setInputCatalogPaths(Collection<File> files) {
     	inputCatalogPaths = files;
@@ -65,18 +62,20 @@ public abstract class OmlMergeTask extends DefaultTask {
     @InputFiles
     public abstract ConfigurableFileCollection getInputFiles();
 
-	@OutputDirectory
-	public abstract DirectoryProperty getOutputCatalogFolder();
+    @OutputDirectory
+    public abstract DirectoryProperty getOutputCatalogFolder();
     
 	@Optional
     @Input
     public abstract Property<Boolean> getGenerateOutputCatalog();
 
-    public boolean debug;
+    @Input
+    @Optional
+	public abstract Property<Boolean> getDebug();
 
     @TaskAction
     public void run() {
-    	List<String> args = new ArrayList<String>();
+    	List<String> args = new ArrayList<>();
     	if (null != inputZipPaths) {
 			for (File inputZipPath : inputZipPaths) {
 				args.add("-z");
@@ -104,11 +103,11 @@ public abstract class OmlMergeTask extends DefaultTask {
 				args.add("-g");
 			}
 		}
-		if (debug) {
+		if (getDebug().isPresent() && getDebug().get()) {
 			args.add("-d");
 		}
 		try {
-    		OmlMergeApp.main(args.toArray(new String[args.size()]));
+    		OmlMergeApp.main(args.toArray(new String[0]));
 		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}
