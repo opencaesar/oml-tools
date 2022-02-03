@@ -52,7 +52,7 @@ public abstract class OmlValidateTask extends DefaultTask {
 
     @Incremental
     @InputFiles
-    public abstract ConfigurableFileCollection getInputFiles();
+    protected abstract ConfigurableFileCollection getInputFiles();
 
     @OutputFile
     public abstract RegularFileProperty getOutputReportPath();

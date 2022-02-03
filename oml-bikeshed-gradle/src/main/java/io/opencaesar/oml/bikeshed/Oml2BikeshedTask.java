@@ -57,7 +57,7 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 
     @Incremental
     @InputFiles
-    public abstract ConfigurableFileCollection getInputFiles();
+    protected abstract ConfigurableFileCollection getInputFiles();
 
     @Optional
     @Input

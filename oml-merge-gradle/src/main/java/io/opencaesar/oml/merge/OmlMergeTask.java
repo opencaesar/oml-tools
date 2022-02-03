@@ -60,7 +60,7 @@ public abstract class OmlMergeTask extends DefaultTask {
 
     @Incremental
     @InputFiles
-    public abstract ConfigurableFileCollection getInputFiles();
+    protected abstract ConfigurableFileCollection getInputFiles();
 
     @OutputDirectory
     public abstract DirectoryProperty getOutputCatalogFolder();
