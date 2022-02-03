@@ -36,7 +36,7 @@ import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class OmlValidateTask extends DefaultTask {
 	
-	private String inputCatalogPath;
+	public String inputCatalogPath;
 
     public void setInputCatalogPath(String s) {
     	try {

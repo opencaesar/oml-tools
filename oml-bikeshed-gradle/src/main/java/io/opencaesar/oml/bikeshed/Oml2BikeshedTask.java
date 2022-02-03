@@ -41,7 +41,7 @@ import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class Oml2BikeshedTask extends DefaultTask {
 	
-	private String inputCatalogPath;
+	public String inputCatalogPath;
 
     public void setInputCatalogPath(String s) {
     	try {
