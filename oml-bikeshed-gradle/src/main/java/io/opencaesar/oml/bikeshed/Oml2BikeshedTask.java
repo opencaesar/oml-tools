@@ -41,7 +41,7 @@ import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class Oml2BikeshedTask extends DefaultTask {
 	
-	public String inputCatalogPath;
+    public String inputCatalogPath;
 
     public void setInputCatalogPath(String s) {
     	try {
@@ -77,9 +77,9 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 	@Input
     public abstract Property<String> getPublishUrl();
 
-	@Input
-	@Optional
-	public abstract Property<Boolean> getDebug();
+    @Input
+    @Optional
+    public abstract Property<Boolean> getDebug();
     
     @TaskAction
     public void run() {

@@ -36,7 +36,7 @@ import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class OmlValidateTask extends DefaultTask {
 	
-	public String inputCatalogPath;
+    public String inputCatalogPath;
 
     public void setInputCatalogPath(String s) {
     	try {
@@ -55,11 +55,11 @@ public abstract class OmlValidateTask extends DefaultTask {
     public abstract ConfigurableFileCollection getInputFiles();
 
     @OutputFile
-	public abstract RegularFileProperty getOutputReportPath();
+    public abstract RegularFileProperty getOutputReportPath();
 
-	@Input
-	@Optional
-	public abstract Property<Boolean> getDebug();
+    @Input
+    @Optional
+    public abstract Property<Boolean> getDebug();
 
     @TaskAction
     public void run() {

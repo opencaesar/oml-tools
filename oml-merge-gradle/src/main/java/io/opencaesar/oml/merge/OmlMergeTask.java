@@ -37,7 +37,7 @@ import org.gradle.work.Incremental;
 
 public abstract class OmlMergeTask extends DefaultTask {
 
-	public Collection<File> inputZipPaths;
+    public Collection<File> inputZipPaths;
 
     public void setInputZipPaths(Collection<File> files) {
     	inputZipPaths = files;
@@ -62,15 +62,15 @@ public abstract class OmlMergeTask extends DefaultTask {
     @InputFiles
     public abstract ConfigurableFileCollection getInputFiles();
 
-	@OutputDirectory
-	public abstract DirectoryProperty getOutputCatalogFolder();
+    @OutputDirectory
+    public abstract DirectoryProperty getOutputCatalogFolder();
     
 	@Optional
     @Input
     public abstract Property<Boolean> getGenerateOutputCatalog();
 
-	@Input
-	@Optional
+    @Input
+    @Optional
 	public abstract Property<Boolean> getDebug();
 
     @TaskAction
