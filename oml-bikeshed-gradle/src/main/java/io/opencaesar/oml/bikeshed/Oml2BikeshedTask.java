@@ -43,9 +43,6 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 	
 	private String inputCatalogPath;
 
-	@Input
-	public String getInputCatalogPath() { return inputCatalogPath; }
-
     public void setInputCatalogPath(String s) {
     	try {
     		inputCatalogPath = s;

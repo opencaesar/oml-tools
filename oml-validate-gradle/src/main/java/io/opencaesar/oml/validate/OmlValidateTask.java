@@ -38,10 +38,6 @@ public abstract class OmlValidateTask extends DefaultTask {
 	
 	private String inputCatalogPath;
 
-	@Input
-	public String getInputCatalogPath() { return inputCatalogPath; }
-
-
     public void setInputCatalogPath(String s) {
     	try {
     		inputCatalogPath = s;
