@@ -18,13 +18,20 @@
  */
 package io.opencaesar.oml.validate;
 
+import java.util.List;
+
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.util.Diagnostician;
 import org.eclipse.emf.ecore.util.EcoreUtil;
+import org.eclipse.xtext.EcoreUtil2;
 
 import io.opencaesar.oml.Member;
 import io.opencaesar.oml.Ontology;
+import io.opencaesar.oml.Reference;
+import io.opencaesar.oml.util.OmlRead;
 
 public class OmlValidator {
 
@@ -32,18 +39,31 @@ public class OmlValidator {
 		final Diagnostician diagnostician = new Diagnostician() {
 			@Override
 			public String getObjectLabel(EObject eObject) {
-			    if (eObject != null) {
-					final String name;
-				    if (eObject instanceof Member) {
-				    	name = ((Member)eObject).getAbbreviatedIri();
-				    } else if (eObject instanceof Ontology) {
-				    	name = ((Ontology)eObject).getIri();
-				    } else {
-				    	name = EcoreUtil.getID(eObject);
-				    }
-				    return eObject.eClass().getName()+" "+name;
+				String type = eObject.eClass().getName();
+				String name = getName(eObject);
+			    return type + (name.length()>0 ? " "+name : "");
+			}
+			private String getName(EObject eObject) {
+				if (eObject == null) {
+					return "null";
+				} else if (eObject.eIsProxy()) {
+		    		return ((InternalEObject)eObject).eProxyURI().toString();
+		    	} else if (eObject instanceof Member) {
+			    	return ((Member)eObject).getAbbreviatedIri();
+		    	} else if (eObject instanceof Reference) {
+		    		Member member = OmlRead.resolve((Reference)eObject);
+		    		if (member == null || member.eIsProxy())
+		    			return "";
+		    		return "ref/"+getName(member);
+			    } else if (eObject instanceof Ontology) {
+			    	return ((Ontology)eObject).getPrefix();
 			    } else {
-			    	return "<null>";
+			    	EReference eRef = eObject.eContainmentFeature();
+			    	int index = -1;
+			    	if (eRef.isMany()) {
+			    		index = ((List<?>)eObject.eContainer().eGet(eRef)).indexOf(eObject);
+			    	}
+			    	return getName(eObject.eContainer())+"/"+eRef.getName()+(index != -1 ? "["+index+"]" :"");
 			    }
 			}
 		};
