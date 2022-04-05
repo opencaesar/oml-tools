@@ -25,7 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -35,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.apache.xml.resolver.Catalog;
 import org.eclipse.emf.common.util.URI;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter;
@@ -44,11 +44,9 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-import io.opencaesar.oml.Ontology;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlConstants;
-import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.util.OmlXMIResourceFactory;
 
 public class OmlValidateApp {
@@ -137,29 +135,34 @@ public class OmlValidateApp {
 		// load the OML catalog
 		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogPath));
 
-		// validate each ontology in turn
-		try {
-			List<Ontology> ontologies = collectOmlFiles(inputCatalog).stream().
-				map(f -> URI.createFileURI(f.getAbsolutePath())).
-				map(u -> inputResourceSet.getResource(u, true)).
-				map(r -> OmlRead.getOntology(r)).
-				collect(Collectors.toList());
-			for(Ontology ontology : ontologies) {
-				OmlValidator.validate(ontology);
-			}
-		} catch (IllegalStateException e) {
-			if (outputReportPath != null) {
-				Files.write(Paths.get(outputReportPath), e.getMessage().getBytes());
-				throw new IllegalStateException("Problems validating OML catalog: check '"+outputReportPath+"' for details.");
-			} else {
-				throw e;
-			}
+		// validate each resource in turn
+		StringBuffer problems = new StringBuffer();
+		for(File file : collectOmlFiles(inputCatalog)) {
+			URI uri = URI.createFileURI(file.getAbsolutePath());
+			Resource r = inputResourceSet.getResource(uri, true);
+			String results = OmlValidator.validate(r);
+	        if (results.length()>0) {
+	        	if (problems.length()>0)
+	        		problems.append("\n\n");
+	        	problems.append(results);
+	        }
 		}
 		
-		// at this point, there is no error
-		File reportFile = new File(outputReportPath);
-		if (reportFile.exists()) {
-			reportFile.delete();
+		if (problems.length() > 0) {
+			if (outputReportPath != null) {
+				Files.write(Paths.get(outputReportPath), problems.toString().getBytes());
+				throw new IllegalStateException("Problems validating OML catalog: check '"+outputReportPath+"' for details.");
+			} else {
+				throw new IllegalStateException("Problems validating OML catalog:\n"+problems);
+			}
+		} else {
+			// there is no error, delete the report file
+			if (outputReportPath != null) {
+				File reportFile = new File(outputReportPath);
+				if (reportFile.exists()) {
+					reportFile.delete();
+				}
+			}
 		}
 		
 		LOGGER.info("=================================================================");

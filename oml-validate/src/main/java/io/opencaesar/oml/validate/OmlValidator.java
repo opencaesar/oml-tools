@@ -24,6 +24,7 @@ import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.InternalEObject;
+import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.Diagnostician;
 
 import io.opencaesar.oml.Member;
@@ -33,18 +34,20 @@ import io.opencaesar.oml.util.OmlRead;
 
 public class OmlValidator {
 
-	public static void validate(Ontology ontology) {
+	public static String validate(Ontology ontology) {
 		final Diagnostician diagnostician = new Diagnostician() {
 			@Override
 			public String getObjectLabel(EObject eObject) {
-				String type = eObject.eClass().getName();
-				String name = getName(eObject);
-			    return type + (name.length()>0 ? " "+name : "");
-			}
-			private String getName(EObject eObject) {
 				if (eObject == null) {
 					return "null";
-				} else if (eObject.eIsProxy()) {
+				} else {
+					String type = eObject.eClass().getName();
+					String name = getName(eObject);
+				    return type + (name.length()>0 ? " "+name : "");
+				}
+			}
+			private String getName(EObject eObject) {
+				if (eObject.eIsProxy()) {
 		    		return ((InternalEObject)eObject).eProxyURI().toString();
 		    	} else if (eObject instanceof Member) {
 			    	return ((Member)eObject).getAbbreviatedIri();
@@ -54,7 +57,7 @@ public class OmlValidator {
 		    			return "";
 		    		return "ref/"+getName(member);
 			    } else if (eObject instanceof Ontology) {
-			    	return ((Ontology)eObject).getPrefix();
+			    	return ((Ontology)eObject).getNamespace();
 			    } else {
 			    	EReference eRef = eObject.eContainmentFeature();
 			    	int index = -1;
@@ -66,17 +69,37 @@ public class OmlValidator {
 			}
 		};
 		
+		String problems = "";
 		final Diagnostic diagnostic = diagnostician.validate(ontology);
 		if (diagnostic.getSeverity() == Diagnostic.ERROR) {
 	        final StringBuilder sb = new StringBuilder(diagnostic.getMessage());
 	        for (final Diagnostic child : diagnostic.getChildren()) {
-	            if (child.getSeverity () == Diagnostic.ERROR) {
-	                sb.append ( System.lineSeparator () );
-	                sb.append ( child.getMessage () );
-	            }
-	        }
-	        throw new IllegalStateException (sb.toString());
+	             if (child.getSeverity () == Diagnostic.ERROR) {
+	                 sb.append ( System.lineSeparator () );
+	                 sb.append ("\t"+ child.getMessage () );
+	             }
+	         }
+	        problems = sb.toString();
 		}
+		return problems;
 	}
+
+	public static String validate(Resource resource) {
+	       final StringBuilder sb = new StringBuilder();
+	       if (!resource.getErrors().isEmpty()) {
+		       sb.append("Diagnosis of resource "+resource.getURI());
+		       for (final org.eclipse.emf.ecore.resource.Resource.Diagnostic diagnostic : resource.getErrors()) {
+	                sb.append ( System.lineSeparator () );
+	                sb.append ( "\t["+diagnostic.getLine()+", "+diagnostic.getColumn()+"]: "+diagnostic.getMessage () );
+		        }
+	       } else {
+				Ontology ontology = OmlRead.getOntology(resource);
+				String problems = validate(ontology);
+				if (problems.length()>0) {
+					sb.append(problems);
+				}
+	       }
+	       return sb.toString();
+		}
 
 }
