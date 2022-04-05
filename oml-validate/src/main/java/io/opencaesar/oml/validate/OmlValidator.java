@@ -94,9 +94,11 @@ public class OmlValidator {
 		        }
 	       } else {
 				Ontology ontology = OmlRead.getOntology(resource);
-				String problems = validate(ontology);
-				if (problems.length()>0) {
-					sb.append(problems);
+				if (ontology != null) {
+					String problems = validate(ontology);
+					if (problems.length()>0) {
+						sb.append(problems);
+					}
 				}
 	       }
 	       return sb.toString();
