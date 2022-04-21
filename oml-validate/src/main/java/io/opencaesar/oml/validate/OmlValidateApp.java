@@ -19,6 +19,7 @@
 package io.opencaesar.oml.validate;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -172,7 +173,7 @@ public class OmlValidateApp {
 	
 	// Utility methods
 
-	public static List<File> collectOmlFiles(OmlCatalog catalog) throws Exception {
+	public static List<File> collectOmlFiles(OmlCatalog catalog) throws IOException {
 		final List<File> files = new ArrayList<>();
 		catalog.getEntries().stream().filter(e -> e.getEntryType() == Catalog.REWRITE_URI).forEach(e -> {
 			String folderPath = e.getEntryArg(1);

@@ -20,12 +20,13 @@ package io.opencaesar.oml.merge;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.provider.ListProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputFiles;
@@ -37,30 +38,14 @@ import org.gradle.work.Incremental;
 
 public abstract class OmlMergeTask extends DefaultTask {
 
-    public Collection<File> inputZipPaths;
+	@InputFiles
+    public abstract ListProperty<File> getInputZipPaths();
 
-    public void setInputZipPaths(Collection<File> files) {
-    	inputZipPaths = files;
-   		getInputFiles().from(files);
-    }
+	@InputFiles
+    public abstract ListProperty<File> getInputFolderPaths();
 
-    public Collection<File> inputFolderPaths = null;
-
-    public void setInputFolderPaths(Collection<File> files) {
-    	inputFolderPaths = files;
-  		getInputFiles().from(files);
-    }
-
-    public Collection<File> inputCatalogPaths;
-
-    public void setInputCatalogPaths(Collection<File> files) {
-    	inputCatalogPaths = files;
-  		getInputFiles().from(files);
-    }
-
-    @Incremental
-    @InputFiles
-    protected abstract ConfigurableFileCollection getInputFiles();
+	@InputFiles
+    public abstract ListProperty<File> getInputCatalogPaths();
 
     @OutputDirectory
     public abstract DirectoryProperty getOutputCatalogFolder();
@@ -73,23 +58,36 @@ public abstract class OmlMergeTask extends DefaultTask {
     @Optional
 	public abstract Property<Boolean> getDebug();
 
+    @Incremental
+    @InputFiles
+	@SuppressWarnings("deprecation")
+    protected ConfigurableFileCollection getInputFiles() {
+    	if (!getInputZipPaths().get().isEmpty())
+    		return getProject().files(getInputZipPaths().get());
+    	if (!getInputFolderPaths().get().isEmpty())
+    		return getProject().files(getInputFolderPaths());
+    	if (!getInputCatalogPaths().get().isEmpty())
+    		return getProject().files(getInputCatalogPaths());
+		return getProject().files(Collections.EMPTY_LIST);
+    }
+
     @TaskAction
     public void run() {
     	List<String> args = new ArrayList<>();
-    	if (null != inputZipPaths) {
-			for (File inputZipPath : inputZipPaths) {
+    	if (!getInputZipPaths().get().isEmpty()) {
+			for (File inputZipPath : getInputZipPaths().get()) {
 				args.add("-z");
 				args.add(inputZipPath.getAbsolutePath());
 			}
 		}
-    	if (null != inputFolderPaths) {
-			for (File inputFolderPath : inputFolderPaths) {
+    	if (!getInputFolderPaths().get().isEmpty()) {
+			for (File inputFolderPath : getInputFolderPaths().get()) {
 				args.add("-f");
 				args.add(inputFolderPath.getAbsolutePath());
 			}
 		}
-    	if (null != inputCatalogPaths) {
-			for (File inputCatalogPath : inputCatalogPaths) {
+    	if (!getInputCatalogPaths().get().isEmpty()) {
+			for (File inputCatalogPath : getInputCatalogPaths().get()) {
 				args.add("-c");
 				args.add(inputCatalogPath.getAbsolutePath());
 			}

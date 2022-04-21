@@ -19,54 +19,60 @@
 package io.opencaesar.oml.validate;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.emf.common.util.URI;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.GradleException;
 import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.Property;
-import org.gradle.api.tasks.*;
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.InputFile;
+import org.gradle.api.tasks.InputFiles;
+import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputFile;
+import org.gradle.api.tasks.TaskAction;
+import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.work.Incremental;
 
 import io.opencaesar.oml.util.OmlCatalog;
 
 public abstract class OmlValidateTask extends DefaultTask {
 	
-    public String inputCatalogPath;
-
-    public void setInputCatalogPath(String s) {
-    	try {
-    		inputCatalogPath = s;
-    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
-    		Collection<File> files = OmlValidateApp.collectOmlFiles(inputCatalog);
-    		files.add(new File(s));
-    		getInputFiles().from(files);
-    	} catch (Exception e) {
-			throw new GradleException(e.getLocalizedMessage(), e);
-    	}
-    }
-
-    @Incremental
-    @InputFiles
-    protected abstract ConfigurableFileCollection getInputFiles();
+    @InputFile
+    public abstract Property<File> getInputCatalogPath();
 
     @OutputFile
     public abstract RegularFileProperty getOutputReportPath();
 
-    @Input
     @Optional
+    @Input
     public abstract Property<Boolean> getDebug();
+
+    @Incremental
+    @InputFiles
+	@SuppressWarnings("deprecation")
+    protected ConfigurableFileCollection getInputFiles() throws IOException {
+		if (getInputCatalogPath().isPresent()) {
+			String s = getInputCatalogPath().get().getAbsolutePath();
+    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
+    		Collection<File> files = OmlValidateApp.collectOmlFiles(inputCatalog);
+    		files.add(getInputCatalogPath().get());
+    		return getProject().files(files);
+		}
+		return getProject().files(Collections.EMPTY_LIST);
+   }
 
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<>();
-		if (inputCatalogPath != null) {
+		if (getInputCatalogPath().isPresent()) {
 			args.add("-i");
-			args.add(inputCatalogPath);
+			args.add(getInputCatalogPath().get().getAbsolutePath());
 		}
 		if (getOutputReportPath().isPresent()) {
 			args.add("-o");
