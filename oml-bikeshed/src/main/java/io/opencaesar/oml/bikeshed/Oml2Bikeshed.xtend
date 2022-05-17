@@ -60,7 +60,6 @@ import io.opencaesar.oml.ScalarPropertyRangeRestrictionAxiom
 import io.opencaesar.oml.ScalarPropertyRestrictionAxiom
 import io.opencaesar.oml.ScalarPropertyValueAssertion
 import io.opencaesar.oml.ScalarPropertyValueRestrictionAxiom
-import io.opencaesar.oml.SemanticProperty
 import io.opencaesar.oml.SpecializableTerm
 import io.opencaesar.oml.Structure
 import io.opencaesar.oml.StructuredProperty
@@ -75,12 +74,12 @@ import io.opencaesar.oml.VocabularyBundle
 import io.opencaesar.oml.VocabularyBundleExtension
 import io.opencaesar.oml.VocabularyBundleInclusion
 import io.opencaesar.oml.VocabularyExtension
+import io.opencaesar.oml.util.OmlSearch
 import java.util.ArrayList
 import java.util.Collection
 import org.eclipse.emf.common.util.URI
 
 import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
-import static extension io.opencaesar.oml.util.OmlIndex.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
 
@@ -282,8 +281,12 @@ class Oml2Bikeshed {
 		«IF entity instanceof RelationEntity»
 		
 			«IF entity.forwardRelation !== null»
-				«defRow('Forward Relation', '''
-					<dfn attribute for=«entity.name»>«entity.forwardRelation.name»</dfn>
+				«defRow('Forward relation', '''
+					«IF entity.forwardRelation.name.toLowerCase != entity.name.toLowerCase»
+					<dfn>«entity.forwardRelation.name»</dfn>
+					«ELSE»
+					«entity.forwardRelation.name»
+					«ENDIF»
 					«val relationDescription = entity.forwardRelation.getDescription(context)»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
@@ -292,8 +295,12 @@ class Oml2Bikeshed {
 			«ENDIF»
 			
 			«IF entity.reverseRelation !== null»
-				«defRow('Reverse Relation', '''
-					<dfn attribute for=«entity.name»>«entity.reverseRelation.name»</dfn>
+				«defRow('Reverse relation', '''
+					«IF entity.reverseRelation.name.toLowerCase != entity.name.toLowerCase»
+					<dfn>«entity.reverseRelation.name»</dfn>
+					«ELSE»
+					«entity.reverseRelation.name»
+					«ENDIF»
 					«val relationDescription = entity.reverseRelation.getDescription(context)»
 					«IF !relationDescription.empty»
 						<p>«relationDescription»</p>
@@ -311,8 +318,8 @@ class Oml2Bikeshed {
 		
 		«val propertyRestrictions = entity.findPropertyRestrictions.filter[r|context.contains(r)].toList»
 
-		«val propertiesDirect = entity.findSemanticPropertiesWithDomain.filter[p|context.contains(p)]»
-		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedFeature].filter(SemanticProperty) »
+		«val propertiesDirect = OmlSearch.findSemanticPropertiesWithDomain(entity).filter[p|context.contains(p)]»
+		«val propertiesWithRestrictions = propertyRestrictions.map[restrictedFeature] »
 		«val properties = (propertiesDirect + propertiesWithRestrictions).toSet»
 
 		«IF !properties.empty »
@@ -321,28 +328,28 @@ class Oml2Bikeshed {
 
 		«val keys = entity.findKeys.filter[k|context.contains(k)]»
 		«IF !keys.empty»
-			«defRow('Keys', keys.map[properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')].toUL)»
+			«defRow('Keys', keys.map[k|k.properties.sortBy[name].map['''<a spec="«ontology.iri»" lt="«name»">«getReferenceName(entity.ontology)»</a>'''].join(', ')].toUL)»
 		«ENDIF»
 		
 		«val relationRestrictions = entity.findRelationRestrictions.filter[r|context.contains(r)].toList»
 
-		«val domainRelationsDirect = entity.findRelationEntitiesWithSource.filter[e|context.contains(e)]»
-		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation).map[it.relationEntity] »
+		«val domainRelationsDirect = entity.findSourceRelations.filter[e|context.contains(e)]»
+		«val domainRelationsWithRangeRestrictions = relationRestrictions.map[relation].filter(ForwardRelation) »
 		«val domainRelations = (domainRelationsDirect + domainRelationsWithRangeRestrictions).toSet »
 		
 		«IF !domainRelations.empty »
-			«defRow('Relations with source', domainRelations.sortBy[name].map[dr|'''
-				«entity.name» ← «entity.ontology.toBikeshedReference(dr)» → «entity.ontology.toBikeshedReference(getRestrictedType(dr.forwardRelation, dr.target, entity.ontology, relationRestrictions))» «entity.ontology.noteRelationRestrictions(dr.forwardRelation, relationRestrictions)»
+			«defRow('Source relations', domainRelations.sortBy[name].map[r|'''
+				«r.toBikeshedReference(entity.ontology)» («entity.name» → «getRestrictedType(r, r.range, entity.ontology, relationRestrictions).toBikeshedReference(entity.ontology)») «entity.ontology.noteRelationRestrictions(r, relationRestrictions)»
 			'''].toUL)»
 		«ENDIF»
 		
-		«val rangeRelationsDirect = entity.findRelationEntitiesWithTarget.filter[e|context.contains(e)]»
-		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation).map[it.relationEntity]»
+		«val rangeRelationsDirect = entity.findTargetRelations.filter[e|context.contains(e)]»
+		«val rangeRelationsWithDomainRestrictions = relationRestrictions.map[relation].filter(ReverseRelation)»
 		«val rangeRelations = (rangeRelationsDirect + rangeRelationsWithDomainRestrictions).toSet»
 
 		«IF !rangeRelations.empty »
-			«defRow('Relations with target', rangeRelations.sortBy[name].map[dr|'''
-				«entity.ontology.toBikeshedReference(getRestrictedType(dr.reverseRelation, dr.source, entity.ontology, relationRestrictions))» ← «entity.ontology.toBikeshedReference(dr)» → «entity.name» «entity.ontology.noteRelationRestrictions(dr.reverseRelation, relationRestrictions)»
+			«defRow('Target relations', rangeRelations.sortBy[name].map[r|'''
+				«r.toBikeshedReference(entity.ontology)» («getRestrictedType(r, r.domain, entity.ontology, relationRestrictions).toBikeshedReference(entity.ontology)» → «entity.name») «entity.ontology.noteRelationRestrictions(r, relationRestrictions)»
 			'''].toUL)»
 		«ENDIF»
 		</table>
@@ -432,24 +439,28 @@ class Oml2Bikeshed {
 	'''
 	
 	private def dispatch String toBikeshed(TypePredicate predicate) '''
-		«predicate.type.name»(«predicate.variable.toString»)
+		«predicate.type.name»(«oneOf(predicate.variable)»)
 	'''
 		
 	private def dispatch String toBikeshed(RelationEntityPredicate predicate) '''
-		«predicate.entity.name»(«predicate.variable1.toString», «predicate.entityVariable.toString», «predicate.variable2.toString»)
+		«predicate.entity.name»(«oneOf(predicate.variable1)», «oneOf(predicate.entityVariable)», «oneOf(predicate.variable2, predicate.instance2)»)
 	'''
 	
 	private def dispatch String toBikeshed(FeaturePredicate predicate) '''
-		«predicate.feature.name»(«predicate.variable1.toString», «predicate.variable2.toString»)
+		«predicate.feature.name»(«oneOf(predicate.variable1)», «oneOf(predicate.variable2, predicate.instance2, predicate.literal2)»)
 	'''
 
     private def dispatch String toBikeshed(SameAsPredicate predicate) '''
-        sameAs(«predicate.variable1.toString», «predicate.variable2.toString»)
+        sameAs(«oneOf(predicate.variable1)», «oneOf(predicate.variable2, predicate.instance2)»)
     '''
 
     private def dispatch String toBikeshed(DifferentFromPredicate predicate) '''
-        differentFrom(«predicate.variable1.toString», «predicate.variable2.toString»)
+        differentFrom(«oneOf(predicate.variable1)», «oneOf(predicate.variable2, predicate.instance2)»)
     '''
+	
+	private def String oneOf(Object... options) {
+		return options.stream.filter[o | o !== null].findFirst.get.toString()
+	}
 	
 	private def dispatch String toBikeshed(NamedInstance instance) '''
 		«instance.sectionHeader»
@@ -466,14 +477,14 @@ class Oml2Bikeshed {
 		
 		<table class='def'>
 		«IF !types.empty»
-			«defRow('Types', types.map[scope.toBikeshedReference(it)].toUL)»
+			«defRow('Types', types.map[toBikeshedReference(scope)].toUL)»
 		«ENDIF»
 		«IF instance instanceof RelationInstance»
 			«IF !instance.sources.empty»
-				«defRow('Source', instance.sources.map[scope.toBikeshedReference(it)].toUL)»
+				«defRow('Source', instance.sources.map[toBikeshedReference(scope)].toUL)»
 			«ENDIF»
 			«IF !instance.targets.empty»
-				«defRow('Target', instance.targets.map[scope.toBikeshedReference(it)].toUL)»
+				«defRow('Target', instance.targets.map[toBikeshedReference(scope)].toUL)»
 			«ENDIF»
 		«ENDIF»
 		«val propertyValueAssertions = instance.findPropertyValueAssertions.filter[a|context.contains(a)].sortBy[property.name]»
@@ -482,7 +493,7 @@ class Oml2Bikeshed {
 		«ENDIF»
 		«val linkAssertions = instance.findLinkAssertions.filter[a|context.contains(a)].sortBy[relation.name]»
 		«IF !linkAssertions.empty»
-			«defRow('Links', linkAssertions.map[scope.toBikeshedReference(relation) + ' ' + scope.toBikeshedReference(target)].toUL)»
+			«defRow('Links', linkAssertions.map[relation.toBikeshedReference(scope) + ' ' + target.toBikeshedReference(scope)].toUL)»
 		«ENDIF»
 		</table>
 	'''
@@ -501,20 +512,22 @@ class Oml2Bikeshed {
 		pnames.toUL
 	}
 	
-	private static def String toBikeshedReference(Ontology scope, Member member) 
+	private static def String toBikeshedReference(Member member, Ontology scope) 
 	'''<a spec="«member.ontology.iri»" lt="«member.name»">«member.getReferenceName(scope)»</a>'''
 	
 	private static def String toBikeshedPropertyValue(Ontology scope, PropertyValueAssertion assertion) {
 		val valueText = switch (assertion) {
-			ScalarPropertyValueAssertion: assertion.value.stringValue
+			ScalarPropertyValueAssertion: 
+				assertion.value.lexicalValue
 			StructuredPropertyValueAssertion: '''
+				«assertion.value.type.toBikeshedReference(scope)»
 				«FOR subAssertion : assertion.value.ownedPropertyValues»
-				 * «scope.toBikeshedPropertyValue(subAssertion)»
+					* «scope.toBikeshedPropertyValue(subAssertion)»
 				«ENDFOR»
 			'''
 		}
 		'''
-		«scope.toBikeshedReference(assertion.property)» «valueText»'''
+		«assertion.property.toBikeshedReference(scope)» = «valueText»'''
 	}
 	
 	private def String getPlainDescription(Member member) '''
@@ -558,9 +571,9 @@ class Oml2Bikeshed {
 					ScalarPropertyRangeRestrictionAxiom: {
 						val range = axiom.range
 						if (axiom.kind == RangeRestrictionKind.ALL) {
-							'''must be of type «context.toBikeshedReference(range)»'''
+							'''must be of type «range.toBikeshedReference(context)»'''
 						} else {
-							'''must include instance of «context.toBikeshedReference(range)»'''
+							'''must include instance of «range.toBikeshedReference(context)»'''
 						}
 					}
 					ScalarPropertyCardinalityRestrictionAxiom: {
@@ -598,9 +611,9 @@ class Oml2Bikeshed {
 					StructuredPropertyRangeRestrictionAxiom: {
 						val range = axiom.range
 						if (axiom.kind == RangeRestrictionKind.ALL) {
-							'''must be of type «context.toBikeshedReference(range)»'''
+							'''must be of type «range.toBikeshedReference(context)»'''
 						} else {
-							'''must include at least some «context.toBikeshedReference(range)»'''
+							'''must include at least some «range.toBikeshedReference(context)»'''
 						}
 					}
 					StructuredPropertyCardinalityRestrictionAxiom: {
@@ -655,7 +668,7 @@ class Oml2Bikeshed {
 							if (axiom.kind == RangeRestrictionKind.ALL) {
 								""
 							} else {
-								'''«domainOrRange» must include at least some «context.toBikeshedReference(restrictedTo)»'''
+								'''«domainOrRange» must include at least some «restrictedTo.toBikeshedReference(context)»'''
 							}
 						}
 						RelationCardinalityRestrictionAxiom: {
@@ -667,7 +680,7 @@ class Oml2Bikeshed {
 							'''cardinality restricted to «kind» «axiom.cardinality»'''
 						}
 						RelationTargetRestrictionAxiom: {
-							'''«domainOrRange» restricted to instance «context.toBikeshedReference(axiom.target)»'''
+							'''«domainOrRange» restricted to instance «axiom.target.toBikeshedReference(context)»'''
 						}
 						default: axiom.toString
 					}
@@ -686,14 +699,20 @@ class Oml2Bikeshed {
 	private static def String defRow(String header, String content) '''
 		<tr>
 			<th>«header»</th>
-			<td>«content»</td>
+			<td>
+				«content»
+			</td>
 		</tr>
 	'''
 	
 	
 	private static def String toUL(Iterable<String> items) '''
 		<ul>
-			«items.map['<li>' + it + '</li>'].join('\n')»
+			«FOR item : items»
+			<li>
+				«item»
+			</li>
+			«ENDFOR»
 		</ul>
 	'''
 	
