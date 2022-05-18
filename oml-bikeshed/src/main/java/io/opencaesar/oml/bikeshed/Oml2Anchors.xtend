@@ -48,7 +48,7 @@ class Oml2Anchors {
 			«IF !ontology.members.empty»
 			urlPrefix: «urlPrefix»#; type: dfn; spec: «ontology.iri»
 				«FOR member: ontology.members»
-				text: «member.name»
+				text: «Oml2Bikeshed.getDfn(member)»
 				«ENDFOR»
 			«ENDIF»
 			
