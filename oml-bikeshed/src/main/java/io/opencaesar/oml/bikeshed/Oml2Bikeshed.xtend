@@ -83,6 +83,7 @@ import org.eclipse.emf.common.util.URI
 import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
+import java.util.Collections
 
 /**
  * Transform OML to Bikeshed
@@ -331,6 +332,12 @@ class Oml2Bikeshed {
 
 		«IF !relations.empty »
 			«defRow('Relations', relations.sortBy[abbreviatedIri].map[getRelationDescription(relationRestrictions, entity.ontology)].toUL)»
+		«ENDIF»
+
+		«val enumeratedInstances = (entity instanceof Concept) ? (entity as Concept).enumeratedInstances : Collections.emptyList»
+
+		«IF !enumeratedInstances.empty »
+			«defRow('Instances', enumeratedInstances.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»
 		«ENDIF»
 		</table>
 		
