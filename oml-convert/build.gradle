@@ -1,0 +1,23 @@
+plugins { id "org.xtext.xtend" version "2.0.8" }
+
+sourceSets {
+	main { xtendOutputDir = 'src/main/xtend-gen' }
+	test { xtendOutputDir = 'src/test/xtend-gen' }
+}
+
+apply plugin: 'application'
+
+ext.title = 'Oml Convert'
+description = 'Converter between the Oml persistance formats'
+mainClassName = 'io.opencaesar.oml.convert.OmlConvertApp'
+applicationName = 'oml-convert'
+
+dependencies {
+	implementation "com.beust:jcommander:${versions.jcommander}"
+	implementation "log4j:log4j:${versions.log4j}"
+	implementation "org.slf4j:slf4j-simple:${versions.slf4j}"
+	testImplementation "junit:junit:${versions.junit}"
+
+    implementation project (':oml-validate')
+    implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
+}

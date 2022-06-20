@@ -24,6 +24,8 @@ import com.beust.jcommander.Parameter
 import com.beust.jcommander.ParameterException
 import io.opencaesar.oml.Ontology
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
+import io.opencaesar.oml.resource.OmlJsonResourceFactory
+import io.opencaesar.oml.resource.OmlXMIResourceFactory
 import io.opencaesar.oml.util.OmlCatalog
 import io.opencaesar.oml.util.OmlConstants
 import io.opencaesar.oml.validate.OmlValidator
@@ -180,6 +182,8 @@ class Oml2BikeshedApp {
         val inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogFile.toString))
 		
 		OmlStandaloneSetup.doSetup
+		OmlXMIResourceFactory.register();
+		OmlJsonResourceFactory.register();
 		val inputResourceSet = new ResourceSetImpl
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 		

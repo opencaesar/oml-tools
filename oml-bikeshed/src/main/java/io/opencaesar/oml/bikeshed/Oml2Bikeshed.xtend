@@ -334,7 +334,7 @@ class Oml2Bikeshed {
 			«defRow('Relations', relations.sortBy[abbreviatedIri].map[getRelationDescription(relationRestrictions, entity.ontology)].toUL)»
 		«ENDIF»
 
-		«val enumeratedInstances = (entity instanceof Concept) ? (entity as Concept).enumeratedInstances : Collections.emptyList»
+		«val enumeratedInstances = (entity instanceof Concept) ? entity.enumeratedInstances : Collections.emptyList»
 
 		«IF !enumeratedInstances.empty »
 			«defRow('Instances', enumeratedInstances.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»

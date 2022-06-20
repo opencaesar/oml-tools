@@ -21,6 +21,10 @@ Requirements: JDK 11
 
 A tool to generate Bikeshed specification from an OML catalog
 
+## [OML Convert](oml-convert/README.md)
+
+A tool to convert OML files to another persistence format
+
 ## [OML Merge](oml-merge/README.md)
 
 A tool to merge two or more OML catalogs into a new OML catalog. 

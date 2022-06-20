@@ -1,0 +1,7 @@
+ext.title = 'OML Convert Gradle'
+description = 'A gradle interface to OML Convert'
+
+dependencies {
+	implementation gradleApi()
+    implementation project (':oml-convert')
+}

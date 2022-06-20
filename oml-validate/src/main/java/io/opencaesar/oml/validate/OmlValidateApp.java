@@ -46,9 +46,10 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
+import io.opencaesar.oml.resource.OmlJsonResourceFactory;
+import io.opencaesar.oml.resource.OmlXMIResourceFactory;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlConstants;
-import io.opencaesar.oml.util.OmlXMIResourceFactory;
 
 public class OmlValidateApp {
 
@@ -129,6 +130,7 @@ public class OmlValidateApp {
 		// initialize OML resource set
 		OmlStandaloneSetup.doSetup();
 		OmlXMIResourceFactory.register();
+		OmlJsonResourceFactory.register();
 		
 		final ResourceSet inputResourceSet = new ResourceSetImpl();
 		inputResourceSet.eAdapters().add(new ECrossReferenceAdapter());

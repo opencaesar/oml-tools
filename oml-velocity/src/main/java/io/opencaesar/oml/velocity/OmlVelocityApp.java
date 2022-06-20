@@ -162,7 +162,7 @@ public class OmlVelocityApp {
 		
 		final var inputBasePath = Path.of(templateFolderPath);
 		final var outputBasePath = Path.of(outputFolderPath);
-        final var templatePaths = collectTemplatelPaths(templateFolderPath, templateInclude);
+        final var templatePaths = collectTemplatePaths(templateFolderPath, templateInclude);
 		
 		for (Path templatePath : templatePaths) {
 			var templateFile = templatePath.toFile();
@@ -204,7 +204,7 @@ public class OmlVelocityApp {
 	
 	// Utility methods
 
-	private List<Path> collectTemplatelPaths(String location, String pattern) throws Exception {
+	private List<Path> collectTemplatePaths(String location, String pattern) throws Exception {
 		final var files = new ArrayList<Path>();
 		final PathMatcher pathMatcher = FileSystems.getDefault().getPathMatcher("glob:"+pattern);
 		Files.walkFileTree(Paths.get(location), new SimpleFileVisitor<Path>() {
