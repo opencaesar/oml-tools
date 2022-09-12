@@ -4,6 +4,10 @@ install: true
 jdk:
   - openjdk11
 
+cache:
+  directories:
+    - $HOME/.gradle
+
 script:
   - ./gradlew build
 
