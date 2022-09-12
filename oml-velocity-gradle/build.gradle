@@ -1,5 +1,5 @@
-ext.title = 'OML Velocity Gradle'
-description = 'A gradle interface to OML Velocity'
+ext.title = 'Oml Velocity Gradle'
+description = 'A gradle interface to Oml Velocity'
 
 dependencies {
 	implementation gradleApi()

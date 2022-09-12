@@ -78,12 +78,14 @@ import io.opencaesar.oml.VocabularyExtension
 import io.opencaesar.oml.util.OmlSearch
 import java.util.ArrayList
 import java.util.Collection
+import java.util.Collections
+import java.util.stream.Collectors
+import java.util.stream.IntStream
 import org.eclipse.emf.common.util.URI
 
 import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
-import java.util.Collections
 
 /**
  * Transform OML to Bikeshed
@@ -228,8 +230,11 @@ class Oml2Bikeshed {
 	'''
 
 	private def dispatch String toBikeshed(Import ^import) '''
-		«val importURI = URI.createURI(^import.iri).trimFileExtension.appendFileExtension('html')»
-			* [«^import.importedOntology?.iri»](«importURI»)«IF ^import.prefix !== null» [«^import.prefix»]«ENDIF»
+		«val n = URI.createURI(contextOntology.iri).segmentCount»
+		«val relativePath = IntStream.range(0, n).mapToObj(i| "../").collect(Collectors.joining(""))»
+		«var importURI = URI.createURI(^import.iri).appendFileExtension('html')»
+		«var importPath = relativePath + importURI.host + importURI.path»
+			* [«^import.importedOntology?.iri»](«importPath»)«IF ^import.prefix !== null» [«^import.prefix»]«ENDIF»
 	'''
 
 	private def dispatch String toBikeshed(SpecializableTerm term) '''

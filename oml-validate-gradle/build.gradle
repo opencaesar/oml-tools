@@ -1,5 +1,5 @@
-ext.title = 'OML Validate Gradle'
-description = 'A gradle interface to OML Validate'
+ext.title = 'Oml Validate Gradle'
+description = 'A gradle interface to Oml Validate'
 
 dependencies {
 	implementation gradleApi()

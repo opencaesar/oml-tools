@@ -81,26 +81,31 @@ public class OmlConvertApp {
 	enum OML_EXTENSIONS { oml, omlxmi, omljson }
 	
 	@Parameter(
+		names = { "--use-catalog", "-u" },
+		description = "Uses the catalog to resolve cross references (default: true, only relevant when output file extension is omlxmi or omljson)",
+		required = false,
+		arity = 1,
+		order = 4)
+	private boolean useCatalog = true;
+	
+	@Parameter(
 		names= {"-debug", "--d"}, 
 		description="Shows debug logging statements", 
-		order=4
-	)
+		order=5)
 	private boolean debug;
 
 	@Parameter(
 		names= {"--help","-h"}, 
 		description="Displays summary of options", 
 		help=true, 
-		order=5
-	)
+		order=6)
 	private boolean help;
 
 	@Parameter(
 		names= {"--version","-v"}, 
 		description="Displays app version", 
 		help=true, 
-		order=6
-	)
+		order=7)
 	private boolean version;
 	
 	private Logger LOGGER = LogManager.getLogger(OmlConvertApp.class);
@@ -142,10 +147,11 @@ public class OmlConvertApp {
 		LOGGER.info("Input catalog path= " + inputCatalogPath);
 		LOGGER.info("Output catalog path= " + outputCatalogPath);
 		LOGGER.info("Output file extension= " + outputFileExtension);
+		LOGGER.info("Use catalog= " + useCatalog);
 		
 		OmlStandaloneSetup.doSetup();
-		OmlXMIResourceFactory.register();
-		OmlJsonResourceFactory.register();
+		OmlXMIResourceFactory.register(useCatalog);
+		OmlJsonResourceFactory.register(useCatalog);
 		final var resourceSet = new ResourceSetImpl();
 		resourceSet.eAdapters().add(new ECrossReferenceAdapter());
 		
@@ -237,7 +243,7 @@ public class OmlConvertApp {
 		@Override
 		public void validate(final String name, final String value) throws ParameterException {
 			final File file = new File(value);
-			if (!file.getName().endsWith("catalog.xml")) {
+			if (!file.exists() || !file.getName().endsWith("catalog.xml")) {
 				throw new ParameterException((("Parameter " + name) + " should be a valid OML catalog path"));
 			}
 		}

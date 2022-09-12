@@ -373,7 +373,7 @@ public class OmlMergeApp {
         @Override
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
-            if (!file.getName().endsWith(".zip") || !file.exists()) {
+            if (!file.exists() || !file.getName().endsWith(".zip")) {
                 throw new ParameterException("Value " + value + " is not a path to an existing ZIP archive file.");
             }
         }
@@ -393,7 +393,7 @@ public class OmlMergeApp {
         @Override
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
-            if (!file.getName().endsWith("catalog.xml") || !file.exists()) {
+            if (!file.exists() || !file.getName().endsWith("catalog.xml")) {
                 throw new ParameterException("Value " + value + " is not a path to an existing catalog.xml");
             }
         }

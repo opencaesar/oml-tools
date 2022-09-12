@@ -43,6 +43,9 @@ public abstract class OmlConvertTask extends DefaultTask {
     @Input
     public abstract Property<String> getOutputExtension();
     
+    @Input
+    public abstract Property<Boolean> getUseCatalog();
+
     @Optional
     @Input
     public abstract Property<Boolean> getDeleteInputs();
@@ -61,6 +64,10 @@ public abstract class OmlConvertTask extends DefaultTask {
 		if (getOutputExtension().isPresent()) {
 			args.add("-o");
 			args.add(getOutputExtension().get());
+		}
+		if (getUseCatalog().isPresent()) {
+			args.add("-u");
+			args.add(getUseCatalog().get().toString());
 		}
 		if (getDeleteInputs().isPresent()) {
 			if (getDeleteInputs().get()) {

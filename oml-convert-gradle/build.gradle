@@ -1,5 +1,5 @@
-ext.title = 'OML Convert Gradle'
-description = 'A gradle interface to OML Convert'
+ext.title = 'Oml Convert Gradle'
+description = 'A gradle interface to Oml Convert'
 
 dependencies {
 	implementation gradleApi()

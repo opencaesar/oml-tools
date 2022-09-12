@@ -373,7 +373,7 @@ class Oml2BikeshedApp {
 	static class InputCatalogPath implements IParameterValidator {
 		override validate(String name, String value) throws ParameterException {
 			val file = new File(value)
-			if (!file.getName().endsWith("catalog.xml")) {
+			if (!file.exists() || !file.getName().endsWith("catalog.xml")) {
 				throw new ParameterException("Parameter " + name + " should be a valid OML catalog path")
 			}
 	  	}
