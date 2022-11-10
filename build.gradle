@@ -23,7 +23,7 @@ subprojects {
 
 	// This cannot be set to 17 until there is a 17-based version of OML and 17-based version of the Xtext/Xtend-related libraries.
 	sourceCompatibility = '11'
-	targetCompatibility = '17'
+	targetCompatibility = '11'
 
 	compileJava.options.encoding = 'UTF-8'
 	compileTestJava.options.encoding = 'UTF-8'
