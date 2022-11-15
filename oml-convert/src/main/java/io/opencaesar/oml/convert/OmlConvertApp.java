@@ -21,10 +21,8 @@ package io.opencaesar.oml.convert;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -49,10 +47,13 @@ import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.resource.OmlJsonResourceFactory;
 import io.opencaesar.oml.resource.OmlXMIResourceFactory;
 import io.opencaesar.oml.util.OmlCatalog;
+import io.opencaesar.oml.util.OmlConstants;
 import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.validate.OmlValidator;
 
-
+/**
+ * An application to convert between the different OML persistence formats 
+ */
 public class OmlConvertApp {
 
 	@Parameter(
@@ -136,8 +137,16 @@ public class OmlConvertApp {
 		app.run();
 	}
 
-	/*
+	/**
+	 * Creates a new OmlConvertApp object
+	 */
+	public OmlConvertApp() {
+	}
+	
+	/**
 	 * Run method
+	 * 
+	 * @throws Exception error
 	 */
 	public void run() throws Exception {
 		LOGGER.info("=================================================================");
@@ -212,16 +221,16 @@ public class OmlConvertApp {
 	
 	// Utility methods
 
-	public static Collection<File> collectOMLFiles(OmlCatalog inputCatalog) throws MalformedURLException, URISyntaxException {
-		var fileExtensions = new ArrayList<String>();
-		fileExtensions.add(OML_EXTENSIONS.oml.toString());
-		fileExtensions.add(OML_EXTENSIONS.omlxmi.toString());
-		fileExtensions.add(OML_EXTENSIONS.omljson.toString());
-		
+	/**
+	 * Returns all the OML Files referenced by the passed catalog
+	 * 
+	 * @param inputCatalog the Oml catalog
+	 * @return Collection of Files
+	 */
+	public static Collection<File> collectOMLFiles(OmlCatalog inputCatalog) {
 		final var omlFiles = new LinkedHashSet<File>();
-		for (URI uri : inputCatalog.getFileUris(fileExtensions)) {
-			File file = new File(new URL(uri.toString()).toURI().getPath());
-			omlFiles.add(file);
+		for (URI uri : inputCatalog.getFileUris(Arrays.asList(OmlConstants.OML_EXTENSIONS))) {
+			omlFiles.add(new File(uri.toFileString()));
 		}
 		return omlFiles;
 	}
@@ -239,7 +248,15 @@ public class OmlConvertApp {
         bw.close();
 	}
 
+	/**
+	 * The validator of input catalog paths
+	 */
 	public static class InputCatalogPath implements IParameterValidator {
+		/**
+		 * Creates a new InputCatalogPath object
+		 */
+		public InputCatalogPath() {
+		}
 		@Override
 		public void validate(final String name, final String value) throws ParameterException {
 			final File file = new File(value);
@@ -249,7 +266,15 @@ public class OmlConvertApp {
 		}
 	}
 
+	/**
+	 * The validator of output catalog paths
+	 */
 	public static class OutputCatalogPath implements IParameterValidator {
+		/**
+		 * Creates a new OutputCatalogPath object
+		 */
+		public OutputCatalogPath() {
+		}
 		@Override
 		public void validate(final String name, final String value) throws ParameterException {
 			final File file = new File(value);
@@ -263,7 +288,7 @@ public class OmlConvertApp {
 	 * Get application version id from properties file.
 	 * @return version string from build.properties or UNKNOWN
 	 */
-    public String getAppVersion() {
+    private String getAppVersion() {
     	var version = this.getClass().getPackage().getImplementationVersion();
     	return (version != null) ? version : "<SNAPSHOT>";
     }

@@ -1,3 +1,4 @@
+package io.opencaesar.oml.merge.tests;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;

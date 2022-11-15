@@ -36,31 +36,74 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.work.Incremental;
 
+/**
+ * A gradle task to invoke the OmlMerge tool 
+ */
 public abstract class OmlMergeTask extends DefaultTask {
 
+	/**
+	 * Creates a new OmlMergeTask object
+	 */
+	public OmlMergeTask() {
+	}
+
+	/**
+	 * The paths to input OML zip archives.
+	 * 
+	 * @return File List Property
+	 */
 	@InputFiles
     public abstract ListProperty<File> getInputZipPaths();
 
+	/**
+	 * The paths to input OML folders.
+	 * 
+	 * @return File List Property
+	 */
 	@InputFiles
     public abstract ListProperty<File> getInputFolderPaths();
 
+	/**
+	 * The paths to input OML catalog files.
+	 * 
+	 * @return File List Property
+	 */
 	@InputFiles
     public abstract ListProperty<File> getInputCatalogPaths();
 
+	/**
+	 * The path to output OML folder where a basic OML catalog will be created.
+	 * 
+	 * @return Directory Property
+	 */
     @OutputDirectory
     public abstract DirectoryProperty getOutputCatalogFolder();
     
+	/**
+	 * Whether to generate a catalog file in the output folder path.
+	 * 
+	 * @return Boolean Property
+	 */
 	@Optional
     @Input
     public abstract Property<Boolean> getGenerateOutputCatalog();
 
+	/**
+	 * Whether to show debug logging statements.
+	 * 
+	 * @return Boolean Property
+	 */
     @Input
     @Optional
 	public abstract Property<Boolean> getDebug();
 
+	/**
+	 * The input OML files
+	 * 
+	 * @return ConfigurableFileCollection
+	 */
     @Incremental
     @InputFiles
-	@SuppressWarnings("deprecation")
     protected ConfigurableFileCollection getInputFiles() {
     	if (!getInputZipPaths().get().isEmpty())
     		return getProject().files(getInputZipPaths().get());
@@ -71,6 +114,9 @@ public abstract class OmlMergeTask extends DefaultTask {
 		return getProject().files(Collections.EMPTY_LIST);
     }
 
+    /**
+     * The gradle task action logic.
+     */
     @TaskAction
     public void run() {
     	List<String> args = new ArrayList<>();

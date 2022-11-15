@@ -35,9 +35,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -53,32 +55,37 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import io.opencaesar.oml.util.OmlConstants;
+
+/**
+ * An app to unzip and merge a set of archived files into a folder
+ */
 public class OmlMergeApp {
 
     @Parameter(
             names = {"--input-zip-path", "-z"},
-            description = "Paths to OML zip archives (Not required)",
+            description = "Paths to input OML zip archives (Not required)",
             validateWith = InputZipPath.class,
             order = 1)
     private List<String> inputZipPaths = new ArrayList<>();
 
     @Parameter(
             names = {"--input-folder-path", "-f"},
-            description = "Paths to OML folders (Not required)",
+            description = "Paths to input OML folders (Not required)",
             validateWith = InputFolderPath.class,
             order = 2)
     private List<String> inputFolderPaths = new ArrayList<>();
 
     @Parameter(
             names = {"--input-catalog-path", "-c"},
-            description = "Paths to OML input catalog files (Required)",
+            description = "Paths to input OML catalog files (Required)",
             validateWith = InputCatalogPath.class,
             order = 3)
     private List<String> inputCatalogPaths = new ArrayList<>();
 
     @Parameter(
             names = {"--output-folder-path", "-o"},
-            description = "Path to OML output folder where a basic OML catalog will be created (Required)",
+            description = "Path to output OML folder where a basic OML catalog will be created (Required)",
             validateWith = OutputFilePath.class,
             required = true,
             order = 4)
@@ -86,25 +93,31 @@ public class OmlMergeApp {
 
     @Parameter(
             names = {"--generate-output-catalog", "-g"},
-            description = "Generate a catalog file in the output folder path",
+            description = "Whether to generate a catalog file in the output folder path",
             order = 5)
     private boolean generateOutputCatalog;
 
     @Parameter(
             names = {"--debug", "-d"},
-            description = "Shows debug logging statements",
+            description = "Whether to show debug logging statements",
             order = 6)
     private boolean debug;
 
     @Parameter(
             names = {"--help", "-h"},
-            description = "Displays summary of options",
+            description = "Whether to displaya a summary of options",
             help = true,
             order = 7)
     private boolean help;
 
     private final Logger LOGGER = Logger.getLogger(OmlMergeApp.class);
 
+	/**
+	 * Main method
+	 * 
+	 * @param args command line arguments for the app
+	 * @throws Exception when template instantiation has a problem
+	 */
     public static void main(final String... args) throws Exception {
         final OmlMergeApp app = new OmlMergeApp();
         final JCommander builder = JCommander.newBuilder().addObject(app).build();
@@ -123,6 +136,18 @@ public class OmlMergeApp {
             System.exit(255);
     }
 
+    /**
+     * Creates a new OmlMergeApp object
+     */
+    public OmlMergeApp() {
+    }
+
+	/**
+	 * Run method
+	 * 
+	 * @return List of UniqueFiles
+	 * @throws IOException error
+	 */
     public List<UniqueFile> run() throws IOException {
         LOGGER.info("=================================================================");
         LOGGER.info("                        S T A R T");
@@ -178,20 +203,20 @@ public class OmlMergeApp {
             }
             zis.close();
             Collection<UniqueFile> ufs = collectOMLUniqueFiles(dir.toFile());
-            allInputs.add(new InputFiles(inputZipPath, dir, ufs));
+            allInputs.add(new InputFiles(inputZipPath, ufs));
         }
 
         for (String inputFolderPath : inputFolderPaths) {
             File dir = new File(inputFolderPath);
             Collection<UniqueFile> ufs = collectOMLUniqueFiles(dir);
-            allInputs.add(new InputFiles(inputFolderPath, dir.toPath(), ufs));
+            allInputs.add(new InputFiles(inputFolderPath, ufs));
         }
 
         for (String inputCatalogPath : inputCatalogPaths) {
             File inputCatalogFile = new File(inputCatalogPath);
             File inputFolder = inputCatalogFile.getParentFile();
             Collection<UniqueFile> ufs = collectOMLUniqueFiles(inputFolder);
-            allInputs.add(new InputFiles(inputCatalogPath, inputFolder.toPath(), ufs));
+            allInputs.add(new InputFiles(inputCatalogPath, ufs));
         }
 
         Map<Path, UniqueFile> uniqueFiles = new HashMap<>();
@@ -267,7 +292,7 @@ public class OmlMergeApp {
         }
     }
 
-    public static Collection<UniqueFile> collectOMLUniqueFiles(File directory) throws IOException {
+    private static Collection<UniqueFile> collectOMLUniqueFiles(File directory) throws IOException {
         Path top = directory.toPath();
         Collection<UniqueFile> ufiles = new ArrayList<>();
         for (PathAndExtension pe : collectOMLFiles(directory)) {
@@ -276,17 +301,14 @@ public class OmlMergeApp {
         return ufiles;
     }
 
-    public final static String OML = "oml";
-    public final static String OMLXMI = "omlxmi";
+    private final static Set<String> OML_EXTENSIONS = new HashSet<String>(Arrays.asList(OmlConstants.OML_EXTENSIONS));
 
-    public static Collection<PathAndExtension> collectOMLFiles(File directory) throws IOException {
+    private static Collection<PathAndExtension> collectOMLFiles(File directory) throws IOException {
         List<PathAndExtension> omlFiles = new ArrayList<>();
         for (File file : Objects.requireNonNull(directory.listFiles())) {
             if (file.isFile()) {
                 String ext = getFileExtension(file);
-                if (ext.equals(OML)) {
-                    omlFiles.add(new PathAndExtension(file, ext));
-                } else if (ext.equals(OMLXMI)) {
+                if (OML_EXTENSIONS.contains(ext)) {
                     omlFiles.add(new PathAndExtension(file, ext));
                 }
             } else if (file.isDirectory()) {
@@ -309,15 +331,18 @@ public class OmlMergeApp {
      *
      * @return version string from build.properties or UNKNOWN
      */
-    public String getAppVersion() {
+    private String getAppVersion() {
     	var version = this.getClass().getPackage().getImplementationVersion();
     	return (version != null) ? version : "<SNAPSHOT>";
     }
 
-    public static class PathAndExtension {
-        public final Path absolutePath;
-        public final String extension;
-        public byte[] hash;
+    /**
+     * A class representing a path and an extension 
+     */
+    private static class PathAndExtension {
+    	private final Path absolutePath;
+    	private final String extension;
+    	private byte[] hash;
 
         public PathAndExtension(File file, String extension) throws IOException {
             String path = file.getAbsolutePath();
@@ -329,14 +354,23 @@ public class OmlMergeApp {
         }
     }
 
+    /**
+     * A class representing a unique file 
+     */
     public static class UniqueFile {
-        public final Path top;
-        public final Path relativePath;
-        public final String extension;
-        public final byte[] hash;
-        public final List<String> inputs = new ArrayList<>();
-        public final List<String> differentInputs = new ArrayList<>();
+        private final Path top;
+        private final Path relativePath;
+        private final String extension;
+        private final byte[] hash;
+        private final List<String> inputs = new ArrayList<>();
+        private final List<String> differentInputs = new ArrayList<>();
 
+        /**
+         * Creates a new UniqueFile object
+         * 
+         * @param top the top path
+         * @param pe the path and extension
+         */
         public UniqueFile(Path top, PathAndExtension pe) {
             this.top = top;
             this.relativePath = top.relativize(pe.absolutePath);
@@ -344,6 +378,11 @@ public class OmlMergeApp {
             this.hash = pe.hash;
         }
 
+        /**
+         * Return a string representing an error
+         * 
+         * @return String
+         */
         public String toError() {
             StringBuffer buff = new StringBuffer();
             buff.append("Different contents for path: ").append(relativePath).append(".").append(extension)
@@ -357,19 +396,28 @@ public class OmlMergeApp {
         }
     }
 
-    public static class InputFiles {
-        public final String input;
-        public final Path top;
-        public final Collection<UniqueFile> files;
+    /**
+     * A class representing a collection of input files 
+     */
+    private static class InputFiles {
+    	private final String input;
+    	private final Collection<UniqueFile> files;
 
-        public InputFiles(String input, Path top, Collection<UniqueFile> files) {
+        public InputFiles(String input, Collection<UniqueFile> files) {
             this.input = input;
-            this.top = top;
             this.files = files;
         }
     }
 
+    /**
+     * The validator of the input zip path 
+     */
     public static class InputZipPath implements IParameterValidator {
+    	/**
+    	 * Creates a new InputZipPath object
+    	 */
+    	public InputZipPath() {
+    	}
         @Override
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
@@ -379,7 +427,15 @@ public class OmlMergeApp {
         }
     }
 
+    /**
+     * The validator of the input folder path 
+     */
     public static class InputFolderPath implements IParameterValidator {
+    	/**
+    	 * Creates a new InputFolderPath object
+    	 */
+    	public InputFolderPath() {
+    	}
         @Override
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
@@ -389,7 +445,15 @@ public class OmlMergeApp {
         }
     }
 
+    /**
+     * The validator of the input catalog path 
+     */
     public static class InputCatalogPath implements IParameterValidator {
+    	/**
+    	 * Creates a new InputCatalogPath object
+    	 */
+    	public InputCatalogPath() {
+    	}
         @Override
         public void validate(final String name, final String value) throws ParameterException {
             File file = new File(value);
@@ -399,7 +463,15 @@ public class OmlMergeApp {
         }
     }
 
+    /**
+     * The validator of the input file path 
+     */
     public static class OutputFilePath implements IParameterValidator {
+    	/**
+    	 * Creates a new OutputFilePath object
+    	 */
+    	public OutputFilePath() {
+    	}
         @Override
         public void validate(final String name, final String value) throws ParameterException {
             new File(value).mkdirs();

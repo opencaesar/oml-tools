@@ -33,27 +33,64 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.work.Incremental;
 
+/**
+ * A gradle task to run the OmlVelocity tool 
+ */
 public abstract class OmlVelocityTask extends DefaultTask {
 	
+	/**
+	 * Creates a new OmlVelocityTask object
+	 */
+	public OmlVelocityTask() {
+	}
+	
+	/**
+	 * The path to an OML template folder.
+	 * 
+	 * @return Directory Property
+	 */
     @Incremental
     @InputDirectory
     public abstract DirectoryProperty getTemplateFolder();
     
+	/**
+	 * The (glob) pattern matching the template files to include (default: **\/*.oml).
+	 * 
+	 * @return String Property
+	 */
     @Optional
     @Input
     public abstract Property<String> getTemplateInclude();
 
+	/**
+	 * The string old:new to find and replace in a template name.
+	 * 
+	 * @return String Property
+	 */
     @Optional
     @Input
     public abstract Property<String> getTemplateRename();
 
+	/**
+	 * The key=value pair to pass as a context when instantiating templates.
+	 * 
+	 * @return List of String Property
+	 */
     @Optional
     @Input
     public abstract ListProperty<String> getTemplateKeyValues();
 
+	/**
+	 * The path to an output folder for template instantiations.
+	 * 
+	 * @return Directory Property
+	 */
     @OutputDirectory
     public abstract DirectoryProperty getOutputFolder();
     
+    /**
+     * The gradle task action logic.
+     */
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<>();

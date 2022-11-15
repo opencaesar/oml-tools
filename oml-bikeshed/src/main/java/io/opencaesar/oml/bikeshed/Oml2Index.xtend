@@ -28,7 +28,7 @@ import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
  * Generate the index file. We produce this as a bikeshed spec as well in order to 
  * get the bikeshed styling.
  */
-class Oml2Index {
+package class Oml2Index {
 
 	static def String addHeader(String url, String title, String version) '''
 		<pre class='metadata'>
