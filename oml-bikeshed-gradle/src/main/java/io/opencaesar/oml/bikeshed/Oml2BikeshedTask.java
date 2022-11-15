@@ -41,33 +41,83 @@ import org.gradle.work.Incremental;
 
 import io.opencaesar.oml.util.OmlCatalog;
 
+/**
+ * A gradle task to invoke the Oml2Bikeshed tool 
+ */
 public abstract class Oml2BikeshedTask extends DefaultTask {
+
+	/**
+	 * Creates a new Oml2BikeshedTask object
+	 */
+	public Oml2BikeshedTask() {
+	}
 	
+	/**
+	 * The path to an input OML catalog
+	 * 
+	 * @return File Property
+	 */
 	@InputFile
     public abstract Property<File> getInputCatalogPath();
 
+	/**
+	 * The title of OML input catalog
+	 * 
+	 * @return String Property
+	 */
     @Optional
     @Input
 	public abstract Property<String> getInputCatalogTitle();
 	
-    @Optional
+	/**
+	 * The version of OML input catalog
+	 * 
+	 * @return String Property
+	 */
+   @Optional
 	@Input
 	public abstract Property<String> getInputCatalogVersion();
     
-    @OutputDirectory
+	/**
+	 * The path of Bikeshed output folder
+	 * 
+	 * @return Directory Property
+	 */
+   @OutputDirectory
 	public abstract DirectoryProperty getOutputFolderPath();
 
+	/**
+	 * The root OML ontology IRI
+	 * 
+	 * @return String Property
+	 */
     @Optional
     @Input
     public abstract Property<String> getRootOntologyIri();
     
+	/**
+	 * The URL where the Bikeshed documentation will be published
+	 * 
+	 * @return String Property
+	 */
 	@Input
     public abstract Property<String> getPublishUrl();
 
+	/**
+	 * The debug flag
+	 * 
+	 * @return Boolean Property
+	 */
     @Input
     @Optional
     public abstract Property<Boolean> getDebug();
     
+	/**
+	 * The collection of input OML files referenced by the OML catalog
+	 * 
+	 * @return ConfigurableFileCollection
+     * @throws IOException error
+	 */
     @Incremental
     @InputFiles
 	@SuppressWarnings("deprecation")
@@ -82,6 +132,9 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 		return getProject().files(Collections.EMPTY_LIST);
    }
 
+    /**
+     * The gradle task action logic.
+     */
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<>();

@@ -41,21 +41,50 @@ import org.gradle.work.Incremental;
 
 import io.opencaesar.oml.util.OmlCatalog;
 
+/**
+ * A gradle task to run the OmlValidate tool 
+ */
 public abstract class OmlValidateTask extends DefaultTask {
+
+	/**
+	 * Creates a new OmlValidateTask object
+	 */
+	public OmlValidateTask() {
+	}
 	
+	/**
+	 * The path of OML input catalog.
+	 * 
+	 * @return File Property
+	 */
     @InputFile
     public abstract Property<File> getInputCatalogPath();
 
+	/**
+	 * The path of output report file.
+	 * 
+	 * @return RegularFile Property
+	 */
     @OutputFile
     public abstract RegularFileProperty getOutputReportPath();
 
-    @Optional
+	/**
+	 * Whether to show debug logging statements.
+	 * 
+	 * @return Boolean Property
+	 */
+   @Optional
     @Input
     public abstract Property<Boolean> getDebug();
 
+	/**
+	 * The input OML files
+	 * 
+	 * @return ConfigurableFileCollection
+	 * @throws IOException error
+	 */
     @Incremental
     @InputFiles
-	@SuppressWarnings("deprecation")
     protected ConfigurableFileCollection getInputFiles() throws IOException {
 		if (getInputCatalogPath().isPresent()) {
 			String s = getInputCatalogPath().get().getAbsolutePath();
@@ -67,6 +96,9 @@ public abstract class OmlValidateTask extends DefaultTask {
 		return getProject().files(Collections.EMPTY_LIST);
    }
 
+    /**
+     * The gradle task action logic.
+     */
     @TaskAction
     public void run() {
 		List<String> args = new ArrayList<>();

@@ -51,6 +51,9 @@ import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
 
 import static extension io.opencaesar.oml.util.OmlRead.*
 
+/**
+ * The transformation from Oml to Bikeshed
+ */
 class Oml2BikeshedApp {
 
 	@Parameter(
@@ -165,6 +168,11 @@ class Oml2BikeshedApp {
 		}
 		app.run()
 	}
+
+	/**
+	 * Creates a new Oml2Bikeshed object
+	 */
+	new() {}
 
 	/*
 	 * Run method
@@ -302,7 +310,13 @@ class Oml2BikeshedApp {
 	}
 	
 	// Utility methods
-
+	
+	/**
+	 * Returns a collection of OML Files referenced by an OML catalog
+	 * 
+	 * @param catalog An OML catalog
+	 * @return Collection of Files
+	 */
 	def static Collection<File> collectOmlFiles(OmlCatalog catalog) {
 		val files = new ArrayList<File>
 		for (entry : catalog.entries.filter[entryType == Catalog.REWRITE_URI]) {
@@ -317,7 +331,7 @@ class Oml2BikeshedApp {
 		return files
 	}
 	
-	def static List<File> collectOmlFiles(File path) {
+	private def static List<File> collectOmlFiles(File path) {
 		val files = if (path.isDirectory()) {
 			Arrays.asList(path.listFiles())
 		} else {
@@ -344,7 +358,7 @@ class Oml2BikeshedApp {
 		return omlFiles
 	}
 
-	static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
+	private static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
 		val resolved = URI.createURI(catalog.resolveURI(rootOntologyIri))
 		
 		if (resolved.file) {
@@ -369,8 +383,15 @@ class Oml2BikeshedApp {
         else 
         	return ""
     }
-
+	
+	/**
+	 * The validator for input catalog paths
+	 */
 	static class InputCatalogPath implements IParameterValidator {
+		/**
+		 * Creates a new InputCatalogPath object
+		 */
+		new() {}
 		override validate(String name, String value) throws ParameterException {
 			val file = new File(value)
 			if (!file.exists() || !file.getName().endsWith("catalog.xml")) {
@@ -379,7 +400,14 @@ class Oml2BikeshedApp {
 	  	}
 	}
 
+	/**
+	 * The validator for output folder paths
+	 */
 	static class OutputFolderPath implements IParameterValidator {
+		/**
+		 * Creates a new OutputFolderPath object
+		 */
+		new() {}
 		override validate(String name, String value) throws ParameterException {
 			val directory = new File(value).absoluteFile
 			if (!directory.isDirectory) {
@@ -395,7 +423,7 @@ class Oml2BikeshedApp {
 	 * Get application version id from properties file.
 	 * @return version string from build.properties or UNKNOWN
 	 */
-	def String getAppVersion() {
+	private def String getAppVersion() {
     	var version = this.getClass().getPackage().getImplementationVersion();
     	return (version !== null) ? version : "<SNAPSHOT>";
 	}

@@ -97,7 +97,7 @@ import static extension io.opencaesar.oml.util.OmlSearch.*
  * See: Bikeshed Reference https://tabatkins.github.io/bikeshed/
  * 
  */
-class Oml2Bikeshed {
+package class Oml2Bikeshed {
 
 	val Ontology contextOntology
 	val OmlSearchContext context
@@ -171,7 +171,7 @@ class Oml2Bikeshed {
 		«vocabulary.toStatement("# Concepts # {#concepts}", Concept)»
 		«vocabulary.toStatement("# Relation Entities # {#Relations}", RelationEntity)»
 		«vocabulary.toStatement("# Structures # {#Structures}", Structure)»
-		«vocabulary.toStatement("# Scalars # {#Scalars}", #[FacetedScalar, EnumeratedScalar])»
+		«vocabulary.toStatement("# Scalars # {#Scalars}", Scalar)»
 		«vocabulary.toStatement("# Annotation Properties # {#AnnotationProperties}", AnnotationProperty)»
 		«vocabulary.toStatement("# Structured Properties # {#StructuredProperties}", StructuredProperty)»
 		«vocabulary.toStatement("# Scalar Properties # {#ScalarProperties}", ScalarProperty)»
@@ -207,8 +207,8 @@ class Oml2Bikeshed {
 			
 	'''
 	
-	private def <T extends Element> String toImport(Ontology ontology, String heading, Class<T>...types) '''
-		«val elements = types.map[type|ontology.imports.filter(type)].flatten»
+	private def <T extends Import> String toImport(Ontology ontology, String heading, Class<T> type) '''
+		«val elements = ontology.imports.filter(type)»
 		«IF !elements.empty»
 		«heading»
 		«FOR element : elements»
@@ -218,8 +218,8 @@ class Oml2Bikeshed {
 		«ENDIF»
 	'''
 	
-	private def <T extends Member> String toStatement(Ontology ontology, String heading, Class<T>...types) '''
-		«val elements = types.map[ontology.statements.filter(it)].flatten»
+	private def <T extends Member> String toStatement(Ontology ontology, String heading, Class<T> type) '''
+		«val elements = ontology.statements.filter(type)»
 		«IF !elements.empty»
 		«heading»
 		«FOR element : elements.sortBy[abbreviatedIri]»
@@ -450,8 +450,13 @@ class Oml2Bikeshed {
         differentFrom(«oneOf(predicate.variable1)», «oneOf(predicate.variable2, predicate.instance2)»)
     '''
 	
-	private def String oneOf(Object... options) {
-		return options.stream.filter[o | o !== null].findFirst.get.toString()
+	private def String oneOf(Object...options) {
+		for (Object o : options) {
+			if (o !== null) {
+				return o.toString();
+			}
+		} 
+		return "";
 	}
 	
 	private def dispatch String toBikeshed(NamedInstance instance) '''

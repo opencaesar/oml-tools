@@ -25,7 +25,7 @@ import org.eclipse.emf.common.util.URI
 
 import static extension io.opencaesar.oml.util.OmlRead.*
 
-class Oml2Anchors {
+package class Oml2Anchors {
 
 	val String outputFolderPath
 	val String anchorFolderRelativePath

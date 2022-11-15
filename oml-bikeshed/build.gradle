@@ -2,7 +2,6 @@ plugins { id "org.xtext.xtend" version "2.0.8" }
 
 sourceSets {
 	main { xtendOutputDir = 'src/main/xtend-gen' }
-	test { xtendOutputDir = 'src/test/xtend-gen' }
 }
 
 apply plugin: 'application'
@@ -24,3 +23,5 @@ dependencies {
 
     implementation project (':oml-validate')
 }
+
+sourcesJar.dependsOn(generateXtext)

@@ -51,6 +51,9 @@ import io.opencaesar.oml.resource.OmlXMIResourceFactory;
 import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlConstants;
 
+/**
+ * An application to validate an OML catalog 
+ */
 public class OmlValidateApp {
 
 	private static final List<String> omlExtensions = Arrays.asList(OmlConstants.OML_EXTENSIONS);
@@ -93,8 +96,11 @@ public class OmlValidateApp {
 	
 	private Logger LOGGER = LogManager.getLogger(OmlValidateApp.class);
 	
-	/*
+	/**
 	 * Main method
+	 * 
+	 * @param args command line arguments for the app
+	 * @throws Exception when template instantiation has a problem
 	 */
 	public static void main(String ... args) throws Exception {
 		final OmlValidateApp app = new OmlValidateApp();
@@ -116,8 +122,16 @@ public class OmlValidateApp {
 		app.run();
 	}
 
-	/*
+	/**
+	 * Creates an new OmlValidateApp object
+	 */
+	public OmlValidateApp() {
+	}
+	
+	/**
 	 * Run method
+	 * 
+	 * @throws Exception error
 	 */
 	public void run() throws Exception {
 		LOGGER.info("=================================================================");
@@ -175,6 +189,13 @@ public class OmlValidateApp {
 	
 	// Utility methods
 
+	/**
+	 * Collects OML files referenced by an OML catalog
+	 * 
+	 * @param catalog the OML catalog
+	 * @return List of Files
+	 * @throws IOException error
+	 */
 	public static List<File> collectOmlFiles(OmlCatalog catalog) throws IOException {
 		final List<File> files = new ArrayList<>();
 		catalog.getEntries().stream().filter(e -> e.getEntryType() == Catalog.REWRITE_URI).forEach(e -> {
@@ -226,7 +247,15 @@ public class OmlValidateApp {
         }
     }
 
+	/**
+	 * Validator for the input catalog path 
+	 */
 	public static class InputCatalogPath implements IParameterValidator {
+		/**
+		 * Creates a new InputCatalogPath object
+		 */
+		public InputCatalogPath() {
+		}
 		@Override
 		public void validate(String name, String value) throws ParameterException {
 			final File file = new File(value);
@@ -240,7 +269,7 @@ public class OmlValidateApp {
 	 * Get application version id from properties file.
 	 * @return version string from build.properties or UNKNOWN
 	 */
-    public String getAppVersion() {
+    private String getAppVersion() {
     	var version = this.getClass().getPackage().getImplementationVersion();
     	return (version != null) ? version : "<SNAPSHOT>";
     }

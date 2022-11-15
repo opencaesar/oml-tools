@@ -4,4 +4,5 @@ description = 'A gradle interface to Oml Convert'
 dependencies {
 	implementation gradleApi()
     implementation project (':oml-convert')
+	implementation "io.opencaesar.oml:io.opencaesar.oml.dsl:${versions.oml}"
 }

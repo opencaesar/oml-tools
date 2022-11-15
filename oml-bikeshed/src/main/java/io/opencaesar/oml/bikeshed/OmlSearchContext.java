@@ -23,7 +23,7 @@ import java.util.List;
 import io.opencaesar.oml.Element;
 import io.opencaesar.oml.Ontology;
 
-public class OmlSearchContext {
+class OmlSearchContext {
 	
 	private List<Ontology> ontologies;
 	

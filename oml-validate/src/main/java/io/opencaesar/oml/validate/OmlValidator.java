@@ -32,8 +32,23 @@ import io.opencaesar.oml.Ontology;
 import io.opencaesar.oml.Reference;
 import io.opencaesar.oml.util.OmlRead;
 
+/**
+ * A validator for an OML ontology 
+ */
 public class OmlValidator {
 
+	/**
+	 * Creates a new OmlValidator object
+	 */
+	public OmlValidator() {
+	}
+
+	/**
+	 * Validates the given OML ontology and returns a problem description
+	 * 
+	 * @param ontology An OML ontology
+	 * @return String representing problems
+	 */
 	public static String validate(Ontology ontology) {
 		final Diagnostician diagnostician = new Diagnostician() {
 			@Override
@@ -84,6 +99,12 @@ public class OmlValidator {
 		return problems;
 	}
 
+	/**
+	 * Validates the given OML resource and returns a problem description
+	 * 
+	 * @param resource An OML resource
+	 * @return String representing problems
+	 */
 	public static String validate(Resource resource) {
 	       final StringBuilder sb = new StringBuilder();
 	       if (!resource.getErrors().isEmpty()) {

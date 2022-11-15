@@ -25,7 +25,7 @@ import io.opencaesar.oml.Ontology;
 import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.util.OmlSearch;
 
-public class OmlUtils {
+class OmlUtils {
 
 	private static String getAnnotationStringValue(AnnotatedElement element, String abbreviatedIri, OmlSearchContext context) {
 		var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);

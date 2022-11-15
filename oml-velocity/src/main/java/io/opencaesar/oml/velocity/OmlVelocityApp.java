@@ -47,7 +47,9 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-
+/**
+ * An application to generate OML models from Velocity templates  
+ */
 public class OmlVelocityApp {
 
 	@Parameter(
@@ -143,8 +145,16 @@ public class OmlVelocityApp {
 		app.run();
 	}
 
-	/*
+	/**
+	 * Creates a new OmlVelocityApp object
+	 */
+	public OmlVelocityApp() {
+	}
+	
+	/**
 	 * Run method
+	 * 
+	 * @throws Exception error
 	 */
 	public void run() throws Exception {
 		LOGGER.info("=================================================================");
@@ -225,7 +235,15 @@ public class OmlVelocityApp {
 		return files;
 	}
 	
+    /**
+     * The validator of the input folder path 
+     */
 	public static class InputFolderPath implements IParameterValidator {
+    	/**
+    	 * Creates a new InputFolderPath object
+    	 */
+    	public InputFolderPath() {
+    	}
 		@Override
 		public void validate(final String name, final String value) throws ParameterException {
 			final File directory = new File(value).getAbsoluteFile();
@@ -235,7 +253,15 @@ public class OmlVelocityApp {
 		}
 	}
 
+    /**
+     * The validator of the output folder path 
+     */
 	public static class OutputFolderPath implements IParameterValidator {
+    	/**
+    	 * Creates a new OutputFolderPath object
+    	 */
+    	public OutputFolderPath() {
+    	}
 		@Override
 		public void validate(final String name, final String value) throws ParameterException {
 			final File directory = new File(value).getAbsoluteFile();
@@ -252,7 +278,7 @@ public class OmlVelocityApp {
 	 * Get application version id from properties file.
 	 * @return version string from build.properties or UNKNOWN
 	 */
-    public String getAppVersion() {
+    private String getAppVersion() {
     	var version = this.getClass().getPackage().getImplementationVersion();
     	return (version != null) ? version : "<SNAPSHOT>";
     }
