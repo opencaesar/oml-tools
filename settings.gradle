@@ -1,3 +1,5 @@
+include 'oml-bikeshed'
+include 'oml-bikeshed-gradle'
 include 'oml-convert'
 include 'oml-convert-gradle'
 include 'oml-merge'
