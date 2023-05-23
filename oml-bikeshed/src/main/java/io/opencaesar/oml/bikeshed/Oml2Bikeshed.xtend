@@ -68,6 +68,7 @@ import org.eclipse.emf.common.util.URI
 import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
 import static extension io.opencaesar.oml.util.OmlRead.*
 import static extension io.opencaesar.oml.util.OmlSearch.*
+import io.opencaesar.oml.ScalarEquivalenceAxiom
 
 /**
  * Transform OML to Bikeshed
@@ -326,19 +327,43 @@ package class Oml2Bikeshed {
 		«scalar.plainDescription»
 		
 		<table class='def'>
-		«IF null!==scalar.length»«defRow('length', scalar.length.toString)»«ENDIF»
-		«IF null!==scalar.minLength»«defRow('min length', scalar.minLength.toString)»«ENDIF»
-		«IF null!==scalar.maxLength»«defRow('max length', scalar.maxLength.toString)»«ENDIF»
-		«IF null!==scalar.pattern»«defRow('pattern', scalar.pattern.toString)»«ENDIF»
-		«IF null!==scalar.language»«defRow('language', scalar.language.toString)»«ENDIF»
-		«IF null!==scalar.minInclusive»«defRow('min inclusive', scalar.minInclusive.stringValue)»«ENDIF»
-		«IF null!==scalar.minExclusive»«defRow('min exclusive', scalar.minExclusive.stringValue)»«ENDIF»
-		«IF null!==scalar.maxInclusive»«defRow('max inclusive', scalar.maxInclusive.stringValue)»«ENDIF»
-		«IF null!==scalar.maxExclusive»«defRow('max exclusive', scalar.maxExclusive.stringValue)»«ENDIF»
-		«IF null!==scalar.ownedEnumeration»«defRow('One of', scalar.ownedEnumeration.literals.map[stringValue].toUL)»«ENDIF»
+
+		«val superScalars = scalar.findSuperTerms.filter[t|context.contains(t)]»
+		«IF !superScalars.empty»
+			«defRow('Supertypes', superScalars.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+		«ENDIF»
+		
+		«val subScalars = scalar.findSubTerms.filter(Scalar).filter[t|context.contains(t)]»
+		«IF !subScalars.empty»
+			«defRow('Subtypes', subScalars.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+		«ENDIF»
+
+		«val equivalenceAxioms = scalar.findScalarEquivalenceAxiomsWithSubScalar.filter[t|context.contains(t)]»
+		«IF !equivalenceAxioms.empty»
+			«defRow('Equivalents', equivalenceAxioms.sortBy[superScalar.abbreviatedIri].map[toBikeshed].toUL)»
+		«ENDIF»
+
+		«val literals = scalar.findLiteralEnumerationAxioms.flatMap[literals]»
+		«IF !literals.empty»
+			«defRow('One of', literals.sortBy[stringValue].map[stringValue].toUL)»
+		«ENDIF»
 		</table>
 	'''
 
+	private def dispatch String toBikeshed(ScalarEquivalenceAxiom axiom) '''
+		«axiom.subScalar.toBikeshedReference(axiom.ontology)»«IF axiom.numberOfFacets > 0»(
+		«IF null!==axiom.length»«defRow('length', axiom.length.toString)»«ENDIF»
+		«IF null!==axiom.minLength»«defRow('min length', axiom.minLength.toString)»«ENDIF»
+		«IF null!==axiom.maxLength»«defRow('max length', axiom.maxLength.toString)»«ENDIF»
+		«IF null!==axiom.pattern»«defRow('pattern', axiom.pattern.toString)»«ENDIF»
+		«IF null!==axiom.language»«defRow('language', axiom.language.toString)»«ENDIF»
+		«IF null!==axiom.minInclusive»«defRow('min inclusive', axiom.minInclusive.stringValue)»«ENDIF»
+		«IF null!==axiom.minExclusive»«defRow('min exclusive', axiom.minExclusive.stringValue)»«ENDIF»
+		«IF null!==axiom.maxInclusive»«defRow('max inclusive', axiom.maxInclusive.stringValue)»«ENDIF»
+		«IF null!==axiom.maxExclusive»«defRow('max exclusive', axiom.maxExclusive.stringValue)»«ENDIF»
+		)«ENDIF»
+	'''
+	
 	private def dispatch String toBikeshed(AnnotationProperty property) '''
 		«property.sectionHeader»
 		
