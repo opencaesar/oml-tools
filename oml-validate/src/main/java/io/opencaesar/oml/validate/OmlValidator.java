@@ -23,13 +23,11 @@ import java.util.List;
 import org.eclipse.emf.common.util.Diagnostic;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
-import org.eclipse.emf.ecore.InternalEObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.util.Diagnostician;
 
 import io.opencaesar.oml.Member;
 import io.opencaesar.oml.Ontology;
-import io.opencaesar.oml.Reference;
 import io.opencaesar.oml.util.OmlRead;
 
 /**
@@ -62,16 +60,9 @@ public class OmlValidator {
 				}
 			}
 			private String getName(EObject eObject) {
-				if (eObject.eIsProxy()) {
-		    		return ((InternalEObject)eObject).eProxyURI().toString();
-		    	} else if (eObject instanceof Member) {
+				if (eObject instanceof Member) {
 			    	return ((Member)eObject).getAbbreviatedIri();
-		    	} else if (eObject instanceof Reference) {
-		    		Member member = OmlRead.resolve((Reference)eObject);
-		    		if (member == null || member.eIsProxy())
-		    			return "";
-		    		return "ref/"+getName(member);
-			    } else if (eObject instanceof Ontology) {
+		    	} else if (eObject instanceof Ontology) {
 			    	return ((Ontology)eObject).getNamespace();
 			    } else {
 			    	EReference eRef = eObject.eContainmentFeature();

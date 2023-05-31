@@ -120,7 +120,6 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 	 */
     @Incremental
     @InputFiles
-	@SuppressWarnings("deprecation")
     protected ConfigurableFileCollection getInputFiles() throws IOException {
 		if (getInputCatalogPath().isPresent()) {
 			String s = getInputCatalogPath().get().getAbsolutePath();
