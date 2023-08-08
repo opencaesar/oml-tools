@@ -22,10 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -33,7 +31,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.apache.log4j.xml.DOMConfigurator;
-import org.apache.xml.resolver.Catalog;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
@@ -49,14 +46,11 @@ import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.resource.OmlJsonResourceFactory;
 import io.opencaesar.oml.resource.OmlXMIResourceFactory;
 import io.opencaesar.oml.util.OmlCatalog;
-import io.opencaesar.oml.util.OmlConstants;
 
 /**
  * An application to validate an OML catalog 
  */
 public class OmlValidateApp {
-
-	private static final List<String> omlExtensions = Arrays.asList(OmlConstants.OML_EXTENSIONS);
 	
 	@Parameter(
 		names= {"--input-catalog-path", "-i"}, 
@@ -197,56 +191,11 @@ public class OmlValidateApp {
 	 * @throws IOException error
 	 */
 	public static List<File> collectOmlFiles(OmlCatalog catalog) throws IOException {
-		final List<File> files = new ArrayList<>();
-		catalog.getEntries().stream().filter(e -> e.getEntryType() == Catalog.REWRITE_URI).forEach(e -> {
-			String folderPath = e.getEntryArg(1);
-			File path = new File(URI.createURI(folderPath).toFileString());
-			files.addAll(collectOmlFiles(path));
-		});
-		for (String subCatalogPath : catalog.getNestedCatalogs()) {
-			final OmlCatalog subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath));
-			files.addAll(collectOmlFiles(subCatalog));
-		}
-		return files;
+		return catalog.getResolvedUris().stream()
+				.map(i -> new File(i.toFileString()))
+				.collect(Collectors.toList());
 	}
 	
-	private static List<File> collectOmlFiles(File path) {
-		final List<File> files;
-		if (path.isDirectory()) {
-			files = Arrays.asList(path.listFiles());
-		} else {
-			files = Collections.singletonList(path);
-		}
-		final List<File> omlFiles = new ArrayList<>();
-		for (File file : files) {
-			if (file.isDirectory()) {
-				omlFiles.addAll(collectOmlFiles(file));
-			} else if (file.isFile()) {
-				String ext = getFileExtension(file);
-				if (omlExtensions.contains(ext)) {
-					omlFiles.add(file);
-				}
-			} else { // must be a file name with no extension
-				for (String ext : omlExtensions) {
-					File f = new File(path.toString()+'.'+ext);
-					if (f.exists()) {
-						omlFiles.add(f);
-					}
-				}
-			}
-		}
-		return omlFiles;
-	}
-	
-	private static String getFileExtension(File file) {
-        String fileName = file.getName();
-        if(fileName.lastIndexOf(".") != -1) {
-        	return fileName.substring(fileName.lastIndexOf(".")+1);
-        } else { 
-        	return "";
-        }
-    }
-
 	/**
 	 * Validator for the input catalog path 
 	 */

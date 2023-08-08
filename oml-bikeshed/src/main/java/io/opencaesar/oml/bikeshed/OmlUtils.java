@@ -32,12 +32,15 @@ class OmlUtils {
 	private static String getAnnotationStringValue(IdentifiedElement element, String abbreviatedIri, OmlSearchContext context) {
 		var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);
 		if (property != null) {
-            final var value = OmlSearch.findAnnotationValue(element, property);
-			if (value instanceof Literal) {
-				return ((Literal)value).getStringValue();	
-			} else if (value instanceof Member) {
-				return ((Member)value).getAbbreviatedIri();
-			}
+	        final var values = OmlSearch.findAnnotationValues(element, property);
+	        if (!values.isEmpty()) {
+	        	var value = values.iterator().next();
+		        if (value instanceof Literal) {
+					return ((Literal)value).getStringValue();
+				} else if (value instanceof Member) {
+					return ((Member)value).getAbbreviatedIri();
+				}
+	        }
 		}
 		return null;
 	}
@@ -45,20 +48,11 @@ class OmlUtils {
     private static boolean getAnnotationBooleanValue(IdentifiedElement element, String abbreviatedIri, OmlSearchContext context) {
 		final var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);
         if (property != null) {
-            final var annotation = OmlSearch.findAnnotations(element).stream()
-            		.filter(a -> context.contains(a))
-            		.filter(a -> a.getProperty() == property)
-            		.findFirst().orElse(null);
-            if (annotation == null) {
-                return false;   
-            }
-            if (annotation.getValue() == null) {
+            final var value = OmlSearch.findAnnotationLiteralValue(element, property);
+            if (!(value instanceof BooleanLiteral)) {
                 return true;
             }
-            if (!(annotation.getValue() instanceof BooleanLiteral)) {
-                return true;
-            }
-            return ((BooleanLiteral)annotation.getValue()).isValue();
+            return ((BooleanLiteral)value).isValue();
         }
         return false;
     }

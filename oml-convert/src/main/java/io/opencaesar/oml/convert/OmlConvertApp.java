@@ -21,11 +21,11 @@ package io.opencaesar.oml.convert;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -47,7 +47,6 @@ import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.resource.OmlJsonResourceFactory;
 import io.opencaesar.oml.resource.OmlXMIResourceFactory;
 import io.opencaesar.oml.util.OmlCatalog;
-import io.opencaesar.oml.util.OmlConstants;
 import io.opencaesar.oml.util.OmlRead;
 import io.opencaesar.oml.validate.OmlValidator;
 
@@ -226,13 +225,12 @@ public class OmlConvertApp {
 	 * 
 	 * @param inputCatalog the Oml catalog
 	 * @return Collection of Files
+	 * @throws IOException exception thrown
 	 */
-	public static Collection<File> collectOMLFiles(OmlCatalog inputCatalog) {
-		final var omlFiles = new LinkedHashSet<File>();
-		for (URI uri : inputCatalog.getFileUris(Arrays.asList(OmlConstants.OML_EXTENSIONS))) {
-			omlFiles.add(new File(uri.toFileString()));
-		}
-		return omlFiles;
+	public static Collection<File> collectOMLFiles(OmlCatalog inputCatalog) throws IOException  {
+		return inputCatalog.getResolvedUris().stream()
+			.map(i -> new File(i.toFileString()))
+			.collect(Collectors.toList());
 	}
 	
 	private void createOutputCatalog(final File outputCatalogFile) throws Exception {

@@ -226,11 +226,11 @@ package class Oml2Bikeshed {
 		<table class='def'>
 		«val superTerms = term.findSuperTerms.filter[t|context.contains(t)]»
 		«IF !superTerms.empty»
-			«defRow('Super terms', superTerms.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Super terms', superTerms.sortBy[abbreviatedIri].map[toBikeshedReference(term.ontology)].toUL)»
 		«ENDIF»
 		«val subTerms = term.findSubTerms.filter[t|context.contains(t)]»
 		«IF !subTerms.empty»
-			«defRow('Sub terms', subTerms.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Sub terms', subTerms.sortBy[abbreviatedIri].map[toBikeshedReference(term.ontology)].toUL)»
 		«ENDIF»		
 		</table>
 		
@@ -246,22 +246,22 @@ package class Oml2Bikeshed {
 		<table class='def'>
 		«IF entity instanceof RelationEntity»
 			«val sources = entity.findSources.filter[t|context.contains(t)]»
-			«defRow('Sources', sources.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Sources', sources.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»
 
 			«val targets = entity.findTargets.filter[t|context.contains(t)]»
-			«defRow('Targets', targets.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Targets', targets.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»
 			
 		«ENDIF»
 		
 	
 		«val superEntities = entity.findSuperTerms.filter[t|context.contains(t)]»
 		«IF !superEntities.empty»
-			«defRow('Supertypes', superEntities.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Supertypes', superEntities.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»
 		«ENDIF»
 		
 		«val subEntities = entity.findSubTerms.filter(Entity).filter[t|context.contains(t)]»
 		«IF !subEntities.empty»
-			«defRow('Subtypes', subEntities.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Subtypes', subEntities.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»
 		«ENDIF»
 		
 		«IF entity instanceof RelationEntity»
@@ -305,13 +305,13 @@ package class Oml2Bikeshed {
 
 		«val keys = entity.findKeyAxioms.filter[k|context.contains(k)]»
 		«IF !keys.empty»
-			«defRow('Keys', keys.map[k|k.properties.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].join(', ')].toUL)»
+			«defRow('Keys', keys.map[k|k.properties.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].join(', ')].toUL)»
 		«ENDIF»
 		
 		«IF entity instanceof Concept»
 			«val instances = entity.findInstanceEnumerationAxioms.flatMap[instances]»
 			«IF !instances.isEmpty»
-				«defRow('Instances', instances.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+				«defRow('Instances', instances.sortBy[abbreviatedIri].map[toBikeshedReference(entity.ontology)].toUL)»
 			«ENDIF»
 		«ENDIF»
 		</table>
@@ -330,12 +330,12 @@ package class Oml2Bikeshed {
 
 		«val superScalars = scalar.findSuperTerms.filter[t|context.contains(t)]»
 		«IF !superScalars.empty»
-			«defRow('Supertypes', superScalars.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Supertypes', superScalars.sortBy[abbreviatedIri].map[toBikeshedReference(scalar.ontology)].toUL)»
 		«ENDIF»
 		
 		«val subScalars = scalar.findSubTerms.filter(Scalar).filter[t|context.contains(t)]»
 		«IF !subScalars.empty»
-			«defRow('Subtypes', subScalars.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Subtypes', subScalars.sortBy[abbreviatedIri].map[toBikeshedReference(scalar.ontology)].toUL)»
 		«ENDIF»
 
 		«val equivalenceAxioms = scalar.findScalarEquivalenceAxiomsWithSubScalar.filter[t|context.contains(t)]»
@@ -382,10 +382,10 @@ package class Oml2Bikeshed {
 		
 		<table class='def'>
 			«val domains = property.domains»
-			«defRow('Domains', domains.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Domains', domains.sortBy[abbreviatedIri].map[toBikeshedReference(property.ontology)].toUL)»
 	
 			«val ranges = property.ranges»
-			«defRow('Ranges', ranges.sortBy[abbreviatedIri].map[toBikeshedReference(ontology)].toUL)»
+			«defRow('Ranges', ranges.sortBy[abbreviatedIri].map[toBikeshedReference(property.ontology)].toUL)»
 			
 			«IF property.functional»
 				«defRow('Attributes', 'Functional')»

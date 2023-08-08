@@ -34,17 +34,15 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 import java.util.ArrayList
-import java.util.Arrays
 import java.util.Collection
-import java.util.Collections
 import java.util.HashMap
 import java.util.LinkedHashMap
 import java.util.List
+import java.util.stream.Collectors
 import org.apache.log4j.AppenderSkeleton
 import org.apache.log4j.Level
 import org.apache.log4j.LogManager
 import org.apache.log4j.xml.DOMConfigurator
-import org.apache.xml.resolver.Catalog
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
@@ -199,7 +197,7 @@ class Oml2BikeshedApp {
 		if (rootOntologyIri !== null) {
 			var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
 			val rootOntology = inputResourceSet.getResource(rootUri, true).contents.filter(Ontology).head
-			inputOntologies += (#[rootOntology] + rootOntology.allImports.map[importedOntology]).toSet.sortBy[iri]
+			inputOntologies += rootOntology.getImportedOntologyClosure(true).sortBy[iri]
 		} else {
 			val omlFiles = collectOmlFiles(inputCatalog)
 			for (omlFile : omlFiles) {
@@ -318,48 +316,13 @@ class Oml2BikeshedApp {
 	 * @return Collection of Files
 	 */
 	def static Collection<File> collectOmlFiles(OmlCatalog catalog) {
-		val files = new ArrayList<File>
-		for (entry : catalog.entries.filter[entryType == Catalog.REWRITE_URI]) {
-			val folderPath = entry.getEntryArg(1)
-			val folder = new File(URI.createURI(folderPath).toFileString)
-			files.addAll(collectOmlFiles(folder))
-		}
-		for (subCatalogPath : catalog.nestedCatalogs) {
-			val subCatalog = OmlCatalog.create(URI.createFileURI(subCatalogPath))
-			files.addAll(collectOmlFiles(subCatalog))
-		}
-		return files
+		catalog.resolvedUris.stream
+			.map(i|new File(i.toFileString))
+			.collect(Collectors.toList)
 	}
 	
-	private def static List<File> collectOmlFiles(File path) {
-		val files = if (path.isDirectory()) {
-			Arrays.asList(path.listFiles())
-		} else {
-			Collections.singletonList(path)
-		}
-		val omlFiles = new ArrayList<File>
-		for (file : files) {
-			if (file.isDirectory) {
-				omlFiles.addAll(collectOmlFiles(file))
-			} else if (file.isFile) {
-				val ext = getFileExtension(file)
-				if (OmlConstants.OML_EXTENSIONS.contains(ext)) {
-					omlFiles.add(file)
-				}
-			} else { // must be a file name with no extension
-				for (String ext : OmlConstants.OML_EXTENSIONS) {
-					val f = new File(path.toString()+'.'+ext)
-					if (f.exists()) {
-						omlFiles.add(f)
-					}
-				}
-			}
-		}
-		return omlFiles
-	}
-
 	private static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
-		val resolved = URI.createURI(catalog.resolveURI(rootOntologyIri))
+		val resolved = catalog.resolveUri(URI.createURI(rootOntologyIri))
 		
 		if (resolved.file) {
 			val filename = resolved.toFileString
@@ -376,14 +339,6 @@ class Oml2BikeshedApp {
 		return resolved
 	}
 
-	private static def String getFileExtension(File file) {
-        val fileName = file.getName()
-        if(fileName.lastIndexOf(".") != -1)
-        	return fileName.substring(fileName.lastIndexOf(".")+1)
-        else 
-        	return ""
-    }
-	
 	/**
 	 * The validator for input catalog paths
 	 */
