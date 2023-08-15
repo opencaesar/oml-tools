@@ -9,7 +9,7 @@ cache:
     - $HOME/.gradle
 
 script:
-  - ./gradlew build
+  - ./gradlew build --refresh-dependencies
 
 deploy:
   - provider: script
