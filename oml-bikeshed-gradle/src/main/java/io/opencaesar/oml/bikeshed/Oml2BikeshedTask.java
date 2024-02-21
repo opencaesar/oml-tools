@@ -91,7 +91,6 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
 	 * 
 	 * @return String Property
 	 */
-    @Optional
     @Input
     public abstract Property<String> getRootOntologyIri();
     
