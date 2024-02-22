@@ -1,7 +1,7 @@
 # OML Tools
 
-[![Build Status](https://app.travis-ci.com/opencaesar/oml-tools.svg?branch=master)](https://app.travis-ci.com/github/opencaesar/oml-tools)
-[![Release](https://img.shields.io/github/v/tag/opencaesar/oml-tools?label=release)](https://github.com/opencaesar/oml-tools/releases/latest)
+[![Build Status](https://github.com/opencaesar/oml-tools/actions/workflows/ci.yml/badge.svg)](https://github.com/opencaesar/oml-tools/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/opencaesar/oml-tools?label=Release)](https://github.com/opencaesar/oml-tools/releases/latest)
 
 A set of tools that work on OML models.
 
