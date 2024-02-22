@@ -18,6 +18,10 @@
  */
 package io.opencaesar.oml.bikeshed;
 
+import java.util.Set;
+
+import org.eclipse.emf.ecore.resource.Resource;
+
 import io.opencaesar.oml.AnnotationProperty;
 import io.opencaesar.oml.BooleanLiteral;
 import io.opencaesar.oml.IdentifiedElement;
@@ -29,10 +33,10 @@ import io.opencaesar.oml.util.OmlSearch;
 
 class OmlUtils {
 
-	private static String getAnnotationStringValue(IdentifiedElement element, String abbreviatedIri, OmlSearchContext context) {
+	private static String findAnnotationStringValue(IdentifiedElement element, String abbreviatedIri, Set<Resource> scope) {
 		var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);
 		if (property != null) {
-	        final var values = OmlSearch.findAnnotationValues(element, property);
+	        final var values = OmlSearch.findAnnotationValues(element, property, scope);
 	        if (!values.isEmpty()) {
 	        	var value = values.iterator().next();
 		        if (value instanceof Literal) {
@@ -45,10 +49,10 @@ class OmlUtils {
 		return null;
 	}
 
-    private static boolean getAnnotationBooleanValue(IdentifiedElement element, String abbreviatedIri, OmlSearchContext context) {
+    private static boolean findAnnotationBooleanValue(IdentifiedElement element, String abbreviatedIri, Set<Resource> scope) {
 		final var property = (AnnotationProperty) OmlRead.getMemberByAbbreviatedIri(element.getOntology(), abbreviatedIri);
         if (property != null) {
-            final var value = OmlSearch.findAnnotationLiteralValue(element, property);
+            final var value = OmlSearch.findAnnotationLiteralValue(element, property, scope);
             if (!(value instanceof BooleanLiteral)) {
                 return true;
             }
@@ -57,32 +61,32 @@ class OmlUtils {
         return false;
     }
 
-	public static String getTitle(Ontology ontology, OmlSearchContext context) {
-		var value = getAnnotationStringValue(ontology, "dc:title", context);
+	public static String findTitle(Ontology ontology, Set<Resource> scope) {
+		var value = findAnnotationStringValue(ontology, "dc:title", scope);
 		return (value != null) ? value : ontology.getPrefix(); 
 	}
 
-	public static String getDescription(IdentifiedElement element, OmlSearchContext context) {
-		var value = getAnnotationStringValue(element, "dc:description", context);
+	public static String findDescription(IdentifiedElement element, Set<Resource> scope) {
+		var value = findAnnotationStringValue(element, "dc:description", scope);
 		return (value != null) ? value : ""; 
 	}
 	
-	public static boolean isDeprecated(IdentifiedElement element, OmlSearchContext context) {
-        return getAnnotationBooleanValue(element, "owl:deprecated", context);
+	public static boolean findIsDeprecated(IdentifiedElement element, Set<Resource> scope) {
+        return findAnnotationBooleanValue(element, "owl:deprecated", scope);
     }
 
-	public static String getCreator(IdentifiedElement element, OmlSearchContext context) {
-		var value = getAnnotationStringValue(element, "dc:creator", context);
+	public static String findCreator(IdentifiedElement element, Set<Resource> scope) {
+		var value = findAnnotationStringValue(element, "dc:creator", scope);
 		return (value != null) ? value : "Unknown"; 
 	}
 
-	public static String getCopyright(IdentifiedElement element, OmlSearchContext context) {
-		var value = getAnnotationStringValue(element, "dc:rights", context);
+	public static String findCopyright(IdentifiedElement element, Set<Resource> scope) {
+		var value = findAnnotationStringValue(element, "dc:rights", scope);
 		return ((value != null) ? value : "").replaceAll("\\R", "");
 	}
 	
-	public static String getComment(IdentifiedElement element, OmlSearchContext context) {
-		var value = getAnnotationStringValue(element, "rdfs:comment", context);
+	public static String findComment(IdentifiedElement element, Set<Resource> scope) {
+		var value = findAnnotationStringValue(element, "rdfs:comment", scope);
 		return (value != null) ? value : ""; 
 	}
 	

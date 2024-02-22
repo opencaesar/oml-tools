@@ -21,6 +21,8 @@ package io.opencaesar.oml.bikeshed
 import io.opencaesar.oml.Ontology
 import java.net.URI
 import java.util.ArrayList
+import java.util.Set
+import org.eclipse.emf.ecore.resource.Resource
 
 import static extension io.opencaesar.oml.bikeshed.OmlUtils.*
 
@@ -44,6 +46,7 @@ package class Oml2Index {
 		Local Boilerplate: logo yes
 		Markup Shorthands: markdown yes, css no
 		Use Dfn Panels: yes
+		Complain About: mixed-indents no
 		Abstract: Documentation generated from OML ontologies
 		Favicon: https://opencaesar.github.io/assets/img/oml.png
 		</pre>
@@ -54,13 +57,13 @@ package class Oml2Index {
 	'''
 	
 	val Ontology ontology
-	val OmlSearchContext context
+	val Set<Resource> scope
 	val String relativePath
 	val int index
 	
-	new(Ontology ontology, OmlSearchContext context, String relativePath, int index) {
+	new(Ontology ontology, Set<Resource> scope, String relativePath, int index) {
 		this.ontology = ontology
-		this.context = context
+		this.scope = scope
 		this.relativePath = relativePath
 		this.index = index
 	}
@@ -71,9 +74,9 @@ package class Oml2Index {
 	
 	def String run() '''
 		
-		## \[«ontology.getTitle(context)»](./«relativePath».html) ## {#heading-«ontology.prefix»-«index»}
-		«ontology.getDescription(context)»
-		«IF ontology.isDeprecated(context)»
+		## \[«ontology.findTitle(scope)»](./«relativePath».html) ## {#heading-«ontology.prefix»-«index»}
+		«ontology.findDescription(scope)»
+		«IF ontology.findIsDeprecated(scope)»
 		<div class=note>
 		This ontology has been deprecated
 		</div>

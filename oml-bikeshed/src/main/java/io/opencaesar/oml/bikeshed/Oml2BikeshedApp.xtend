@@ -28,12 +28,12 @@ import io.opencaesar.oml.resource.OmlJsonResourceFactory
 import io.opencaesar.oml.resource.OmlXMIResourceFactory
 import io.opencaesar.oml.util.OmlCatalog
 import io.opencaesar.oml.util.OmlConstants
+import io.opencaesar.oml.util.OmlRead
 import io.opencaesar.oml.validate.OmlValidator
 import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.util.ArrayList
 import java.util.Collection
 import java.util.HashMap
 import java.util.LinkedHashMap
@@ -46,8 +46,6 @@ import org.apache.log4j.xml.DOMConfigurator
 import org.eclipse.emf.common.util.URI
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl
 import org.eclipse.emf.ecore.util.ECrossReferenceAdapter
-
-import static extension io.opencaesar.oml.util.OmlRead.*
 
 /**
  * The transformation from Oml to Bikeshed
@@ -82,7 +80,7 @@ class Oml2BikeshedApp {
 	@Parameter(
 		names=#["--root-ontology-iri","-r"], 
 		description="Root OML ontology IRI (Required)",
-		required=false, 
+		required=true, 
 		order=4
 	)
 	String rootOntologyIri = null
@@ -193,22 +191,10 @@ class Oml2BikeshedApp {
 		val inputResourceSet = new ResourceSetImpl
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 		
-		var List<Ontology> inputOntologies = new ArrayList<Ontology> 
-		if (rootOntologyIri !== null) {
-			var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
-			val rootOntology = inputResourceSet.getResource(rootUri, true).contents.filter(Ontology).head
-			inputOntologies += rootOntology.getImportedOntologyClosure(true).sortBy[iri]
-		} else {
-			val omlFiles = collectOmlFiles(inputCatalog)
-			for (omlFile : omlFiles) {
-				val ontologyUri = URI.createFileURI(omlFile.absolutePath)
-				var ontology = inputResourceSet.getResource(ontologyUri, true).contents.filter(Ontology).head
-				inputOntologies += ontology  
-			}
-			inputOntologies = inputOntologies.sortBy[iri]
-		}
-
-		val context = new OmlSearchContext(inputOntologies)
+		var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
+		val rootOntology = OmlRead.getOntology(inputResourceSet.getResource(rootUri, true))
+		val scope = OmlRead.getImportScope(rootOntology)
+		var List<Ontology> inputOntologies = scope.map[r|OmlRead.getOntology(r)].sortBy[iri]
 		
 		// validate ontologies
 		for (ontology : inputOntologies) {
@@ -253,7 +239,7 @@ class Oml2BikeshedApp {
         for (ontology : inputOntologies) {
             val uri = URI.createURI(ontology.iri)
             val relativePath = uri.authority+uri.path
-			val oml2index = new Oml2Index(ontology, context, relativePath, index++)
+			val oml2index = new Oml2Index(ontology, scope, relativePath, index++)
 			groupsByDomain.computeIfAbsent(oml2index.domain, [new Oml2Index.Group]).add(oml2index)
 		}
 		
@@ -279,7 +265,7 @@ class Oml2BikeshedApp {
             val uri = URI.createURI(ontology.iri)
             val relativePath = uri.authority+uri.path
 			val bikeshedFile = new File(outputFolderPath+File.separator+relativePath+'.bs')
-			outputFiles.put(bikeshedFile, new Oml2Bikeshed(ontology, context, publishUrl, relativePath).run)
+			outputFiles.put(bikeshedFile, new Oml2Bikeshed(ontology, scope, publishUrl, relativePath).run)
 		}
 
 		// save output files				

@@ -147,10 +147,18 @@ public class OmlValidateApp {
 		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogPath));
 
 		// validate each resource in turn
+		for(File file : collectOmlFiles(inputCatalog)) {
+			URI uri = URI.createFileURI(file.getAbsolutePath());
+			LOGGER.info("Loading: " + uri);
+			inputResourceSet.getResource(uri, true);
+		}
+		
+		// validate each resource in turn
 		StringBuffer problems = new StringBuffer();
 		for(File file : collectOmlFiles(inputCatalog)) {
 			URI uri = URI.createFileURI(file.getAbsolutePath());
-			Resource r = inputResourceSet.getResource(uri, true);
+			LOGGER.info("Validating: " + uri);
+			Resource r = inputResourceSet.getResource(uri, false);
 			String results = OmlValidator.validate(r);
 	        if (results.length()>0) {
 	        	if (problems.length()>0)
@@ -158,7 +166,7 @@ public class OmlValidateApp {
 	        	problems.append(results);
 	        }
 		}
-		
+
 		if (problems.length() > 0) {
 			if (outputReportPath != null) {
 				Files.write(Paths.get(outputReportPath), problems.toString().getBytes());
