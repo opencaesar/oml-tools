@@ -19,6 +19,7 @@
 package io.opencaesar.oml.bikeshed
 
 import io.opencaesar.oml.AnnotationProperty
+import io.opencaesar.oml.AnonymousInstance
 import io.opencaesar.oml.Argument
 import io.opencaesar.oml.Aspect
 import io.opencaesar.oml.Concept
@@ -492,21 +493,23 @@ package class Oml2Bikeshed {
 	'''<a spec="«member.ontology.iri»" lt="«member.dfn»">«member.getReferenceName»</a>'''
 	
 	private def String toBikeshedPropertyValue(PropertyValueAssertion assertion) {
-		val value = assertion.value
-		val valueText = switch (value) {
-			Literal: 
-				value.lexicalValue
-			StructureInstance: '''
-				«value.type.toBikeshedReference»
-				«FOR subAssertion : value.ownedPropertyValues»
-					* «subAssertion.toBikeshedPropertyValue»
-				«ENDFOR»
-			'''
-			NamedInstance: 
-				value.toBikeshedReference
-		}
+		val valueTexts = assertion.value.map[value | 
+			switch (value) {
+				Literal: 
+					value.lexicalValue
+				AnonymousInstance: '''
+					«value.type.toBikeshedReference»
+					«FOR subAssertion : value.ownedPropertyValues»
+						* «subAssertion.toBikeshedPropertyValue»
+					«ENDFOR»
+				'''
+				NamedInstance: 
+					value.toBikeshedReference
+			}
+		]
+		
 		'''
-		«assertion.property.toBikeshedReference» «valueText»'''
+		«assertion.property.toBikeshedReference» «valueTexts.join(", ")»'''
 	}
 	
 	private def String getPlainDescription(Member member) '''
