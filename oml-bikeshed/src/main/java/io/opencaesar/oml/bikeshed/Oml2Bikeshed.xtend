@@ -19,7 +19,7 @@
 package io.opencaesar.oml.bikeshed
 
 import io.opencaesar.oml.AnnotationProperty
-import io.opencaesar.oml.AnonymousInstance
+import io.opencaesar.oml.AnonymousRelationInstance
 import io.opencaesar.oml.Argument
 import io.opencaesar.oml.Aspect
 import io.opencaesar.oml.Concept
@@ -497,7 +497,7 @@ package class Oml2Bikeshed {
 			switch (value) {
 				Literal: 
 					value.lexicalValue
-				AnonymousInstance: '''
+				StructureInstance: '''
 					«value.type.toBikeshedReference»
 					«FOR subAssertion : value.ownedPropertyValues»
 						* «subAssertion.toBikeshedPropertyValue»
@@ -606,7 +606,9 @@ package class Oml2Bikeshed {
 		if (value instanceof Literal)
 			return value.lexicalValue
 		else if (value instanceof StructureInstance)
-			return value.type.name
+			return value.type?.name + '[...]'
+		else if (value instanceof AnonymousRelationInstance)
+			return value.target.name + '[...]'
 		else if (value instanceof Member)
 			return value.abbreviatedIri 
 	}
