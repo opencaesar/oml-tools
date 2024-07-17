@@ -12,7 +12,7 @@ A set of tools that work on OML models.
 ```
       
 ## Build
-Requirements: JDK 11
+Requirements: JDK 17+
 ```
     ./gradlew build
 ```
