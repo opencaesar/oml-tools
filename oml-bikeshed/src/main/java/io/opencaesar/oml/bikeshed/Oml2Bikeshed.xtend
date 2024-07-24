@@ -498,7 +498,13 @@ package class Oml2Bikeshed {
 				Literal: 
 					value.lexicalValue
 				StructureInstance: '''
-					«value.type.toBikeshedReference»
+					«value.structure.toBikeshedReference»
+					«FOR subAssertion : value.ownedPropertyValues»
+						* «subAssertion.toBikeshedPropertyValue»
+					«ENDFOR»
+				'''
+				AnonymousRelationInstance: '''
+					«value.relationEntity.toBikeshedReference»
 					«FOR subAssertion : value.ownedPropertyValues»
 						* «subAssertion.toBikeshedPropertyValue»
 					«ENDFOR»
@@ -606,9 +612,9 @@ package class Oml2Bikeshed {
 		if (value instanceof Literal)
 			return value.lexicalValue
 		else if (value instanceof StructureInstance)
-			return value.type?.name + '[...]'
+			return value.structure.name + '[...]'
 		else if (value instanceof AnonymousRelationInstance)
-			return value.target.name + '[...]'
+			return value.relationEntity.name + '[...]'
 		else if (value instanceof Member)
 			return value.abbreviatedIri 
 	}
