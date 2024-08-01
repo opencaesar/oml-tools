@@ -19,6 +19,7 @@
 package io.opencaesar.oml.bikeshed
 
 import io.opencaesar.oml.AnnotationProperty
+import io.opencaesar.oml.AnonymousConceptInstance
 import io.opencaesar.oml.AnonymousRelationInstance
 import io.opencaesar.oml.Argument
 import io.opencaesar.oml.Aspect
@@ -52,9 +53,6 @@ import io.opencaesar.oml.ScalarEquivalenceAxiom
 import io.opencaesar.oml.ScalarProperty
 import io.opencaesar.oml.SemanticProperty
 import io.opencaesar.oml.SpecializableTerm
-import io.opencaesar.oml.Structure
-import io.opencaesar.oml.StructureInstance
-import io.opencaesar.oml.StructuredProperty
 import io.opencaesar.oml.Type
 import io.opencaesar.oml.TypePredicate
 import io.opencaesar.oml.Vocabulary
@@ -157,10 +155,8 @@ package class Oml2Bikeshed {
 		«vocabulary.toStatement("# Aspects # {#Aspects}", Aspect)»
 		«vocabulary.toStatement("# Concepts # {#concepts}", Concept)»
 		«vocabulary.toStatement("# Relation Entities # {#Relations}", RelationEntity)»
-		«vocabulary.toStatement("# Structures # {#Structures}", Structure)»
 		«vocabulary.toStatement("# Scalars # {#Scalars}", Scalar)»
 		«vocabulary.toStatement("# Annotation Properties # {#AnnotationProperties}", AnnotationProperty)»
-		«vocabulary.toStatement("# Structured Properties # {#StructuredProperties}", StructuredProperty)»
 		«vocabulary.toStatement("# Scalar Properties # {#ScalarProperties}", ScalarProperty)»
 		«vocabulary.toStatement("# Rules # {#Rules}", Rule)»
 	'''
@@ -433,16 +429,6 @@ package class Oml2Bikeshed {
 		else if (argument.variable !== null)
 			return argument.variable
 	}
-
-  	//TODO: find an ontology containing examples of this we can test against
-	private def dispatch String toBikeshed(StructuredProperty property) '''
-		«property.sectionHeader»
-		
-		«property.findComment(scope)»
-		
-		«property.plainDescription»
-		
-	'''
 		
 	private def dispatch String toBikeshed(NamedInstance instance) '''
 		«instance.sectionHeader»
@@ -497,8 +483,8 @@ package class Oml2Bikeshed {
 			switch (value) {
 				Literal: 
 					value.lexicalValue
-				StructureInstance: '''
-					«value.structure.toBikeshedReference»
+				AnonymousConceptInstance: '''
+					«value.entity.toBikeshedReference»
 					«FOR subAssertion : value.ownedPropertyValues»
 						* «subAssertion.toBikeshedPropertyValue»
 					«ENDFOR»
@@ -611,8 +597,8 @@ package class Oml2Bikeshed {
 	private static def String asString(Element value) {
 		if (value instanceof Literal)
 			return value.lexicalValue
-		else if (value instanceof StructureInstance)
-			return value.structure.name + '[...]'
+		else if (value instanceof AnonymousConceptInstance)
+			return value.entity.name + '[...]'
 		else if (value instanceof AnonymousRelationInstance)
 			return value.relationEntity.name + '[...]'
 		else if (value instanceof Member)
