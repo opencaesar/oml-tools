@@ -17,7 +17,7 @@ gradlew.bat oml-velocity:run --args="..."
 Args:
 ```
 -t | --template-folder path/to/base/template/folder [Required]
--i | --template-include a (glob) pattern matching the template files to include [Optional, default: **/*.om]
+-i | --template-include a (glob) pattern matching the template files to include [Optional, default: **/*.oml]
 -r | --template-rename A string old:new to find and replace in a template name [Optional]
 -k | --template-key-value a key=value pair to pass as a context when instantiating templates [Optional]
 -o | --output-folder path/to/output/folder [Required]
