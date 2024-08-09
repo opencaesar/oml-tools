@@ -479,7 +479,7 @@ package class Oml2Bikeshed {
 	'''<a spec="«member.ontology.iri»" lt="«member.dfn»">«member.getReferenceName»</a>'''
 	
 	private def String toBikeshedPropertyValue(PropertyValueAssertion assertion) {
-		val valueTexts = assertion.value.map[value | 
+		val valueTexts = assertion.values.map[value | 
 			switch (value) {
 				Literal: 
 					value.lexicalValue

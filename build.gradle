@@ -1,6 +1,6 @@
 subprojects {
 	group = 'io.opencaesar.oml'
-	version = '2.8.0'
+	version = '2.9.0'
 	ext.versions = [
 	    oml: '2.+',
 		plantuml: '1.2019.0',
