@@ -46,8 +46,8 @@ import com.beust.jcommander.ParameterException;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.resource.OmlJsonResourceFactory;
 import io.opencaesar.oml.resource.OmlXMIResourceFactory;
-import io.opencaesar.oml.util.OmlCatalog;
 import io.opencaesar.oml.util.OmlRead;
+import io.opencaesar.oml.util.OmlResolve;
 import io.opencaesar.oml.validate.OmlValidator;
 
 /**
@@ -163,11 +163,10 @@ public class OmlConvertApp {
 		final var resourceSet = new ResourceSetImpl();
 		resourceSet.eAdapters().add(new ECrossReferenceAdapter());
 		
-		final var inputCatalogFile = new File(inputCatalogPath);
-		final var inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogFile.toString()));
+		final var inputCatalogUri = URI.createFileURI(inputCatalogPath);
 
 		// load the OML ontologies
-		final var inputFiles = collectOMLFiles(inputCatalog);
+		final var inputFiles = collectOMLFiles(inputCatalogUri);
 		final var inputResources = new ArrayList<Resource>();
 		for (File inputFile : inputFiles) {
 			final var inputUri = URI.createFileURI(inputFile.getAbsolutePath());
@@ -223,12 +222,12 @@ public class OmlConvertApp {
 	/**
 	 * Returns all the OML Files referenced by the passed catalog
 	 * 
-	 * @param inputCatalog the Oml catalog
+	 * @param inputCatalogURI the URI of the Oml catalog
 	 * @return Collection of Files
 	 * @throws IOException exception thrown
 	 */
-	public static Collection<File> collectOMLFiles(OmlCatalog inputCatalog) throws IOException  {
-		return inputCatalog.getResolvedUris().stream()
+	public static Collection<File> collectOMLFiles(URI inputCatalogURI) throws IOException  {
+		return OmlResolve.resolveOmlFileUris(inputCatalogURI).stream()
 			.map(i -> new File(i.toFileString()))
 			.collect(Collectors.toList());
 	}

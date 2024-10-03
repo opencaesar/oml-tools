@@ -39,8 +39,6 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.work.Incremental;
 
-import io.opencaesar.oml.util.OmlCatalog;
-
 /**
  * A gradle task to run the OmlValidate tool 
  */
@@ -88,8 +86,8 @@ public abstract class OmlValidateTask extends DefaultTask {
     protected ConfigurableFileCollection getInputFiles() throws IOException {
 		if (getInputCatalogPath().isPresent()) {
 			String s = getInputCatalogPath().get().getAbsolutePath();
-    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
-    		Collection<File> files = OmlValidateApp.collectOmlFiles(inputCatalog);
+    		final URI inputCatalogUri = URI.createFileURI(s);
+    		Collection<File> files = OmlValidateApp.collectOmlFiles(inputCatalogUri);
     		files.add(getInputCatalogPath().get());
     		return getProject().files(files);
 		}

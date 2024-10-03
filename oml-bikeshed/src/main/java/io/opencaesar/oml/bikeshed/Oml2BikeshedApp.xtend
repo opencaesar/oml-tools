@@ -26,9 +26,9 @@ import io.opencaesar.oml.Ontology
 import io.opencaesar.oml.dsl.OmlStandaloneSetup
 import io.opencaesar.oml.resource.OmlJsonResourceFactory
 import io.opencaesar.oml.resource.OmlXMIResourceFactory
-import io.opencaesar.oml.util.OmlCatalog
 import io.opencaesar.oml.util.OmlConstants
 import io.opencaesar.oml.util.OmlRead
+import io.opencaesar.oml.util.OmlResolve
 import io.opencaesar.oml.validate.OmlValidator
 import java.io.BufferedWriter
 import java.io.File
@@ -182,8 +182,7 @@ class Oml2BikeshedApp {
 		LOGGER.info("Root Ontology= " + rootOntologyIri)
 		LOGGER.info("Output Folder= " + outputFolderPath)
 		
-		val inputCatalogFile = new File(inputCatalogPath)
-        val inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogFile.toString))
+        val inputCatalogUri = URI.createFileURI(inputCatalogPath);
 		
 		OmlStandaloneSetup.doSetup
 		OmlXMIResourceFactory.register();
@@ -191,7 +190,7 @@ class Oml2BikeshedApp {
 		val inputResourceSet = new ResourceSetImpl
 		inputResourceSet.eAdapters.add(new ECrossReferenceAdapter)
 		
-		var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalog)
+		var rootUri = resolveRootOntologyIri(rootOntologyIri, inputCatalogUri)
 		val rootOntology = OmlRead.getOntology(inputResourceSet.getResource(rootUri, true))
 		val scope = OmlRead.getImportScope(rootOntology)
 		var List<Ontology> inputOntologies = scope.map[r|OmlRead.getOntology(r)].sortBy[iri]
@@ -298,17 +297,17 @@ class Oml2BikeshedApp {
 	/**
 	 * Returns a collection of OML Files referenced by an OML catalog
 	 * 
-	 * @param catalog An OML catalog
+	 * @param inputCatalogUri The URI of the OML catalog
 	 * @return Collection of Files
 	 */
-	def static Collection<File> collectOmlFiles(OmlCatalog catalog) {
-		catalog.resolvedUris.stream
+	def static Collection<File> collectOmlFiles(URI inputCatalogUri) {
+		OmlResolve.resolveOmlFileUris(inputCatalogUri).stream
 			.map(i|new File(i.toFileString))
 			.collect(Collectors.toList)
 	}
 	
-	private static def URI resolveRootOntologyIri(String rootOntologyIri, OmlCatalog catalog) {
-		val resolved = catalog.resolveUri(URI.createURI(rootOntologyIri))
+	private static def URI resolveRootOntologyIri(String rootOntologyIri, URI inputCatalogUri) {
+		val resolved = OmlResolve.resolveOmlFileUri(inputCatalogUri, rootOntologyIri)
 		
 		if (resolved.file) {
 			val filename = resolved.toFileString

@@ -37,8 +37,6 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.work.Incremental;
 
-import io.opencaesar.oml.util.OmlCatalog;
-
 /**
  * A gradle task to invoke the OmlConvert tool 
  */
@@ -102,8 +100,8 @@ public abstract class OmlConvertTask extends DefaultTask {
     protected ConfigurableFileCollection getInputFiles() throws IOException {
 		if (getInputCatalogPath().isPresent()) {
 			String s = getInputCatalogPath().get().getAbsolutePath();
-    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
-    		Collection<File> files = OmlConvertApp.collectOMLFiles(inputCatalog);
+    		final URI inputCatalogURI = URI.createFileURI(s);
+    		Collection<File> files = OmlConvertApp.collectOMLFiles(inputCatalogURI);
     		files.add(getInputCatalogPath().get());
     		return getProject().files(files);
 		}

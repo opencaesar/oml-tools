@@ -24,6 +24,7 @@ import java.util.List;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.InputDirectory;
@@ -81,6 +82,15 @@ public abstract class OmlVelocityTask extends DefaultTask {
     public abstract ListProperty<String> getTemplateKeyValues();
 
 	/**
+	 * A key/value map to pass as a context when instantiating templates.
+	 * 
+	 * @return List of String Property
+	 */
+    @Optional
+    @Input
+    public abstract MapProperty<String, Object> getTemplateKeyValues2();
+
+    /**
 	 * The path to an output folder for template instantiations.
 	 * 
 	 * @return Directory Property
@@ -117,7 +127,7 @@ public abstract class OmlVelocityTask extends DefaultTask {
 			args.add(getOutputFolder().get().getAsFile().getAbsolutePath());
 		}
 		try {
-    		OmlVelocityApp.main(args.toArray(new String[0]));
+    		OmlVelocityApp.main(getTemplateKeyValues2().get(), args.toArray(new String[0]));
 		} catch (Exception e) {
 			throw new TaskExecutionException(this, e);
 		}

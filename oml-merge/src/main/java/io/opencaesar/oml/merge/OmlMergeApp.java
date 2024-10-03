@@ -78,7 +78,7 @@ public class OmlMergeApp {
 
     @Parameter(
             names = {"--input-catalog-path", "-c"},
-            description = "Paths to input OML catalog files (Required)",
+            description = "Paths to input OML catalog files (Not Required)",
             validateWith = InputCatalogPath.class,
             order = 3)
     private List<String> inputCatalogPaths = new ArrayList<>();
@@ -93,7 +93,7 @@ public class OmlMergeApp {
 
     @Parameter(
             names = {"--generate-output-catalog", "-g"},
-            description = "Whether to generate a catalog file in the output folder path",
+            description = "Whether to generate a catalog file in the output folder path (Not Required)",
             order = 5)
     private boolean generateOutputCatalog;
 

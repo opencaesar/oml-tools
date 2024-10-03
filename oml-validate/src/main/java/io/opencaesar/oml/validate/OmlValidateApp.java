@@ -45,7 +45,7 @@ import com.beust.jcommander.ParameterException;
 import io.opencaesar.oml.dsl.OmlStandaloneSetup;
 import io.opencaesar.oml.resource.OmlJsonResourceFactory;
 import io.opencaesar.oml.resource.OmlXMIResourceFactory;
-import io.opencaesar.oml.util.OmlCatalog;
+import io.opencaesar.oml.util.OmlResolve;
 
 /**
  * An application to validate an OML catalog 
@@ -144,10 +144,10 @@ public class OmlValidateApp {
 		inputResourceSet.eAdapters().add(new ECrossReferenceAdapter());
 
 		// load the OML catalog
-		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(inputCatalogPath));
+		final URI inputCatalogUri = URI.createFileURI(inputCatalogPath);
 
 		// validate each resource in turn
-		for(File file : collectOmlFiles(inputCatalog)) {
+		for(File file : collectOmlFiles(inputCatalogUri)) {
 			URI uri = URI.createFileURI(file.getAbsolutePath());
 			LOGGER.info("Loading: " + uri);
 			inputResourceSet.getResource(uri, true);
@@ -155,7 +155,7 @@ public class OmlValidateApp {
 		
 		// validate each resource in turn
 		StringBuffer problems = new StringBuffer();
-		for(File file : collectOmlFiles(inputCatalog)) {
+		for(File file : collectOmlFiles(inputCatalogUri)) {
 			URI uri = URI.createFileURI(file.getAbsolutePath());
 			LOGGER.info("Validating: " + uri);
 			Resource r = inputResourceSet.getResource(uri, false);
@@ -194,12 +194,12 @@ public class OmlValidateApp {
 	/**
 	 * Collects OML files referenced by an OML catalog
 	 * 
-	 * @param catalog the OML catalog
+	 * @param catalogUri the URI of the OML catalog
 	 * @return List of Files
 	 * @throws IOException error
 	 */
-	public static List<File> collectOmlFiles(OmlCatalog catalog) throws IOException {
-		return catalog.getResolvedUris().stream()
+	public static List<File> collectOmlFiles(URI catalogUri) throws IOException {
+		return OmlResolve.resolveOmlFileUris(catalogUri).stream()
 				.map(i -> new File(i.toFileString()))
 				.collect(Collectors.toList());
 	}

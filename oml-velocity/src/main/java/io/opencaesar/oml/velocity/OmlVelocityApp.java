@@ -31,7 +31,10 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.AppenderSkeleton;
@@ -85,6 +88,11 @@ public class OmlVelocityApp {
 	)
 	private List<String> templateKeyValues = new ArrayList<>();
 
+	/**
+	 *  A key/value map for the template
+	 */
+	private Map<String, Object> templateKeyValues2 = new HashMap<>();
+
 	@Parameter(
 		names= {"--output-folder", "-o"}, 
 		description="Path to an output folder for template instantiations (Required)", 
@@ -126,6 +134,17 @@ public class OmlVelocityApp {
 	 * @throws Exception when template instantiation has a problem
 	 */
 	public static void main(String ... args) throws Exception {
+		main(Collections.emptyMap(), args);
+	}
+
+	/**
+	 * Main method
+	 * 
+	 * @param args command line arguments for the app
+	 * @param templateKeyValues2 a map from string to object to be used as context of template
+	 * @throws Exception when template instantiation has a problem
+	 */
+	public static void main(Map<String, Object> templateKeyValues2, String ... args) throws Exception {
 		final OmlVelocityApp app = new OmlVelocityApp();
 		final JCommander builder = JCommander.newBuilder().addObject(app).build();
 		builder.parse(args);
@@ -142,9 +161,10 @@ public class OmlVelocityApp {
 			Appender appender = LogManager.getRootLogger().getAppender("stdout");
 			((AppenderSkeleton)appender).setThreshold(Level.DEBUG);
 		}
+		app.templateKeyValues2 = templateKeyValues2;
 		app.run();
 	}
-
+	
 	/**
 	 * Creates a new OmlVelocityApp object
 	 */
@@ -194,6 +214,9 @@ public class OmlVelocityApp {
             for (String templateKeyValue : templateKeyValues) {
             	String[] s = templateKeyValue.split("=");
             	context.put(s[0], s[1]);
+            }
+            for (var e : templateKeyValues2.entrySet()) {
+            	context.put(e.getKey(), e.getValue());
             }
             
             System.out.println("Generating "+outputFile);

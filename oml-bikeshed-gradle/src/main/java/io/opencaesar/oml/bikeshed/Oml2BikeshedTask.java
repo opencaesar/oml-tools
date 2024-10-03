@@ -39,8 +39,6 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.TaskExecutionException;
 import org.gradle.work.Incremental;
 
-import io.opencaesar.oml.util.OmlCatalog;
-
 /**
  * A gradle task to invoke the Oml2Bikeshed tool 
  */
@@ -122,8 +120,8 @@ public abstract class Oml2BikeshedTask extends DefaultTask {
     protected ConfigurableFileCollection getInputFiles() throws IOException {
 		if (getInputCatalogPath().isPresent()) {
 			String s = getInputCatalogPath().get().getAbsolutePath();
-    		final OmlCatalog inputCatalog = OmlCatalog.create(URI.createFileURI(s));
-    		Collection<File> files = Oml2BikeshedApp.collectOmlFiles(inputCatalog);
+    		final URI inputCatalogUri = URI.createFileURI(s);
+    		Collection<File> files = Oml2BikeshedApp.collectOmlFiles(inputCatalogUri);
     		files.add(getInputCatalogPath().get());
     		return getProject().files(files);
 		}

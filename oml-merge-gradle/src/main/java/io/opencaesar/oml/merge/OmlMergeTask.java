@@ -52,7 +52,8 @@ public abstract class OmlMergeTask extends DefaultTask {
 	 * 
 	 * @return File List Property
 	 */
-	@InputFiles
+    @Input
+    @Optional
     public abstract ListProperty<File> getInputZipPaths();
 
 	/**
@@ -60,16 +61,18 @@ public abstract class OmlMergeTask extends DefaultTask {
 	 * 
 	 * @return File List Property
 	 */
-	@InputFiles
-    public abstract ListProperty<File> getInputFolderPaths();
+    @Input
+    @Optional
+   public abstract ListProperty<File> getInputFolderPaths();
 
 	/**
 	 * The paths to input OML catalog files.
 	 * 
 	 * @return File List Property
 	 */
-	@InputFiles
-    public abstract ListProperty<File> getInputCatalogPaths();
+    @Input
+    @Optional
+   public abstract ListProperty<File> getInputCatalogPaths();
 
 	/**
 	 * The path to output OML folder where a basic OML catalog will be created.

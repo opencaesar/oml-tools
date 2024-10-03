@@ -18,7 +18,7 @@ Args:
 ```
 -t | --template-folder path/to/base/template/folder [Required]
 -i | --template-include a (glob) pattern matching the template files to include [Optional, default: **/*.oml]
--r | --template-rename A string old:new to find and replace in a template name [Optional]
+-r | --template-rename a string old:new to find and replace in a template name [Optional]
 -k | --template-key-value a key=value pair to pass as a context when instantiating templates [Optional]
 -o | --output-folder path/to/output/folder [Required]
 -v | --version displays app version [Optional]
@@ -40,7 +40,8 @@ task omlVelocity(type:io.opencaesar.oml.velocity.OmlVelocityTask) {
 	templateFolder = file('path/to/base/template/folder') [Required]
 	templateInclude = '**/namespace/*.oml' [Optional]
 	templateRename = 'old:new' [Optional]
-	templateKeyValues = ["key1=value1", "key2=value2"] [Optional]
+	templateKeyValues = ["key1=value1", "key2=value2"] [Optional] // "key=value" pairs
+	templateKeyValues2 = ["key1", value1, "key2", value2] [Optional] // "key"=value pairs
 	outputFolder = file('path/to/base/output/folder') [Required]
 }               
 ```
