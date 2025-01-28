@@ -1,9 +1,11 @@
-apply plugin: 'application'
-
 ext.title = 'Oml Merge'
 description = 'A tool to merge several input Oml catalogs into a single output catalog'
-mainClassName = 'io.opencaesar.oml.merge.OmlMergeApp'
-applicationName = 'oml-merge'
+
+apply plugin: 'application'
+application {
+	applicationName = 'oml-merge'
+	mainClass = 'io.opencaesar.oml.merge.OmlMergeApp'
+}
 
 dependencies {
 	implementation "com.beust:jcommander:${versions.jcommander}"

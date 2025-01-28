@@ -1,9 +1,11 @@
-apply plugin: 'application'
-
 ext.title = 'Oml Velocity'
 description = 'Velocity template instantiator for Oml'
-mainClassName = 'io.opencaesar.oml.velocity.OmlVelocityApp'
-applicationName = 'oml-velocity'
+
+apply plugin: 'application'
+application {
+	applicationName = 'oml-velocity'
+	mainClass = 'io.opencaesar.oml.velocity.OmlVelocityApp'
+}
 
 dependencies {
 	implementation "com.beust:jcommander:${versions.jcommander}"

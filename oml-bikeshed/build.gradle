@@ -1,15 +1,14 @@
-plugins { id "org.xtext.xtend" version "2.0.8" }
-
-sourceSets {
-	main { xtendOutputDir = 'src/main/xtend-gen' }
-}
-
-apply plugin: 'application'
+plugins { id "org.xtext.xtend" version "4.0.0" }
+sourceSets { main.xtend.outputDir = 'src/main/xtend-gen' }
 
 ext.title = 'Oml to Bikeshed'
 description = 'Bikeshed generator for Oml'
-mainClassName = 'io.opencaesar.oml.bikeshed.Oml2BikeshedApp'
-applicationName = 'oml2bikeshed'
+
+apply plugin: 'application'
+application {
+	applicationName = 'oml2bikeshed'
+	mainClass = 'io.opencaesar.oml.bikeshed.Oml2BikeshedApp'
+}
 
 dependencies {
 	implementation "com.beust:jcommander:${versions.jcommander}"

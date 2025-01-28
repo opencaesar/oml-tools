@@ -1,9 +1,11 @@
-apply plugin: 'application'
-
 ext.title = 'Oml Convert'
 description = 'Converter between the Oml persistance formats'
-mainClassName = 'io.opencaesar.oml.convert.OmlConvertApp'
-applicationName = 'oml-convert'
+
+apply plugin: 'application'
+application {
+	applicationName = 'oml-convert'
+	mainClass = 'io.opencaesar.oml.convert.OmlConvertApp'
+}
 
 dependencies {
 	implementation "com.beust:jcommander:${versions.jcommander}"
