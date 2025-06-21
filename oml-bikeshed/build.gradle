@@ -23,4 +23,6 @@ dependencies {
     implementation project (':oml-validate')
 }
 
-sourcesJar.dependsOn(generateXtext)
+tasks.named('sourcesJar') {
+    dependsOn(tasks.named('generateXtext'))
+}
